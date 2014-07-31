@@ -1,0 +1,72 @@
+<tool id="gradeCode" name="Grade Code">
+  <description>Grade code specified by the student by comparing standard out</description>
+  <command interpreter="python">gradeCode.py '$html_file' '$initializationCode' '$finalizationCode' '$instructorCode' '$language' '$badgeName' '$other'</command>
+ <inputs>
+    <param name="initializationCode" type= "text" area="True" size="10x100" label="Initialization Code"/>
+    <param name="finalizationCode" type="text" area="True" size="10x100" label="Finalization Code"/>
+    <param name="instructorCode" type="text" area="True" size="10x100" label="Instructor Code"/>
+    <param name="language" type="select" label="Select Language to Grade">
+	<option value="python27">Python 2.7</option>
+	<option value="R">R</option>
+    </param>
+    <param name="badgeName" type="text" area="True" size="1x100" value="None" label="Badge Name"/>
+    <param name="other" type="text" area="True" size="20x100" value='{"email": "a@b.com", "studentCode": "a=1"}' label="Other Parameters"/>
+    <!--kdkd -->
+  </inputs>
+  <outputs>
+      <data format="html" name="html_file" label="Grade Code Results" />
+  </outputs>
+
+  <tests>
+    <test>
+
+    </test>
+  </tests>
+
+
+  <help>
+.. class:: infomark
+
+**Explanation of Inputs**
+&#xA;*Initialization Code* &#x21D0; Code that is run before the student code
+&#xA;*Finalization Code* &#x21D0; Code that is run after the student code 
+&#xA;*Instructor Code* &#x21D0; Code that is used to generate the answer
+&#xA;*Student Code* &#x21D0; Code that is to be graded
+&#xA;*Badge Name* &#x21D0; Badge name to award. Can be None
+&#xA;*Other* &#x21D0; other parameters that need to be set
+
+----
+
+.. class:: infomark
+
+**What The Tool Does**
+&#xA;This tool compares the output from running the student code to the instructor code. If the output matches, then a positive result is returned.
+
+**Need to suppress print statements by the student in Python?**
+
+::
+
+	# Put this in the initialization code
+	import sys
+	save_stdout = sys.stdout
+	class DummyFile(object):
+       	  def write(self, x): pass
+	sys.stdout = DummyFile()
+
+	# Put this in the finalization code
+	sys.stdout = save_stdout	
+
+**Need to suppress print statements by the student in R?**
+
+::
+
+	# Put this in the initialization code
+	save_print = print
+	print=function(...) {}
+
+	# Put this in the finalization code
+	print = save_print
+
+  </help>
+
+</tool>

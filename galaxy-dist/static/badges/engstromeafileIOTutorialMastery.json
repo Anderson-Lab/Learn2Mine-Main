@@ -1,0 +1,15 @@
+{
+   "uid":"engstromea@g.cofc.edu",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "engstromea@g.cofc.edu"
+   },
+   "image":"http://learn2mine.appspot.com/images/fileIOTutorialMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/fileIOTutorialMastery.json",
+   "issuedOn":1395166703,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/engstromeafileIOTutorialMastery.json"
+   }
+}

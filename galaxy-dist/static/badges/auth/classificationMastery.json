@@ -1,0 +1,8 @@
+{
+   "name": "Classigication Mastery Badge",
+   "description": "For mastering the different Classification Algorithms",
+   "image": "http://learn2mine.appspot.com/images/classificationMastery.png",
+   "criteria": "http://learn2mine.appspot.com/Home",
+   "tags": ["classification", "mastery"],
+   "issuer": "http://learn2mine.appspot.com/badges/organization.json"
+}

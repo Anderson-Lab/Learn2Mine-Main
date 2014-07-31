@@ -1,0 +1,15 @@
+{
+   "uid":"wbrandon80@gmail.com",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "wbrandon80@gmail.com"
+   },
+   "image":"http://learn2mine.appspot.com/images/knnRTutorialMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/knnRTutorialMastery.json",
+   "issuedOn":1395334782,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/wbrandon80knnRTutorialMastery.json"
+   }
+}

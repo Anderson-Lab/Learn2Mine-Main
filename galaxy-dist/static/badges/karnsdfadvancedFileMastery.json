@@ -1,0 +1,15 @@
+{
+   "uid":"132581916339423165894",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "karnsdf@g.cofc.edu"
+   },
+   "image":"http://learn2mine.appspot.com/images/advancedFileMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/advancedFileMastery.json",
+   "issuedOn":1381261897,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/karnsdfadvancedFileMastery.json"
+   }
+}

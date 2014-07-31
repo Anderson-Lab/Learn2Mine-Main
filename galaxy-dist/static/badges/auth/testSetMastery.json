@@ -1,0 +1,8 @@
+{
+   "name": "Test Set Mastery Badge",
+   "description": "For mastering the Test Set Cross Validation",
+   "image": "http://learn2mine.appspot.com/images/testSetMastery.png",
+   "criteria": "http://learn2mine.appspot.com/Home",
+   "tags": ["test set", "mastery"],
+   "issuer": "http://learn2mine.appspot.com/badges/organization.json"
+}

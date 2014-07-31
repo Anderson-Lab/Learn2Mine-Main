@@ -1,0 +1,4 @@
+1)
+Percent return of policy.1 is 2.7
+2)
+Percent return of policy.2 is -9.04

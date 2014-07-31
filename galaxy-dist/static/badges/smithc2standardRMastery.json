@@ -1,0 +1,15 @@
+{
+   "uid":"124371919100660716655",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "smithc2@g.cofc.edu"
+   },
+   "image":"http://learn2mine.appspot.com/images/standardRMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/standardRMastery.json",
+   "issuedOn":1378340748,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/smithc2standardRMastery.json"
+   }
+}

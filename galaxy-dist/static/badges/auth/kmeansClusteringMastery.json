@@ -1,0 +1,8 @@
+{
+   "name": "k-Means Clustering Mastery",
+   "description": "For successfully completing Learn2mine's k-Means Clustering Lesson",
+   "image": "http://learn2mine.appspot.com/images/kmeansClusteringMastery.png",
+   "criteria": "http://learn2mine.appspot.com/Home",
+   "tags": ["kmeans", "clustering", "mastery"],
+   "issuer": "http://learn2mine.appspot.com/badges/organization.json"
+}

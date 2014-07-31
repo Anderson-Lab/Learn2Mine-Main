@@ -1,0 +1,15 @@
+{
+   "uid":"pauleanderson@gmail.com",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "pauleanderson@gmail.com"
+   },
+   "image":"http://learn2mine.appspot.com/images/knnLearned.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/knnLearned.json",
+   "issuedOn":1395084867,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/pauleandersonknnMastery.json"
+   }
+}

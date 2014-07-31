@@ -1,0 +1,15 @@
+{
+   "uid":"247285116103793611066",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "gardnercm@g.cofc.edu"
+   },
+   "image":"http://learn2mine.appspot.com/images/functionsMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/functionsMastery.json",
+   "issuedOn":1382796042,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/gardnercmfunctionsMastery.json"
+   }
+}

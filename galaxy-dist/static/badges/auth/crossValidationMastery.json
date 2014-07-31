@@ -1,0 +1,8 @@
+{
+   "name": "Cross Validation Mastery Badge",
+   "description": "For mastering the various Cross Validation skills",
+   "image": "http://learn2mine.appspot.com/images/crossValidationMastery.png",
+   "criteria": "http://learn2mine.appspot.com/Home",
+   "tags": ["cross","validcation", "mastery"],
+   "issuer": "http://learn2mine.appspot.com/badges/organization.json"
+}

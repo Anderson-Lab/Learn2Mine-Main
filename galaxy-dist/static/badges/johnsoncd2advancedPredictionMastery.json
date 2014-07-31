@@ -1,0 +1,15 @@
+{
+   "uid":"678806875686365368184",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "johnsoncd2@g.cofc.edu"
+   },
+   "image":"http://learn2mine.appspot.com/images/advancedPredictionMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/advancedPredictionMastery.json",
+   "issuedOn":1381256574,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/johnsoncd2advancedPredictionMastery.json"
+   }
+}

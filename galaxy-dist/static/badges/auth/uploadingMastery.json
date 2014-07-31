@@ -1,0 +1,8 @@
+{
+   "name": "Uploading Mastery Badge",
+   "description": "For mastering the ",
+   "image": "http://learn2mine.appspot.com/images/uploadingMastery.png",
+   "criteria": "http://learn2mine.appspot.com/Home",
+   "tags": ["uploaing", "mastery"],
+   "issuer": "http://learn2mine.appspot.com/badges/organization.json"
+}

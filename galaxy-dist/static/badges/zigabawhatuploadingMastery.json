@@ -1,0 +1,15 @@
+{
+   "uid":"zigabawhat@gmail.com",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "zigabawhat@gmail.com"
+   },
+   "image":"http://learn2mine.appspot.com/images/uploadingMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/uploadingMastery.json",
+   "issuedOn":1393961163,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/zigabawhatuploadingMastery.json"
+   }
+}

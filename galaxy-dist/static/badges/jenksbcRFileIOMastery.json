@@ -1,0 +1,15 @@
+{
+   "uid":"808125900367804477670",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "jenksbc@g.cofc.edu"
+   },
+   "image":"http://learn2mine.appspot.com/images/RFileIOMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/RFileIOMastery.json",
+   "issuedOn":1378932215,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/jenksbcRFileIOMastery.json"
+   }
+}

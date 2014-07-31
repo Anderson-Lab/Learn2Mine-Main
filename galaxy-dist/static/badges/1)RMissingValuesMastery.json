@@ -1,0 +1,16 @@
+{
+   "uid":""","season","size","speed","mxPH","mnO2","Cl","NO3","NH4","oPO4","PO4","Chla","a1","a2","a3","a4","a5","a6","a7"
+",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "1)"
+   },
+   "image":"http://learn2mine.appspot.com/images/RMissingValuesMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/RMissingValuesMastery.json",
+   "issuedOn":1379610604,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/1)RMissingValuesMastery.json"
+   }
+}

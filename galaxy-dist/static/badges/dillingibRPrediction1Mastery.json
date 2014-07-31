@@ -1,0 +1,15 @@
+{
+   "uid":"908854151865283565382",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "dillingib@g.cofc.edu"
+   },
+   "image":"http://learn2mine.appspot.com/images/RPrediction1Mastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/RPrediction1Mastery.json",
+   "issuedOn":1380209482,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/dillingibRPrediction1Mastery.json"
+   }
+}

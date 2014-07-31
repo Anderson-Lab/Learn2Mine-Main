@@ -1,0 +1,9 @@
+{
+  "name": "R Prediction Lesson 1 Mastery Badge",
+  "description": "For Successfully completing a set of prediction tests in R",
+  "image": "http://learn2mine.appspot.com/images/RPrediction1Mastery.png",
+  "criteria": "http://learn2mine.appspot.com/Home",
+  "tags": ["R Prediction","1", "mastery"],
+  "issuer": "http://learn2mine.appspot.com/badges/organization.json"
+}
+

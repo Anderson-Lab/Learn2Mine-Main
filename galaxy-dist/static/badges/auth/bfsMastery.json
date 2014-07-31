@@ -1,0 +1,8 @@
+{
+   "name": "BFS Mastery Badge",
+   "description": "For completing the BFS Lessons of Learn2Mine",
+   "image": "http://learn2mine.appspot.com/images/bfsMastery.png",
+   "criteria": "http://learn2mine.appspot.com/Home",
+   "tags": ["bfs","mastery"],
+   "issuer": "http://learn2mine.appspot.com/badges/organization.json"
+}

@@ -1,0 +1,15 @@
+{
+   "uid":"pauleanderson@gmail.com",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "pauleanderson@gmail.com"
+   },
+   "image":"http://learn2mine.appspot.com/images/basicRMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/basicRMastery.json",
+   "issuedOn":1395770878,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/pauleandersonbasicRMastery.json"
+   }
+}

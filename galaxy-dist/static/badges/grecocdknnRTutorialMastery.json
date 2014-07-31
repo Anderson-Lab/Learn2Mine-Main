@@ -1,0 +1,15 @@
+{
+   "uid":"grecocd@g.cofc.edu",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "grecocd@g.cofc.edu"
+   },
+   "image":"http://learn2mine.appspot.com/images/knnRTutorialMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/knnRTutorialMastery.json",
+   "issuedOn":1395167994,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/grecocdknnRTutorialMastery.json"
+   }
+}

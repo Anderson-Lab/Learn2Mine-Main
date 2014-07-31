@@ -1,0 +1,17 @@
+<tool id="simulatedTraderParameters" name="Get Simulated Trader Parameters">
+  <description>For use in the Simulated Trader Lesson</description>
+  <command interpreter="python">getSimulatedTraderParameters.py $input1 $output $input2</command>
+ <inputs>
+    <!-- Input the data from the test-->
+    <param name="input1" size="21" value="000000000000000000000" type="integer" label="Key"/>
+    <param name="input2" size="42" type="text" label="Email"/><!-- 42 because Google Accounts can be 31 digits long plus "@gmail.com"/"@g.cofc.edu"-->
+  </inputs>
+  <outputs>
+    <!-- Dummy output for now, not sure if output is needed -->
+      <data format="txt" name="output" label="Parameters"/>
+  </outputs>
+  <help>
+  Use these parameters in the Simulated Trader Lesson. They are specific to each user, and they are saved on the
+  server every time you run this tool.
+  </help>
+</tool>

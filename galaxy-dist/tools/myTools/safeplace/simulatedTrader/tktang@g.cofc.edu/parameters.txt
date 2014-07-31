@@ -1,0 +1,6 @@
+# Fraction of our money that we will invest each time we open a new position
+frac.money.invest=0.4
+# Maximum loss we are willing to admit before we close the position
+max.loss.admit=0.08
+# Profit margin that we wish for our positions and is used when posting the limit orders
+profit.margin.positions=0.02

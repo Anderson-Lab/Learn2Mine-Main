@@ -1,0 +1,16 @@
+{
+   "uid":"[1]   4   8 -12  20
+",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "3)"
+   },
+   "image":"http://learn2mine.appspot.com/images/uploadingLearned.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/uploadingLearned.json",
+   "issuedOn":1378220936,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/3)uploadingMastery.json"
+   }
+}

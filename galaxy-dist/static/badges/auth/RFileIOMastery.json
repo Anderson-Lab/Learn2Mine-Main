@@ -1,0 +1,9 @@
+{
+  "name": "R IO Mastery Badge",
+  "description": "For Successfully completing a series of R I/O operations",
+  "image": "http://learn2mine.appspot.com/images/RFileIOMastery.png",
+  "criteria": "http://learn2mine.appspot.com/Home",
+  "tags": ["R I/O", "mastery"],
+  "issuer": "http://learn2mine.appspot.com/badges/organization.json"
+}
+

@@ -1,0 +1,15 @@
+{
+   "uid":"279274451493454875738",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "lorangmr@g.cofc.edu"
+   },
+   "image":"http://learn2mine.appspot.com/images/advancedUnknownMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/advancedUnknownMastery.json",
+   "issuedOn":1381366158,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/lorangmradvancedUnknownMastery.json"
+   }
+}

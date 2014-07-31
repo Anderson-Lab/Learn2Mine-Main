@@ -1,0 +1,15 @@
+{
+   "uid":"252500627436628449163",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "jake.dierksheide@gmail.com"
+   },
+   "image":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/images/standardRMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/standardRMastery.json",
+   "issuedOn":1377122578,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/jake.dierksheidestandardRMastery.json"
+   }
+}
