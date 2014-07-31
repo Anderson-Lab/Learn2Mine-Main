@@ -1,0 +1,8 @@
+{
+  "name": "Fraud Case Study Mastery Badge",
+  "description": "For successfully learning R through a Fraud Detection case study",
+  "image": "http://learn2mine.appspot.com/images/fraudMastery.png",
+  "criteria": "http://learn2mine.appspot.com/Home.html",
+  "tags": ["fraud", "case study","mastery"],
+  "issuer": "http://learn2mine.appspot.com/badges/organization.json"
+}

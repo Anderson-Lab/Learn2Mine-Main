@@ -1,0 +1,175 @@
+<!DOCTYPE HTML> 
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+
+<title>Learn2Mine</title>
+
+<link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+<link type="text/css" rel="stylesheet" href="/stylesheets/tutorial.css" />
+<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+<link rel="shortcut icon" href="./images/l2m.ico">
+<script type="text/javascript" SRC="./Javascript/jquery.js"></script>
+<script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+<script type="text/javascript">
+var correct = 0;
+var totalProblems = 0;
+var problemsCorrect = new Array();
+function updateProgressBar(problemNumber) {
+	if(problemNumber == totalProblems){
+		var experience = 100;
+	}
+	else{
+		if( $.inArray(problemNumber,problemsCorrect) === -1 ){
+			problemsCorrect.push(problemNumber);
+			correct += 1;
+			var experience = ((correct*100)/(totalProblems*100))*100;
+		}
+	}
+	$( "#progressbar" ).progressbar({
+		value: experience,
+	});
+};
+	function grade(index,workflow_id,hist_id) {
+		//code = $('.answer').val();
+		code = $('.answer'+index).val();
+		//email = '{{user}}';
+		email = 'nashtf@g.cofc.edu';
+		//workflow_id = "f2db41e1fa331b3e";
+		//hist_id = "e89067bb68bee7a0";
+		try {
+		$.ajax({
+			url: '/OnsiteGrader',
+			type: 'POST',
+			data: {code:code,email:email,workflow_id:workflow_id,hist_id:hist_id},
+			success: function(outputid){
+				//alert("HTTP 200 Returned");
+				$(".results"+index).css('display','inline');
+				$(".refresh"+index).css('display','inline');
+				$(".outputid"+index).html(outputid); // This populates the result
+				$(".results"+index).val("Click refresh to see the results");
+			},
+			failure: function(response){
+				alert("An error occurred when sending results and your work was not graded. Contact us if this problem persists.");
+			}
+		})//.done(alert("done"+code.val()));
+		} catch (error) {
+		        $(".outputid"+index).html("An error occurred. Please try again later.");
+		}
+	}
+
+	function refresh(index,hist_id) {
+                outputid = $(".outputid"+index).html();
+               	//hist_id = "e89067bb68bee7a0";
+		$.ajax({
+			url: '/OnsiteGrader',
+			type: 'GET',
+			data: {hist_id:hist_id,outputid:outputid},
+			success: function(results){
+				$(".results"+index).val("No status yet. Check back again shortly.");
+				obj = JSON.parse(results);
+				if (obj.return == "correct") {
+					$(".results"+index).val("Congratulations! You've solved this problem. ");
+					updateProgressBar(index);
+					if (obj.badge_image_url != "None") {
+						$(".badge"+index).attr("src",obj.badge_image_url)
+					        $(".badge"+index).css('display','inline');
+					} else {
+					        $(".badge"+index).css('display','none');
+					}
+				} else {
+					$(".results"+index).val("The code you entered is incorrect. \nThe following shows what output correctly matched and what output was different (shown using + and -): \n" + obj.difference_stdout);
+					$(".badge"+index).attr("src","")
+				        $(".badge"+index).css('display','none');
+				}
+			},
+			failure: function(response){
+				alert("An error occurred when sending results and your work was not graded. Contact us if this problem persists.");
+			},
+			statusCode: {
+			        500: function() {
+		                        $(".results"+index).val("Still starting submission... Hit refresh again.");
+                        	}
+    			}
+
+		})//.done(alert("done"+code.val()));
+
+	
+	}
+	$(function() { // Initialize Progress Bar
+    	$( "#progressbar" ).progressbar({
+    	value: 0
+    });
+  });
+</script>
+
+</head>
+
+<body>
+
+	<a href="http://birg.cs.cofc.edu/index.php/Anderson_Lab"><img src="/images/Paul-labs-logo.png" align="right" title="BiRG Labs" style="width: 75px;"></a>
+	<a id="home" href="Home"><div id="banner"><img id=bannerImg src='images/learn2mine.png' title="LOOK AT BANNER, MICHAEL!"/></a></div>
+	<div id="lava">
+		<ul>
+			<li><a id="home" href="Home"><div class="sitenav" id="homelink">Home</div></a></li>
+			<li><a id="profile" href="Profile"><div class="sitenav" id="profilelink">Profile</div></a></li>
+			<li><a id="leaderboard" href="Leaderboard"><div class="sitenav" id="leaderlink">Leaderboard</div></a></li>
+                        <li><a id="grade" href="Grader"><div class="sitenav" id="gradelink">Grade</div></a></li>
+			<li><a id="about" href="About"><div class="sitenav" id="aboutlink">About</div></a></li>
+			<li><a id="help" href="Help"><div class="sitenav" id="helplink">Help</div></a></li>
+                        <li><a id="rstudio" target="_blank" href="http://portal.cs.cofc.edu/learn2mine-rstudio"><div class="sitenav" id="rstudiolink">Rstudio</div></a></li>
+		</ul>
+		<div class="loggedin">{{user}}</div>
+	</div>
+
+	<div class="container" id="tutorialText">
+		<h2>{{header}}</h2>
+		<div id="tutorialText">
+			<p>
+				{{paragraph}}
+			</p>
+			<p>
+				This experience bar represents your strength for taking on the boss fight. Defeat the "boss problem" and you will max out your strength.
+			</p>
+			<div id="progressbar"></div><div id="progress-label">XP</div>
+			<p>
+				{{reminder}}
+			</p>
+			<p>
+				<form method="post" id="gradeform" action="http://portal.cs.cofc.edu/learn2mine">
+				<ol>
+					{% for i in range(problems|length) %}
+					<script type="text/javascript">
+						totalProblems += 1;
+					</script>
+						<li>{{problems[i]}}</li>
+						<textarea class="answer{{ loop.index }}" cols="50" rows="5" placeholder="Enter code or answer here"></textarea>
+						<br>
+                                                {%- if workflow_ids_R|length > 0  -%}
+						  <input type="button" value="Grade R Code" onclick="grade({{ loop.index }},'{{workflow_ids_R[i]}}','a799d38679e985db')"/>
+                                                {%- endif %}
+                                                {%- if workflow_ids_python27|length > 0  -%}
+						<input type="button" value="Grade Python Code" onclick="grade({{ loop.index }},'{{workflow_ids_python27[i]}}','a799d38679e985db')"/>
+                                                {%- endif %}
+						<p>
+						<div class="outputid{{ loop.index }}">No submission</div>
+						<br>
+					        <textarea class="results{{ loop.index }}" cols="50" rows="5" placeholder="Click refresh to see the results" style="display:none;"></textarea>
+					        <br>
+					        <input type="button" class="refresh{{ loop.index }}" value="Refresh" style="display:none;" onclick="refresh({{ loop.index }},'a799d38679e985db')"/>
+						<br>
+						<img src="" class="badge{{ loop.index }}" style="display:none;" >
+					{% endfor %}
+				</ol>
+
+				</form>
+				<!--<form method="get" action="">
+					<input type="submit" value="Refresh" />
+					<br>-->
+				<!--</form>-->
+				<br>
+			</p>
+		</div>
+	</div>
+
+</body>

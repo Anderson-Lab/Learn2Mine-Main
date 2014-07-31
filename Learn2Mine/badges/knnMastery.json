@@ -1,0 +1,8 @@
+{
+  "name": "KNN Mastery Badge",
+  "description": "For Classifying Those Whatevers You Classified Sooo Goooood",
+  "image": "http://learn2mine.appspot.com/images/knnMastery.png",
+  "criteria": "http://learn2mine.appspot.com/Home.html",
+  "tags": ["knn", "mastery"],
+  "issuer": "http://learn2mine.appspot.com/badges/organization.json"
+}
