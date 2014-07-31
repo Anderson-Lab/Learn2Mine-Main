@@ -1,0 +1,51 @@
+<tool id="simulatedTrader" name="Simulated Trader">
+  <description>Submit the results of a lesson to Learn2Mine for scoring</description>
+  <command interpreter="python">submitData.py $input1 "simulatedTrader" -d "$html_file.files_path" -o "$html_file"  '$input3' '$input4'</command>
+ <inputs>
+    <!-- Input the data from the test-->
+    <param name="input1" type= "data" label="Algorithm Textual Output"/>
+    <param name="input4" type="text" area="True" size="10x25" label="Copy and Paste Output"/>
+    <param name="input3" type="data" label="Key"/>
+  </inputs>
+  <outputs>
+      <data format="html" name="html_file" label="Stock Market Simulated Trader Lesson ${on_string}" />
+  </outputs>
+
+  <tests>
+    <test>
+
+    </test>
+  </tests>
+
+
+  <help>
+.. class:: infomark
+
+**Problem Definition**
+http://portal.cs.cofc.edu/learn2mine/static/lessons/simulatedTrader.html
+
+----
+
+**Explanation of Inputs**
+&#xA;*Algorithm Textual Output* &#x21D0; Select the non-html output of the algorithm that you want graded.
+&#xA;*Key* &#x21D0; Your unique key that is found on http://learn2mine.appspot.com - This key can be quickly looked up in the "My Logins" section on the Lessons page. You can issue yourself a new Key if you believe your key has been compromised on Learn2Mine. This key is very important because it is how you will submit files to Learn2Mine for grading. This is how you unlock new lessons and the ability to earn more badges. 
+
+----
+
+
+.. class:: warningmark
+ 
+**Common Problems**
+&#xA;Make sure your Learn2Mine key is up to date if you have changed it
+&#xA;Make sure you selected the correct grading option
+
+----
+
+.. class:: infomark
+
+**What The Tool Does**
+&#xA;This tool sends the output data from your lesson to Learn2Mine for grading
+&#xA;You cannot 'forget' a skill if you do worse in a lesson
+  </help>
+
+</tool>

@@ -1,0 +1,15 @@
+{
+   "uid":"learn2minetesting2@gmail.com",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "learn2minetesting2@gmail.com"
+   },
+   "image":"http://learn2mine.appspot.com/images/basicRMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/basicRMastery.json",
+   "issuedOn":1395113721,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/learn2minetesting2basicRMastery.json"
+   }
+}

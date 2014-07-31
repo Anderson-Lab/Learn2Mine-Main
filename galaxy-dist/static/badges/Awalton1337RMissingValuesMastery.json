@@ -1,0 +1,15 @@
+{
+   "uid":"825926412938646610874",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "Awalton1337@gmail.com"
+   },
+   "image":"http://learn2mine.appspot.com/images/RMissingValuesMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/RMissingValuesMastery.json",
+   "issuedOn":1379591749,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/Awalton1337RMissingValuesMastery.json"
+   }
+}

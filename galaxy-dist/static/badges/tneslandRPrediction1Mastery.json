@@ -1,0 +1,15 @@
+{
+   "uid":"149510554811844612021",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "tnesland@gmail.com"
+   },
+   "image":"http://learn2mine.appspot.com/images/RPrediction1Mastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/RPrediction1Mastery.json",
+   "issuedOn":1380149471,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/tneslandRPrediction1Mastery.json"
+   }
+}

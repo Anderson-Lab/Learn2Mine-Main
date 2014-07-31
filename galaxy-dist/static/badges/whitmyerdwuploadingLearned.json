@@ -1,0 +1,15 @@
+{
+   "uid":"411229486741886249521",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "whitmyerdw@g.cofc.edu"
+   },
+   "image":"http://learn2mine.appspot.com/images/uploadingLearned.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/uploadingLearned.json",
+   "issuedOn":1378221192,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/whitmyerdwuploadingMastery.json"
+   }
+}

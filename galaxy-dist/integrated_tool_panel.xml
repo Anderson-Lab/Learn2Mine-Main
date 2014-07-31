@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<toolbox>
+    <section id="stockMarketLessons" name="Stock Market Prediction Lessons" version="">
+    </section>
+    <section id="dataMining" name="Data Mining" version="">
+    </section>
+    <section id="artificialIntelligence" name="Artificial Intelligence" version="">
+    </section>
+    <section id="myTools" name="Learn2Mine_Toolset" version="">
+        <tool id="gradeCode" />
+    </section>
+    <section id="learningR" name="Learning R" version="">
+    </section>
+    <section id="tutorials" name="Tutorial Lessons" version="">
+    </section>
+    <section id="customTools" name="Learn2Mine_Custom_Tools" version="">
+    </section>
+    <section id="getext" name="Get Data" version="">
+        <tool id="upload1" />
+    </section>
+    <section id="send" name="Send Data" version="">
+    </section>
+    <section id="liftOver" name="Lift-Over" version="">
+    </section>
+    <section id="textutil" name="Text Manipulation" version="">
+    </section>
+    <section id="filter" name="Filter and Sort" version="">
+    </section>
+    <section id="group" name="Join, Subtract and Group" version="">
+    </section>
+    <section id="convert" name="Convert Formats" version="">
+    </section>
+    <section id="features" name="Extract Features" version="">
+    </section>
+    <section id="fetchSeq" name="Fetch Sequences" version="">
+    </section>
+    <section id="fetchAlign" name="Fetch Alignments" version="">
+    </section>
+    <section id="scores" name="Get Genomic Scores" version="">
+    </section>
+    <section id="bxops" name="Operate on Genomic Intervals" version="">
+    </section>
+    <section id="stats" name="Statistics" version="">
+    </section>
+    <section id="plots" name="Graph/Display Data" version="">
+    </section>
+    <section id="regVar" name="Regional Variation" version="">
+    </section>
+    <section id="multReg" name="Multiple regression" version="">
+    </section>
+    <section id="multVar" name="Multivariate Analysis" version="">
+    </section>
+    <section id="hyphy" name="Evolution" version="">
+    </section>
+    <section id="motifs" name="Motif Tools" version="">
+    </section>
+    <section id="clustal" name="Multiple Alignments" version="">
+    </section>
+    <section id="fasta_manipulation" name="FASTA manipulation" version="">
+    </section>
+    <section id="NGS_QC" name="NGS: QC and manipulation" version="">
+    </section>
+    <section id="solexa_tools" name="NGS: Mapping" version="">
+    </section>
+    <section id="ngs-rna-tools" name="NGS: RNA Analysis" version="">
+    </section>
+    <section id="samtools" name="NGS: SAM Tools" version="">
+    </section>
+    <section id="gatk" name="NGS: GATK Tools (beta)" version="">
+    </section>
+    <section id="ngs-simulation" name="NGS: Simulation" version="">
+    </section>
+    <section id="hgv" name="Phenotype Association" version="">
+    </section>
+</toolbox>

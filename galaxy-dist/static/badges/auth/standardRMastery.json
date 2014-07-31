@@ -1,0 +1,9 @@
+{
+  "name": "Standard R Practice Mastery Badge",
+  "description": "For Completing a Series of Introductory R Statements",
+  "image": "http://learn2mine.appspot.com/images/standardRMastery.png",
+  "criteria": "http://learn2mine.appspot.com/Home",
+  "tags": ["standardR", "mastery"],
+  "issuer": "http://learn2mine.appspot.com/badges/organization.json"
+}
+

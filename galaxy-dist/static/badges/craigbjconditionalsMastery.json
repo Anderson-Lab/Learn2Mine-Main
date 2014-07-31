@@ -1,0 +1,15 @@
+{
+   "uid":"153467387645120110683",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "craigbj@g.cofc.edu"
+   },
+   "image":"http://learn2mine.appspot.com/images/conditionalsMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/conditionalsMastery.json",
+   "issuedOn":1384893672,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/craigbjconditionalsMastery.json"
+   }
+}

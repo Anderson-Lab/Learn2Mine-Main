@@ -1,0 +1,15 @@
+{
+   "uid":"623014938263367276447",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "suggsjm@g.cofc.edu"
+   },
+   "image":"http://learn2mine.appspot.com/images/simulatedTraderMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/simulatedTraderMastery.json",
+   "issuedOn":1386710015,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/suggsjmsimulatedTraderMastery.json"
+   }
+}

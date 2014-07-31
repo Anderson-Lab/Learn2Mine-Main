@@ -1,0 +1,15 @@
+{
+   "uid":"830537274033755553681",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "pkbrewer@g.cofc.edu"
+   },
+   "image":"http://learn2mine.appspot.com/images/advancedFileMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/advancedFileMastery.json",
+   "issuedOn":1381031081,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/pkbreweradvancedFileMastery.json"
+   }
+}

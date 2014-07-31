@@ -1,0 +1,15 @@
+{
+   "uid":"322068352546563308753",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "devinedm@g.cofc.edu"
+   },
+   "image":"http://learn2mine.appspot.com/images/advancedPredictionMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/advancedPredictionMastery.json",
+   "issuedOn":1381369151,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/devinedmadvancedPredictionMastery.json"
+   }
+}

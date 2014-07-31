@@ -1,0 +1,15 @@
+{
+   "uid":"tmraab@g.cofc.edu",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "tmraab@g.cofc.edu"
+   },
+   "image":"http://learn2mine.appspot.com/images/loopsConditionalsTutorialMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/loopsConditionalsTutorialMastery.json",
+   "issuedOn":1395167947,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/tmraabloopsConditionalsTutorialMastery.json"
+   }
+}

@@ -1,0 +1,8 @@
+{
+   "name": "Second Test Badge",
+   "description": "For completing a second test",
+   "image": "http://learn2mine.appspot.com/images/test2Mastery.png",
+   "criteria": "http://learn2mine.appspot.com/Home",
+   "tags": ['second', 'test'],
+   "issuer": "http://learn2mine.appspot.com/badges/organization.json"
+}

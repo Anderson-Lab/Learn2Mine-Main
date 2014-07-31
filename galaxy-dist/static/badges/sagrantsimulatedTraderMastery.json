@@ -1,0 +1,15 @@
+{
+   "uid":"789461373251806244670",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "sagrant@g.cofc.edu"
+   },
+   "image":"http://learn2mine.appspot.com/images/simulatedTraderMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/simulatedTraderMastery.json",
+   "issuedOn":1386610284,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/sagrantsimulatedTraderMastery.json"
+   }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "Simulated Trader Mastery Badge",
+  "description": "For Completing the Stock Trading Simulation",
+  "image": "http://learn2mine.appspot.com/images/simulatedTraderMastery.png",
+  "criteria": "http://learn2mine.appspot.com/Home",
+  "tags": ["simulated","trader", "mastery"],
+  "issuer": "http://learn2mine.appspot.com/badges/organization.json"
+}
+

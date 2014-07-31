@@ -1,0 +1,8 @@
+{
+   "name": "Decision Tree Mastery Badge",
+   "description": "For completing the Decision Tree Lesson of Learn2Mine",
+   "image": "http://learn2mine.appspot.com/images/decisionTreeMastery.png",
+   "criteria": "http://learn2mine.appspot.com/Home",
+   "tags": ["decision","mastery"],
+   "issuer": "http://learn2mine.appspot.com/badges/organization.json"
+}

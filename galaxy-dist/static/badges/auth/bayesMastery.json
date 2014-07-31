@@ -1,0 +1,8 @@
+{
+   "name": "Bayes Mastery Badge",
+   "description": "For mastering the different Bayesian algorithms",
+   "image": "http://learn2mine.appspot.com/images/bayesMastery.png",
+   "criteria": "http://learn2mine.appspot.com/Home",
+   "tags": ["bayes", "mastery"],
+   "issuer": "http://learn2mine.appspot.com/badges/organization.json"
+}

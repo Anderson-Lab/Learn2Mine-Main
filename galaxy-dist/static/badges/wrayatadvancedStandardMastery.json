@@ -1,0 +1,15 @@
+{
+   "uid":"103589835478839198114",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "wrayat@g.cofc.edu"
+   },
+   "image":"http://learn2mine.appspot.com/images/advancedStandardMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/advancedStandardMastery.json",
+   "issuedOn":1381415696,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/wrayatadvancedStandardMastery.json"
+   }
+}

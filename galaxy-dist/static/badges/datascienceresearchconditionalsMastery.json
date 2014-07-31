@@ -1,0 +1,15 @@
+{
+   "uid":"datascienceresearch@gmail.com",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "datascienceresearch@gmail.com"
+   },
+   "image":"http://learn2mine.appspot.com/images/conditionalsMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/conditionalsMastery.json",
+   "issuedOn":1395187926,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/datascienceresearchconditionalsMastery.json"
+   }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "R Missing Values Badge",
+  "description": "For Successfully Handling missing values in an R dataset",
+  "image": "http://learn2mine.appspot.com/images/RMissingValuesMastery.png",
+  "criteria": "http://learn2mine.appspot.com/Home",
+  "tags": ["R Missing Values", "mastery"],
+  "issuer": "http://learn2mine.appspot.com/badges/organization.json"
+}
+

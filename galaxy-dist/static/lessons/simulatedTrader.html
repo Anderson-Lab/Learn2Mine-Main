@@ -1,0 +1,77 @@
+<html>
+<body>
+The goal of this lesson is to build your first trading simulator. The point of this is to see the entire system working together. The second is to gain an appreciation for the difficulty of the problem. This is your first attempt at such a system. As the chapter progresses, the performance increases as we fine tune our strategy. The code that you will need is laid out in 3.5.3 and previous sections. See the book's website for code examples (http://www.dcc.fc.up.pt/~ltorgo/DataMiningWithR/code3.html). Specifically, you will need to do the following:
+<p>
+1. Generate your parameters using the 'Get Simulated Trader Parameters' tool.
+<p>
+2. Using these parameters, determine the performance (percent return) of simulating two trading strategies (policy.1 and policy.2) using the trading.simulator function provided by the book.
+<p>
+3. Submit the performance of these two strategies using the following format:
+<pre>
+1)
+Percent return of policy.1 is 4.32
+2)
+Percent return of policy.2 is -6.64
+</pre>
+
+<p><p>
+Hint #1: Here is the code that will create the correct dataset. See Chapter 3 for explanation.<br>
+Hint #2: For the first policy only change the following parameters: exp.prof, bet and, max.loss<br>
+Hint #3: For the second policy only change the following parameters: exp.prof and bet
+<pre>
+library(DMwR)
+library(quantmod)
+
+T.ind <- function(quotes,tgt.margin=0.025,n.days=10) {
+  v <- apply(HLC(quotes),1,mean)
+  
+  r <- matrix(NA,ncol=n.days,nrow=NROW(quotes))
+  ## The following statment is wrong in the book (page 109)!
+  for(x in 1:n.days) r[,x] <- Next(Delt(Cl(quotes),v,k=x),x)
+  
+  x <- apply(r,1,function(x) sum(x[x > tgt.margin | x < -tgt.margin]))
+  if (is.xts(quotes)) xts(x,time(quotes)) else x
+}
+
+myATR <- function(x) ATR(HLC(x))[,'atr']
+mySMI <- function(x) SMI(HLC(x))[,'SMI']
+myADX <- function(x) ADX(HLC(x))[,'ADX']
+myAroon <- function(x) aroon(x[,c('High','Low')])$oscillator
+myBB <- function(x) BBands(HLC(x))[,'pctB']
+myChaikinVol <- function(x) Delt(chaikinVolatility(x[,c("High","Low")]))[,1]
+myCLV <- function(x) EMA(CLV(HLC(x)))[,1]
+myEMV <- function(x) EMV(x[,c('High','Low')],x[,'Volume'])[,2]
+myMACD <- function(x) MACD(Cl(x))[,2]
+myMFI <- function(x) MFI(x[,c("High","Low","Close")], x[,"Volume"])
+mySAR <- function(x) SAR(x[,c('High','Close')]) [,1]
+myVolat <- function(x) volatility(OHLC(x),calc="garman")[,1]
+
+data.model <- specifyModel(T.ind(GSPC) ~ Delt(Cl(GSPC),k=1) + myATR(GSPC) 
+                           + myADX(GSPC) +    myEMV(GSPC) + myVolat(GSPC)  + myMACD(GSPC) 
+                           + mySAR(GSPC) + runMean(Cl(GSPC)) )
+
+
+Tdata.train <- as.data.frame(modelData(data.model,
+                                       data.window=c('1970-01-02','1999-12-31')))
+Tform <- as.formula('T.ind.GSPC ~ .')
+
+# Train and test periods
+start <- 1
+len.tr <- 1000
+len.ts <- 500
+tr <- start:(start+len.tr-1)
+ts <- (start+len.tr):(start+len.tr+len.ts-1)
+
+# getting the quotes for the testing period
+data(GSPC)
+date <- rownames(Tdata.train[start+len.tr,])
+market <- GSPC[paste(date,'/',sep='')][1:len.ts]
+
+# learning the model and obtaining its signal predictions
+library(e1071)
+s <- svm(Tform,Tdata.train[tr,],cost=10,gamma=0.01)
+p <- predict(s,Tdata.train[ts,])
+sig <- trading.signals(p,0.1,-0.1)
+</pre>
+</body>
+</html>

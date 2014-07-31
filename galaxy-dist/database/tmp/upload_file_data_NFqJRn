@@ -1,0 +1,1 @@
+levels(df$students) = c('Paul','Edward','Mike','Joe') df$students[2] = 'Joe' 

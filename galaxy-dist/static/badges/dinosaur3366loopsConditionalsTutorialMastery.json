@@ -1,0 +1,15 @@
+{
+   "uid":"dinosaur3366@gmail.com",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "dinosaur3366@gmail.com"
+   },
+   "image":"http://learn2mine.appspot.com/images/loopsConditionalsTutorialMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/loopsConditionalsTutorialMastery.json",
+   "issuedOn":1395336260,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/dinosaur3366loopsConditionalsTutorialMastery.json"
+   }
+}

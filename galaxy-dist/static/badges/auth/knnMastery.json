@@ -1,0 +1,8 @@
+{
+   "name": "KNN Mastery",
+   "description": "For making Successful classifications using the knn Galaxy tool",
+   "image": "http://learn2mine.appspot.com/images/knnMastery.png",
+   "criteria": "http://learn2mine.appspot.com/Home",
+   "tags": ["mastery", "knn"],
+   "issuer": "http://learn2mine.appspot.com/badges/organization.json"
+}
