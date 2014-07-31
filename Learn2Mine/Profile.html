@@ -1,0 +1,348 @@
+<!DOCTYPE HTML> 
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+
+<title>Learn2Mine</title>
+
+<link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+<link type="text/css" rel="stylesheet" href="/stylesheets/jOrgChart.css" />
+<link type="text/css" rel="stylesheet" href="/Javascript/pageslide/jquery.pageslide.css" />
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
+<link rel="shortcut icon" href="./images/l2m.ico">
+
+<script type="text/javascript" SRC="./Javascript/jquery.js"></script><!--Gives us access to jQuery -->
+<script type="text/javascript" SRC="./Javascript/jquery1.10/js/jquery-ui-1.10.3.custom.js"></script>
+
+
+
+<script type="text/javascript" src="./Javascript/javascriptForProfile/graphs/src/AC_OETags.js"></script>
+<script type="text/javascript" src="./Javascript/javascriptForProfile/graphs/src/cytoscapeweb.js"></script>
+<script type="text/javascript" src="./Javascript/javascriptForProfile/graphs/src/json2.js"></script>
+<script type="text/javascript">
+            window.onload=function() {
+                // id of Cytoscape Web container div
+                div_id = "skillTree";
+		dm_div_id = "dmSkillTree";
+                
+		dm_json = {
+			dataSchema:{
+			nodes: [ {name:"link", type:"string"}],
+			edges: [ {name:"edgey", type:"string"}]
+		    },
+		    data: {
+                        nodes: [{ id: "DMDataMiningRoot",link:"#"},//"/DMLesson?page=dataMiningAll"}, // Data Mining Tree lessons
+				{ id: "DMClassificationRoot",link:"#"},//"/DMLesson?page=dataMiningClassificationAll"},
+				{ id: "DMBayesRoot",link:"#"},//"/DMLesson?page=dataMiningBayesAll"},
+				{ id: "DMEmpiricalNaiveBayes",link:"/DMLesson?page=empiricalNaiveBayes"},
+				{ id: "DMCrossValidationRoot",link:"#"},//"/DMLesson?page=dataMiningCrossValidationRoot"},
+				{ id: "DMCVTestSet",link:"/DMLesson?page=dataMiningCVTestSet"},
+				{ id: "DMCVLOO",link:"/DMLesson?page=LeaveOneOutCV"},
+				{ id: "DMCVKFold",link:"/DMLesson?page=dataMiningCVKFold"},
+				{ id: "DMDecisionTree",link:"/DMLesson?page=decisionTree"},
+				{ id: "DMClusteringRoot",link:"#"},//"/DMLesson?page=dataMiningClusteringAll"},
+				{ id: "DMKMeansClustering",link:"/DMLesson?page=kmeans"},
+				{ id: "DMKnapsack",link:"/DMLesson?page=knapsack"},
+				{ id: "DMHierarchicalClustering",link:"/DMLesson?page=hierarchicalClustering"}],
+                 edges: [ 
+				 { id: "to", target: "DMClassificationRoot", source: "DMDataMiningRoot", directed: true}, 
+				 { id: "to", target: "DMBayesRoot", source: "DMClassificationRoot", directed: true},
+				 { id: "to", target: "DMEmpiricalNaiveBayes", source: "DMBayesRoot", directed: true},
+				 { id: "to", target: "DMCrossValidationRoot", source: "DMClassificationRoot", directed: true},
+				 { id: "to", target: "DMCVTestSet", source: "DMCrossValidationRoot", directed: true},
+				 { id: "to", target: "DMCVLOO", source: "DMCrossValidationRoot", directed: true},
+				 { id: "to", target: "DMCVKFold", source: "DMCrossValidationRoot", directed: true},
+				 { id: "to", target: "DMDecisionTree", source: "DMClassificationRoot", directed: true},
+				 { id: "to", target: "DMClusteringRoot", source: "DMDataMiningRoot", directed: true},
+				 { id: "to", target: "DMKMeansClustering", source: "DMClusteringRoot", directed: true},
+				 { id: "to", target: "DMKnapsack", source: "DMClusteringRoot", directed: true},
+				 { id: "to", target: "DMHierarchicalClustering", source: "DMClusteringRoot", directed: true}
+			]
+		    }
+                };
+                // you could also use other formats (e.g. GraphML) or grab the network data via AJAX
+                networ_json = {
+		    dataSchema:{
+			nodes: [ {name:"link", type:"string"}],
+			edges: [ {name:"edgey", type:"string"}]
+		    },
+                    data: {
+                        nodes: [
+				{ id: "DataScience", link:"/Lessons?lesson=welcome1"},// Generic Heading
+				//{ id: "GalaxyUploading",link:"/DMLesson?page=galaxy1" }, 
+				{ id: "basicRTutorial",link:"/TutorialLesson?page=tutorial1"}, // Tool Lessons
+				{ id: "fileIOTutorial",link:"/TutorialLesson?page=tutorial2"},
+				{ id: "loopsConditionalsTutorial",link:"/TutorialLesson?page=tutorial3"},
+				{ id: "knnRTutorial",link:"/TutorialLesson?page=tutorial4"},
+				{ id: "GalaxyKNN",link:"#"},//"/DMLesson?page=knn1" }, 
+				{ id: "GalaxyKNN2",link:"#"},//"/DMLesson?page=knn5" }, 
+				{ id: "GalaxyKMeans",link:"#"},//"/DMLesson?page=kmeans1" },
+				{ id: "GalaxyPLS",link:"#"},//"/DMLesson?page=pls1" },
+				{ id: "GalaxyNN",link:"#"},//"/DMLesson?page=nn1" },
+				{ id: "GalaxyMBA",link:"#"},//"/DMLesson?page=mb1" },
+				{ id: "GalaxyScaleFilter",link:"#"},//"/DMLesson?page=sf1" },
+				{ id: "GalaxyPCA",link:"#"},//"/DMLesson?page=pca1" },
+				{ id: "GalaxyCase1",link:"#"},//"/DMLesson?page=case2" },
+				{ id: "GalaxyCase2",link:"#"},//"/DMLesson?page=case3" },
+				{ id: "GalaxyCase3",link:"#"},//"/DMLesson?page=case4" },
+				{ id: "GalaxyCase12" ,link:"#"},//"/DMLesson?page=case2"},
+				{ id: "GalaxyCase22",link:"#"},//"/DMLesson?page=case3" },
+				{ id: "GalaxyCase32",link:"#"},//"/DMLesson?page=case4" },
+				{ id: "BasicR",link:"/DMLesson?page=BasicR" }, // R Lessons
+				{ id: "MissingValuesR",link:"/DMLesson?page=unknown" },
+				{ id: "FileIOR",link:"/DMLesson?page=fileIO" },
+				{ id: "PredictionR",link:"/DMLesson?page=predictionLesson2" },
+				{ id: "PredictionR2",link:"/DMLesson?page=predictionLesson1" },
+				{ id: "PredictionR3",link:"/DMLesson?page=welcome1" },
+				{ id: "FileIOR2",link:"/DMLesson?page=welcome1" },
+				{ id: "StandardR2",link:"/DMLesson?page=welcome1" },
+				{ id: "MissingValuesR2",link:"/DMLesson?page=welcome1" },
+				{ id: "FunctionsR",link:"/DMLesson?page=functions"},
+				{ id: "ConditionalsR",link:"/DMLesson?page=conditionals"},
+				{ id: "LoopsR",link:"/DMLesson?page=loops"},
+				{ id: "EvaluationsR",link:"/DMLesson?page=stockMarket"}, 
+				{ id: "DataMiningRoot",link:"#"},//"/DMLesson?page=dataMiningAll"}, // Data Mining lessons
+				{ id: "ClassificationRoot",link:"#"},//"/DMLesson?page=dataMiningClassificationAll"},
+				{ id: "BayesRoot",link:"#"},//"/DMLesson?page=dataMiningBayesAll"},
+				{ id: "EmpiricalNaiveBayes",link:"/DMLesson?page=empiricalNaiveBayes"},
+				{ id: "CrossValidationRoot",link:"#"},//"/DMLesson?page=dataMiningCrossValidationRoot"},
+				{ id: "CVTestSet",link:"/DMLesson?page=dataMiningCVTestSet"},
+				{ id: "CVLOO",link:"/DMLesson?page=LeaveOneOutCV"},
+				{ id: "CVKFold",link:"/DMLesson?page=dataMiningCVKFold"},
+				{ id: "DecisionTree",link:"/DMLesson?page=decisionTree"},
+				{ id: "ClusteringRoot",link:"#"},//"/DMLesson?page=dataMiningClusteringAll"},
+				{ id: "KMeansClustering",link:"/DMLesson?page=kmeans"},
+				{ id: "Knapsack",link:"#"},//"/DMLesson?page=knapsack"},
+				{ id: "HierarchicalClustering",link:"/DMLesson?page=hierarchicalClustering"},
+				{ id: "AIRoot",link:"#"},//"/DMLesson?page=AIAll"}, // AI Lessons
+				{ id: "SearchRoot",link:"#"},//"/DMLesson?page=AISearchRoot"},
+				{ id: "BreadthFirstSearch",link:"#"},//"/DMLesson?page=AIBreadthFirstSearch"},
+				{ id: "DepthFirstSearch",link:"#"},//"/DMLesson?page=AIDepthFirstSearch"},
+				{ id: "UniformCostSearch",link:"#"},//"/DMLesson?page=AIUniformCostSearch"},//End of Global Tree
+				//FLAG1
+				//{ id: "SQL" } // SQL Lessons
+				],
+                 edges: [ 
+                 { id: "to", target: "basicRTutorial", source: "DataScience", directed: true}, // Tutorial Edges
+                 { id: "to", target: "fileIOTutorial", source: "basicRTutorial", directed: true},
+                 { id: "to", target: "loopsConditionalsTutorial", source: "fileIOTutorial", directed: true},
+                 { id: "to", target: "knnRTutorial", source: "loopsConditionalsTutorial", directed: true},
+				 //{ id: "to", target: "SQL", source: "DataScience", directed: true},
+				 { id: "to", target: "GalaxyKNN", source: "DataScience", directed: true}, // Tool Edges
+				 { id: "to", target: "GalaxyKMeans", source: "DataScience", directed: true},
+				 { id: "to", target: "GalaxyMBA", source: "DataScience", directed: true},
+				 { id: "to", target: "GalaxyScaleFilter", source: "DataScience", directed: true},
+				 { id: "to", target: "GalaxyCase1", source: "DataScience", directed: true},
+				 { id: "to", target: "GalaxyKNN2", source: "GalaxyKNN", directed: true},
+				 { id: "to", target: "GalaxyPLS", source: "GalaxyKNN", directed: true},
+				 { id: "to", target: "GalaxyNN", source: "GalaxyPLS", directed: true},
+				 { id: "to", target: "GalaxyPCA", source: "GalaxyScaleFilter", directed: true},
+				 { id: "to", target: "GalaxyCase2", source: "GalaxyCase1", directed: true},
+				 { id: "to", target: "GalaxyCase12", source: "GalaxyCase1", directed: true},
+				 { id: "to", target: "GalaxyCase3", source: "GalaxyCase2", directed: true},
+				 { id: "to", target: "GalaxyCase22", source: "GalaxyCase2", directed: true},
+				 { id: "to", target: "GalaxyCase32", source: "GalaxyCase3", directed: true},
+				 { id: "to", target: "BasicR", source: "DataScience", directed: true}, // R Programming Edges
+				 { id: "to", target: "MissingValuesR", source: "BasicR", directed: true},
+				 { id: "to", target: "FileIOR", source: "BasicR", directed: true},
+				 { id: "to", target: "PredictionR", source: "BasicR", directed: true},
+				 { id: "to", target: "StandardR2", source: "BasicR", directed: true},
+				 { id: "to", target: "MissingValuesR2", source: "MissingValuesR", directed: true},
+				 { id: "to", target: "FileIOR2", source: "FileIOR", directed: true},
+				 { id: "to", target: "PredictionR2", source: "PredictionR", directed: true},
+				 { id: "to", target: "PredictionR3", source: "PredictionR2", directed: true},
+				 { id: "to", target: "LoopsR", source: "ConditionalsR", directed: true},
+				 { id: "to", target: "ConditionalsR", source: "FunctionsR", directed: true},
+				 { id: "to", target: "FunctionsR", source: "BasicR", directed: true},
+				 { id: "to", target: "EvaluationsR", source: "FunctionsR", directed: true},
+				 { id: "to", target: "DataMiningRoot", source: "DataScience", directed: true}, // Data Mining Edges
+				 { id: "to", target: "ClassificationRoot", source: "DataMiningRoot", directed: true}, 
+				 { id: "to", target: "BayesRoot", source: "ClassificationRoot", directed: true},
+				 { id: "to", target: "EmpiricalNaiveBayes", source: "BayesRoot", directed: true},
+				 { id: "to", target: "CrossValidationRoot", source: "ClassificationRoot", directed: true},
+				 { id: "to", target: "CVTestSet", source: "CrossValidationRoot", directed: true},
+				 { id: "to", target: "CVLOO", source: "CrossValidationRoot", directed: true},
+				 { id: "to", target: "CVKFold", source: "CrossValidationRoot", directed: true},
+				 { id: "to", target: "DecisionTree", source: "ClassificationRoot", directed: true},
+				 { id: "to", target: "ClusteringRoot", source: "DataMiningRoot", directed: true},
+				 { id: "to", target: "KMeansClustering", source: "ClusteringRoot", directed: true},
+				 { id: "to", target: "Knapsack", source: "ClusteringRoot", directed: true},
+				 { id: "to", target: "HierarchicalClustering", source: "ClusteringRoot", directed: true},
+				 { id: "to", target: "AIRoot", source: "DataScience", directed: true}, // AI Edges
+				 { id: "to", target: "SearchRoot", source: "AIRoot", directed: true},
+				 { id: "to", target: "BreadthFirstSearch", source: "SearchRoot", directed: true},
+				 { id: "to", target: "DepthFirstSearch", source: "SearchRoot", directed: true},
+				 { id: "to", target: "UniformCostSearch", source: "BreadthFirstSearch", directed: true},
+				 { id: "to", target: "UniformCostSearch", source: "DepthFirstSearch", directed: true},//End of Global Tree
+				 //FLAG2
+				]
+                    }
+                };
+                // initialization options
+                options = {
+                    // where you have the Cytoscape Web SWF
+                    swfPath: "./Javascript/javascriptForProfile/graphs/swf/CytoscapeWeb",
+                    // where you have the Flash installer SWF
+                    flashInstallerPath: "./Javascript/javascriptForProfile/graphs/swf/playerProductInstall"
+                };
+
+                style = {
+				nodes: {// these nodes reference id's created earlier
+					"DMDataMiningRoot" : {image:"./images/{{dataMiningMastery}}.png", borderColor:"#FFFFFF", data:{link:"#"}},//"/DMLesson?page=dataMiningAll"} }, // Data Mining Lessons
+					"DMClassificationRoot" : {image:"./images/{{classificationMastery}}.png", borderColor:"#FFFFFF", data:{link:"#"}},//"/DMLesson?page=dataMiningClassificationAll"} }, 
+					"DMBayesRoot" : {image:"./images/{{bayesMastery}}.png", borderColor:"#FFFFFF", data:{link:"#"}},//"/DMLesson?page=dataMiningBayesAll"} },
+					"DMEmpiricalNaiveBayes" : {image:"./images/{{empiricalNBMastery}}.png", borderColor:"#FFFFFF", data:{link:"/DMLesson?page=empiricalNaiveBayes"} },
+					"DMCrossValidationRoot" : {image:"./images/{{crossValidationMastery}}.png", borderColor:"#FFFFFF", data:{link:"#"}},//"/DMLesson?page=dataMiningCrossValidationRoot"} },
+					"DMCVTestSet" : {image:"./images/{{testSetMastery}}.png", borderColor:"#FFFFFF", data:{link:"/DMLesson?page=dataMiningCVTestSet"} },
+					"DMCVLOO" : {image:"./images/{{leaveOneOutMastery}}.png", borderColor:"#FFFFFF", data:{link:"/DMLesson?page=dataMiningCVLeaveOneOut"} },
+					"DMCVKFold" : {image:"./images/{{kFoldMastery}}.png", borderColor:"#FFFFFF", data:{link:"/DMLesson?page=dataMiningCVKFold"} },
+					"DMDecisionTree" : {image:"./images/{{decisionTreeMastery}}.png", borderColor:"#FFFFFF", data:{link:"/DMLesson?page=decisionTree"} },
+					"DMClusteringRoot" : {image:"./images/{{clusteringMastery}}.png", borderColor:"#FFFFFF", data:{link:"#"}},//"/DMLesson?page=dataMiningClusteringAll"} },
+					"DMKMeansClustering" : {image:"./images/{{kmeansClusteringMastery}}.png", borderColor:"#FFFFFF", data:{link:"/DMLesson?page=kmeansClustering"} },
+					"DMKnapsack" : {image:"./images/{{knapsackMastery}}.png", borderColor:"#FFFFFF", data:{link:"/DMLesson?page=knapsack"} },
+					"DMHierarchicalClustering" : {image:"./images/{{hierarchicalClusteringMastery}}.png", borderColor:"#FFFFFF", data:{link:"/DMLesson?page=hierarchicalClustering"} },
+					"DataScience": {image:"./images/datascienceMastery.png", borderColor:"#FFFFFF", data: {link:"/DMLesson?page=welcome1"} },// Generic Heading
+					"basicRTutorial" : {image:"./images/{{basicRTutorialMastery}}.png", borderColor:"#FFFFFF", data: {link:"/DMLesson?page=tutorial1"} },
+					"fileIOTutorial" : {image:"./images/{{fileIOTutorialMastery}}.png", borderColor:"#FFFFFF", data: {link:"/DMLesson?page=tutorial2"} },
+					"loopsConditionalsTutorial" : {image:"./images/{{loopsConditionalsTutorialMastery}}.png", borderColor:"#FFFFFF", data: {link:"/DMLesson?page=tutorial3"} },
+					"knnRTutorial" : {image:"./images/{{knnRTutorialMastery}}.png", borderColor:"#FFFFFF", data: {link:"/DMLesson?page=tutorial4"} },
+					//"GalaxyUploading" : {image:"./images/{{uploadingMastery}}.png", borderColor:"#FFFFFF", data: {link:"/DMLesson?page=galaxy1"} }, // Tool Lessons
+					"GalaxyKNN" : {image:"./images/{{knnLearned}}.png", borderColor:"#FFFFFF", data: {link:"#"}},//"/DMLesson?page=knn1"} }, 
+					"GalaxyKNN2" : {image:"./images/{{knnMastery}}.png", borderColor:"#FFFFFF", data:{link:"#"}},//"/DMLesson?page=knn5"} }, 
+					"GalaxyKMeans" : {image:"./images/{{kmeansLearned}}.png", borderColor:"#FFFFFF", data:{link:"#"}},//"/DMLesson?page=kmeans1"} },
+					"GalaxyPLS" : {image:"./images/{{plsLearned}}.png", borderColor:"#FFFFFF", data:{link:"#"}},//"/DMLesson?page=pls1"} },
+					"GalaxyNN" : {image:"./images/{{nnLearned}}.png", borderColor:"#FFFFFF", data:{link:"#"}},//"/DMLesson?page=nn1"} },
+					"GalaxyMBA" : {image:"./images/{{marketLearned}}.png", borderColor:"#FFFFFF", data:{link:"#"}},//"/DMLesson?page=mb1"} },
+					"GalaxyScaleFilter" : {image:"./images/{{scaleFilterLearned}}.png", borderColor:"#FFFFFF", data:{link:"#"}},//"/DMLesson?page=sf1"} },
+					"GalaxyPCA" : {image:"./images/{{pcaLearned}}.png", borderColor:"#FFFFFF", data:{link:"#"}},//"/DMLesson?page=pca1"} },
+					"GalaxyCase1" : {image:"./images/{{algaeLearned}}.png", borderColor:"#FFFFFF", data:{link:"#"}},//"/DMLesson?page=case2"} },
+					"GalaxyCase2" : {image:"./images/{{stocksLearned}}.png", borderColor:"#FFFFFF", data:{link:"#"}},//"/DMLesson?page=case3"} },
+					"GalaxyCase3" : {image:"./images/{{fraudLearned}}.png", borderColor:"#FFFFFF", data:{link:"#"}},//"/DMLesson?page=case4"} },
+					"GalaxyCase12" : {image:"./images/{{algaeMastery}}.png", borderColor:"#FFFFFF", data:{link:"#"}},//"/DMLesson?page=case2"} },
+					"GalaxyCase22" : {image:"./images/{{stocksMastery}}.png", borderColor:"#FFFFFF", data:{link:"#"}},//"/DMLesson?page=case3"} },
+					"GalaxyCase32" : {image:"./images/{{fraudMastery}}.png", borderColor:"#FFFFFF", data:{link:"#"}},//"/DMLesson?page=case4"} },
+					"BasicR" : {image:"./images/{{basicRMastery}}.png", borderColor:"#FFFFFF", data:{link:"/DMLesson?page=BasicR"} }, // R Lessons
+					"MissingValuesR" : {image:"./images/{{RMissingValuesMastery}}.png", borderColor:"#FFFFFF", data:{link:"/DMLesson?page=unknown"} },
+					"FileIOR" : {image:"./images/{{RFileIOMastery}}.png", borderColor:"#FFFFFF", data:{link:"/DMLesson?page=fileIO"} },
+					"PredictionR" : {image:"./images/{{RPrediction1Mastery}}.png", borderColor:"#FFFFFF", data:{link:"/DMLesson?page=predictionLesson1"} },
+					"PredictionR2" : {image:"./images/{{RPrediction2Mastery}}.png", borderColor:"#FFFFFF", data:{link:"/DMLesson?page=predictionLesson2"} },
+					"PredictionR3" : {image:"./images/{{advancedPredictionMastery}}.png", borderColor:"#FFFFFF", data:{link:"/DMLesson?page=welcome1"} }, //***//
+					"FileIOR2" : {image:"./images/{{advancedFileMastery}}.png", borderColor:"#FFFFFF", data:{link:"/DMLesson?page=welcome1"} },
+					"StandardR2" : {image:"./images/{{advancedStandardMastery}}.png", borderColor:"#FFFFFF", data:{link:"/DMLesson?page=welcome1"} }, //***//
+					"MissingValuesR2" : {image:"./images/{{advancedUnknownMastery}}.png", borderColor:"#FFFFFF", data:{link:"/DMLesson?page=welcome1"} }, //***//
+					"FunctionsR" : {image:"./images/{{functionsMastery}}.png", borderColor:"#FFFFFF", data:{link:"/DMLesson?page=functions"} },
+					"ConditionalsR" : {image:"./images/{{conditionalsMastery}}.png", borderColor:"#FFFFFF", data:{link:"/DMLesson?page=conditionals"} },
+					"LoopsR" : {image:"./images/{{loopsMastery}}.png", borderColor:"#FFFFFF", data:{link:"/DMLesson?page=loops"} },
+					"EvaluationsR" : {image:"./images/{{evaluationMastery}}.png", borderColor:"#FFFFFF", data:{link:"/DMLesson?page=stockMarket"} }, 
+					"DataMiningRoot" : {image:"./images/{{dataMiningMastery}}.png", borderColor:"#FFFFFF", data:{link:"#"}},//"/DMLesson?page=dataMiningAll"} }, // Data Mining Lessons
+					"ClassificationRoot" : {image:"./images/{{classificationMastery}}.png", borderColor:"#FFFFFF", data:{link:"#"}},//"/DMLesson?page=dataMiningClassificationAll"} }, 
+					"BayesRoot" : {image:"./images/{{bayesMastery}}.png", borderColor:"#FFFFFF", data:{link:"#"}},//"/DMLesson?page=dataMiningBayesAll"} },
+					"EmpiricalNaiveBayes" : {image:"./images/{{empiricalNBMastery}}.png", borderColor:"#FFFFFF", data:{link:"/DMLesson?page=empiricalNaiveBayes"} },
+					"CrossValidationRoot" : {image:"./images/{{crossValidationMastery}}.png", borderColor:"#FFFFFF", data:{link:"#"}},//"/DMLesson?page=dataMiningCrossValidationRoot"} },
+					"CVTestSet" : {image:"./images/{{testSetMastery}}.png", borderColor:"#FFFFFF", data:{link:"/DMLesson?page=dataMiningCVTestSet"} },
+					"CVLOO" : {image:"./images/{{leaveOneOutMastery}}.png", borderColor:"#FFFFFF", data:{link:"/DMLesson?page=dataMiningCVLeaveOneOut"} },
+					"CVKFold" : {image:"./images/{{kFoldMastery}}.png", borderColor:"#FFFFFF", data:{link:"/DMLesson?page=dataMiningCVKFold"} },
+					"DecisionTree" : {image:"./images/{{decisionTreeMastery}}.png", borderColor:"#FFFFFF", data:{link:"/DMLesson?page=decisionTree"} },
+					"ClusteringRoot" : {image:"./images/{{clusteringMastery}}.png", borderColor:"#FFFFFF", data:{link:"#"}},//"/DMLesson?page=dataMiningClusteringAll"} },
+					"KMeansClustering" : {image:"./images/{{kmeansClusteringMastery}}.png", borderColor:"#FFFFFF", data:{link:"/DMLesson?page=kmeansClustering"} },
+					"Knapsack" : {image:"./images/{{knapsackMastery}}.png", borderColor:"#FFFFFF", data:{link:"#"}},//"/DMLesson?page=knapsack"} },
+					"HierarchicalClustering" : {image:"./images/{{hierarchicalClusteringMastery}}.png", borderColor:"#FFFFFF", data:{link:"/DMLesson?page=hierarchicalClustering"} },
+					"AIRoot" : {image:"./images/{{aiMastery}}.png", borderColor:"#FFFFFF", data:{link:"#"}},//"/DMLesson?page=AIAll"} }, // AI Lessons
+					"SearchRoot" : {image:"./images/{{searchMastery}}.png", borderColor:"#FFFFFF", data:{link:"#"}},//"/DMLesson?page=AISearchRoot"} },
+					"BreadthFirstSearch" : {image:"./images/{{bfsMastery}}.png", borderColor:"#FFFFFF", data:{link:"#"}},//"/DMLesson?page=AIBreadthFirstSearch"} },
+					"DepthFirstSearch" : {image:"./images/{{dfsMastery}}.png", borderColor:"#FFFFFF", data:{link:"#"}},//"/DMLesson?page=AIDepthFirstSearch"} },
+					"UniformCostSearch" : {image:"./images/{{ucsMastery}}.png", borderColor:"#FFFFFF", data:{link:"#"}},//"/DMLesson?page=AIUniformCostSearch"} }//End of Global Tree
+					//FLAG3
+					//"SQL" : {image:"./images/{{sqlMastery}}.png", borderColor:"#FFFFFF" }
+				}
+			};
+		layout = {
+				name: "Tree"
+		};
+                // init and draw
+		dataMiningVis = new org.cytoscapeweb.Visualization(dm_div_id, options);
+                vis = new org.cytoscapeweb.Visualization(div_id, options);
+		function skillTreeScroller( visObject, skillTreeId ){
+			visObject.visualStyleBypass(style);	
+			visObject.layout(layout);
+			visObject.panEnabled(true);	
+			visObject.addListener("click", "nodes", function(event) {
+				handle_click(event);
+			})
+			function handle_click(event) {
+				var target = event.target;
+				var link = target.data.link;
+				if (link == "#")
+					window.open(link,"_self");
+				else
+					window.open(link);
+			}
+			var ctr = 1;
+			$(document).ready(function(){
+        		$("#"+skillTreeId).on("mousewheel",function(e){
+        			//alert("You Scrolled!"+this.wheelDelta);
+        			var zoom = event.value;
+        			
+        			if(e.originalEvent.wheelDelta /120 > 0) {
+			            visObject.zoom(ctr*2);
+			            ctr++;
+			        }
+			        else{
+			            visObject.zoom(ctr/2);
+			            ctr--;
+			        }
+			        if(ctr <= 0){
+			        	ctr = 1;
+			        }
+			        if(ctr > 3){
+			        	ctr = 3;
+			        }
+        		})
+        	});
+		};
+		vis.ready(function(){
+			skillTreeScroller(vis,"skillTree");
+		});
+		dataMiningVis.ready(function(){
+			skillTreeScroller(dataMiningVis,"dmSkillTree");
+		});
+		
+		dataMiningVis.draw({ network: dm_json});
+                vis.draw({ network: networ_json });
+            };
+            
+        </script>
+        
+        <style>
+            html, body { height: 100%; width: 100%; padding: 0; margin: 0; }
+            #skillTree { width: 100%; height: 40%; }
+	    #dmSkillTree {width: 100%; height: 40%; }
+        </style>
+        <script type="text/javascript">
+        	
+        </script>
+
+</head>
+<body>
+
+	<a href="http://birg.cs.cofc.edu/index.php/Anderson_Lab"><img src="/images/Paul-labs-logo.png" align="right" title="BiRG Labs" style="width: 75px;"></a>
+	<a id="home" href="Home"><div id="banner"><img id=bannerImg src='images/learn2mine.png' title="FAMILY LOVE MICHAEL!"/></a></div>
+
+	<div id="lava">
+		<ul>
+			<li><a id="home" href="Home"><div class="sitenav" id="homelink">Home</div></a></li>
+			<li><a id="profile" href="Profile"><div class="sitenav" id="profilelink">Profile</div></a></li>
+			<li><a id="leaderboard" href="Leaderboard"><div class="sitenav" id="leaderlink">Leaderboard</div></a></li>
+                        <li><a id="grade" href="Grader"><div class="sitenav" id="gradelink">Grade</div></a></li>
+			<li><a id="about" href="About"><div class="sitenav" id="aboutlink">About</div></a></li>
+			<li><a id="help" href="Help"><div class="sitenav" id="helplink">Help</div></a></li>
+		</ul>
+		<div class="loggedin">{{user}}</div>
+	</div>
+	<p style="padding-left:25px; padding-right:25px;">Below you will see the data mining subtree (on top) and the global skill tree (on bottom). the leaf nodes of the data mining subtree currently contain the latest lesson implementations (e.g. Empirical Naive Bayes), while the global skill tree is currently undergoing expansion.</p>
+	<div id="dmSkillTree"></div>
+	<div id="skillTree"></div>
+	<div id="dialog"></div>
+	<br />
+
+</body>

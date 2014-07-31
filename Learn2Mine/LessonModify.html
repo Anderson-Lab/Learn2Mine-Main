@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+{% autoescape true %}
+<html>
+<head>
+<meta http-equiv="refresh" content="30">
+</head>
+<link rel="shortcut icon" href="./images/l2m.ico">
+<link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+<title>Learn2Mine Lesson Maker</title>
+<script type="text/javascript">
+    function validateUpdate() {
+	var checked = 0;
+
+	if(updateLesson.removePython.checked && updateLesson.removeRcode.checked) {
+	    alert("Cannot remove both programming langauges.");
+	    return false;
+	}
+	if(!(typeof updateLesson.removeQuestion.length == "undefined")) {
+	    for (i=0; i < updateLesson.removeQuestion.length; i++) {
+		if (updateLesson.removeQuestion[i].checked) {
+		    checked++;
+		}
+	    }
+	    if (checked == updateLesson.removeQuestion.length) {
+		alert("Cannot remove all questions from lesson.");
+		return false;
+	    }
+	}
+	else {
+	    if(updateLesson.removeQuestion.checked) {
+		alert("Cannot remove all questions from lesson.");
+		return false;
+	    }
+	}
+	return true;
+    }
+</script>
+<body>
+<a href="http://birg.cs.cofc.edu/index.php/Anderson_Lab"><img src="/images/Paul-labs-logo.png" align="right" title="BiRG Labs" style="width: 75px;"></a>
+        <a id="home" href="Home"><div id="banner"><img id=bannerImg src='images/learn2mine.png' title="LOOK AT BANNER, MICHAEL!"/></a></div>
+        <div id="lava">
+                <ul>
+                        <li><a id="home" href="Home"><div class="sitenav" id="homelink">Home</div></a></li>
+                        <li><a id="profile" href="Profile"><div class="sitenav" id="profilelink">Profile</div></a></li>
+                        <li><a id="leaderboard" href="Leaderboard"><div class="sitenav" id="leaderlink">Leaderboard</div></a></li>
+                        <li><a id="grade" href="Grader"><div class="sitenav" id="gradelink">Grade</div></a></li>
+                        <li><a id="about" href="About"><div class="sitenav" id="aboutlink">About</div></a></li>
+                        <li><a id="help" href="Help"><div class="sitenav" id="helplink">Help</div></a></li>
+                        <li><a id="rstudio" target="_blank" href="http://portal.cs.cofc.edu/learn2mine-rstudio"><div class="sitenav" id="rstudiolink">Rstudio</div></a></li>
+                        <li><a id="LessonCreator" href="LessonCreator"><div class="sitenav" id="lessoncreatorlink">Create</div></a></li>
+                </ul>
+                <div class="loggedin">{{user}}</div>
+        </div>
+	{% if errorCatch != "yes" %}
+	<h1>Submit code for Learn2Mine Lesson</h1>
+
+                <form name="updateLesson" action="/LessonModify" id="updateLesson" method="post" onsubmit="return validateUpdate();">
+
+		{% if user == author %}
+			Submit lesson plan then <a href="http://localhost:8080/LessonPreview?page={{ lessonName }}" 
+			target="_blank">click here</a> to preview your lesson plan as it would appear in Learn2Mine.
+			Refresh the page as updates are submitted to view changes.<br>
+
+			<br>
+
+			Public Viewing URL: http://localhost:8080/LessonPreview?public={{ urlKey }} <br>
+			Public Edit URL: http://localhost:8080/LessonModify?public={{ urlKey }} <br>
+			Public Lessonplan URL: http://localhost:8080/PublicLesson?public={{ urlKey }} <br><br>
+
+
+			{% if publicViewing == "True" %}
+				<input type="checkbox" name="publicView" value="no">Make lesson unavailable for public viewing
+			{% else %}
+				<input type="checkbox" name="publicView" value="yes">Make lesson available for public viewing
+			{% endif %}<br>
+			{% if publicModify == "True" %}
+				<input type="checkbox" name="publicEdit" value="no">Make lesson unavailable for public edits
+			{% else %}
+				<input type="checkbox" name="publicEdit" value="yes">Make lesson available for public edits
+			{% endif %}<br>
+			{% if publicExecute == "True" %}
+				<input type="checkbox" name="publicExecute" value="no">Make lesson unavailable for public lessonplans
+			{% else %}
+				<input type="checkbox" name="publicExecute" value="yes">Make lesson available for public lessonplans
+			{% endif %}<br><br>
+
+		{% else %}
+			Submit lesson plan then <a href="http://localhost:8080/LessonPreview?public={{ urlKey }}" 
+			target="_blank">click here</a> to preview your lesson plan as it would appear in Learn2Mine.
+			Refresh the page as updates are submitted to view changes.<br>
+
+			<br>
+
+		{% endif %}
+		Change Language Options<br>
+		{% if languages|length == 1 %}
+			{% if languages[0] == "Python" %}
+				<input type="checkbox" name="addRcode" value="yes">Add option to submit answers using R
+			{% else %}
+				<input type="checkbox" name="addPython" value="yes">Add option to submit answers using Python
+			{% endif %}
+		{% else %}
+			<input type="checkbox" name="removeRcode" id="removeRcode" value="yes">Remove option to submit answers using R<br>
+			<input type="checkbox" name="removePython" id="removePython" value="yes">Remove option to submit answers using Python	
+		{% endif %}
+		<br><br>
+		Remove Questions from Lesson<br>
+                {% for i in range(0,(questionCount|int)) %}
+	                <input type="checkbox" name="removeQuestion" value="{{ i }}">Remove Question {{ i+1 }}<br>
+		{% endfor %}
+		<br>
+		Add Questions to Lesson<br>
+		<select id="addQuestions" name="addQuestions" form="updateLesson">
+		<option value="0"></option>
+		{% for i in range(1,(11-questionCount|int)) %}
+			<option value="{{i}}">{{i}}</option>
+		{% endfor %}
+		</select> 
+
+                <input type="hidden" name="lessonName" value={{ lessonName }} />
+                <input type="hidden" name="questionCount" value={{ questionCount }} />
+		<input type="hidden" name="python" value={{ python }} />
+		<input type="hidden" name="rcode" value={{ rcode }} />
+		<input type="hidden" name="languages" value={{ languages }} />
+		<input type="hidden" name="modify" value="True" />
+		<input type="hidden" name="urlKey" value={{ urlKey }} />
+                <div id="lessonMakerSubmit"><input type="submit" value="Update Lesson Parameters"></div>
+		</form>
+		<br><br>
+
+	Initialization Code - Code that is run before the student code<br>
+
+	Finalization Code - Code that is run after the student code<br>
+
+	Instructor Code - Code that is used to generate the answer<br><br><br>
+	<form action="/LessonModify" method="post" name="lessonModify">
+
+		Full Lesson Name: <input type="text" name=fullLesson value='{{ fullLesson }}'><br><br>
+		Paragraph<br>
+                <textarea id="lessonMakerTextarea" name="paragraph" rows="6" cols="80">{{ paragraph }}</textarea></div><br><br><br><br>
+
+{% if languages|length != 1 %}
+
+		{% for i in range(0,(questionCount|int)) %}
+
+		      	<div id="lessonMakerProblem">Problem Statement: Question {{ i+1 }}<br>
+			<textarea id="lessonMakerTextarea" name="problem" rows="6" cols="80">{{ problems[loop.index0] }}</textarea></div><br><br>
+		<div id="lessonMakerWrap">
+		    <div id="lessonMakerLeft">
+
+			R Init Code: Question {{ i+1 }}
+		      	<div><textarea id="lessonMakerTextarea" name="R-init" rows="6" cols="80">{{ R_init_code[loop.index0] }}</textarea></div>
+
+			R Instructor Code: Question {{ i+1 }}
+			<div><textarea id="lessonMakerTextarea" name="R-instruct" rows="6" cols="80">{{ R_instruct_code[loop.index0] }}</textarea></div>
+
+			R Final Code: Question {{ i+1 }}
+			<div><textarea id="lessonMakerTextarea" name="R-final" rows="6" cols="80">{{ R_final_code[loop.index0] }}</textarea></div><br><br>
+		    </div>
+		    <div id="lessonMakerRight">
+
+                        Python Init Code: Question {{ i+1 }}
+                        <div><textarea id="lessonMakerTextarea" name="Python-init" rows="6" cols="80">{{ Python_init_code[loop.index0] }}</textarea></div>
+
+                        Python Instructor Code: Question {{ i+1 }}
+                        <div><textarea id="lessonMakerTextarea" name="Python-instruct" rows="6" cols="80">{{ Python_instruct_code[loop.index0] }}</textarea></div>
+
+                        Python Final Code: Question {{ i+1 }}
+                        <div><textarea id="lessonMakerTextarea" name="Python-final" rows="6" cols="80">{{ Python_final_code[loop.index0] }}</textarea></div>
+
+                        <br><br>
+		    </div>
+		</div>
+                {% endfor %}
+
+{% else %}
+
+		{% for i in range(0,(questionCount|int)) %}
+		      	Problem Statement: Question {{ i+1 }}<br>
+			<textarea id="lessonMakerTextarea" name="problem" rows="6" cols="80">{{ problems[loop.index0] }}</textarea></div><br><br>
+
+			{{ languages[0] }} Init Code: Question {{ i+1 }}
+		      	<div><textarea id="lessonMakerTextarea" name="{{ languages[0] }}-init" rows="6" cols="80">{{ init_code[loop.index0] }}</textarea></div>
+
+			{{ languages[0] }} Instructor Code: Question {{ i+1 }}
+			<div><textarea id="lessonMakerTextarea" name="{{ languages[0] }}-instruct" rows="6" cols="80">{{ instruct_code[loop.index0] }}</textarea></div>
+
+			{{ languages[0] }} Final Code: Question {{ i+1 }}
+			<div><textarea id="lessonMakerTextarea" name="{{ languages[0] }}-final" rows="6" cols="80">{{ final_code[loop.index0] }}</textarea></div>
+
+			<br><br>
+		{% endfor %}
+{% endif %}
+		<input type="hidden" name="python" value={{ python }} />
+		<input type="hidden" name="rcode" value={{ rcode }} />
+		<input type="hidden" name="languages" value={{ languages }} />
+		<input type="hidden" name="questionCount" value={{ questionCount }} />
+		<input type="hidden" name="lessonName" value={{ lessonName }} />
+		<input type="hidden" name="modify" value="False" />
+		<input type="hidden" name="urlKey" value={{ urlKey }} />
+		<div id="lessonMakerSubmit"><input type="submit" value="Update Lesson Plan"></div>
+	</form><br>
+{% else %}
+    <br><br>
+    <center><b>Error in accessing page. Either page does not exist or you do not have acess.<br></b>
+    <br><br><br>
+{% endif %}
+<a href="{{ url|safe }}">{{ url_linktext }}</a>
+<br><br>
+</body>
+</html>
+{% endautoescape %}

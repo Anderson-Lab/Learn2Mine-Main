@@ -1,0 +1,61 @@
+<!DOCTYPE HTML> 
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+
+<title>Learn2Mine</title>
+
+<link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+<link type="text/css" rel="stylesheet" href="/stylesheets/tutorial.css" />
+<link rel="shortcut icon" href="./images/l2m.ico">
+<script type="text/javascript" SRC="./Javascript/jquery.js"></script>
+
+
+</head>
+
+<body>
+
+	<a href="http://birg.cs.cofc.edu/index.php/Anderson_Lab"><img src="/images/Paul-labs-logo.png" align="right" title="BiRG Labs" style="width: 75px;"></a>
+	<a id="home" href="Home"><div id="banner"><img id=bannerImg src='images/learn2mine.png' title="LOOK AT BANNER, MICHAEL!"/></a></div>
+	<div id="lava">
+		<ul>
+			<li><a id="home" href="Home"><div class="sitenav" id="homelink">Home</div></a></li>
+			<li><a id="profile" href="Profile"><div class="sitenav" id="profilelink">Profile</div></a></li>
+			<li><a id="leaderboard" href="Leaderboard"><div class="sitenav" id="leaderlink">Leaderboard</div></a></li>
+			<li><a id="search" href="Search"><div class="sitenav" id="searchlink">Search</div></a></li>
+			<li><a id="about" href="About"><div class="sitenav" id="aboutlink">About</div></a></li>
+			<li><a id="help" href="Help"><div class="sitenav" id="helplink">Help</div></a></li>
+			<li><a id="galaxy" href="http://portal.cs.cofc.edu/learn2mine" target="_blank"><div class="sitenav" id="galaxylink">Galaxy</div></a></li>
+			<li><a id="rstudio" target="_blank" href="http://portal.cs.cofc.edu/learn2mine-rstudio"><div class="sitenav" id="rstudiolink">Rstudio</div></a></li>
+		</ul>
+		<div class="loggedin">{{user}}</div>
+	</div>
+
+	<div class="container" id="tutorialText">
+		<h2>{{header}}</h2>
+		<div id="tutorialText">
+			<p>
+				{{paragraph}}
+			</p>
+			<p>
+				{{reminder}}
+			</p>
+			<p>
+				<ol>
+					{% for problem in problems %}
+						<li>{{problem}}</li>
+					{% endfor %}
+				</ol>
+			</p>
+		</div>
+		<div>
+			<div class='container'>
+				<a href="http://portal.cs.cofc.edu/learn2mine-rstudio"><div class="nextButton">RStudio</div></a>
+				<a href="http://portal.cs.cofc.edu/learn2mine"><div class="nextButton" style="float:right">
+					Galaxy
+				</div></a>
+				</div>
+		</div>
+	</div>
+
+</body>

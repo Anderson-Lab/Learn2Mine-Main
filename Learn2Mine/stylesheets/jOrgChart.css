@@ -1,0 +1,91 @@
+/* Basic styling */
+/* Draw the lines */
+/*Adapted from jQuery plugin - Learn2Mine*/
+.jOrgChart .line {
+	height: 20px;
+	width: 4px;
+}
+
+.jOrgChart .down {
+	background-color: black;
+	margin: 0px auto;
+}
+
+.jOrgChart .top {
+	border-top: 3px solid black;
+}
+
+.jOrgChart .left {
+	border-right: 2px solid black;
+}
+
+.jOrgChart .right {
+	border-left: 2px solid black;
+}
+
+.jOrgChart table{
+	padding-left:5px;
+}
+
+/* node cell */
+.jOrgChart td {
+	text-align: center;
+	vertical-align: top;
+	padding: 0;
+}
+
+/* The node */
+/* Learn2Mine Edit: multiple nodes for conditional colors */
+.jOrgChart .mastered { /*mastered*/
+	background-image:url('../images/mastered.png');
+	background-size:110px 70px;
+	color: #000000; 
+	display : inline-block;
+	width: 110px;
+	height: 70px;
+	z-index: 10;
+	margin: 0 2px;
+}
+
+.jOrgChart .learned { /*Learned*/
+	background-image:url('../images/learned.png');
+	background-size:110px 70px;
+	color: #000000;
+	display: inline-block;
+	width: 110px;
+	height: 70px;
+	z-index: 10;
+	margin: 0 2px;
+}
+
+.jOrgChart .stillneedswork { /*Still Needs work*/
+	background-image:url('../images/stillneedswork.png');
+	background-size:110px 70px;
+	color: #000000;
+	display: inline-block;
+	width: 110px;
+	height: 70px;
+	z-index: 10;
+	margin: 0 2px;
+}
+
+.jOrgChart .locked { /*Locked*/
+	background-image:url('../images/locked.png');
+	background-size:110px 70px;
+	color: #000000;
+	display: inline-block;
+	width: 110px;
+	height: 70px;
+	z-index: 10;
+	margin: 0 2px;
+}
+
+.jOrgChart .sidebar { /*addition for cleanup*/
+	background-color: #025167;
+	color: #000000;
+	display: inline-block;
+	width: 100px;
+	height: 65px;
+	z-index: 10;
+	margin: 0 2px;
+}

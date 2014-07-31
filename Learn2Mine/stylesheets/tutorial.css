@@ -1,0 +1,27 @@
+.nextButton{
+	color:#FFFFFF;
+	font-size:large;
+	margin-top:30px;
+	padding:10px;
+	background-color:#313131;
+	text-align: center;
+	float:left; 
+	width:200px; 
+	height:50px;
+}
+.nextButton:hover{
+	background-color:#898989;
+}
+#tutorialText{
+	padding-left: 20px;
+	padding-right:50px;
+	width:960px;
+}
+
+div#profileTutorial{
+	background-color:#87CC5C;
+	left:120px;
+}
+div#profileTutorial:hover{
+	background-color:#97ED61;
+}

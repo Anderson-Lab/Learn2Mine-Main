@@ -1,0 +1,796 @@
+#!/usr/bin/env python
+#
+# Copyright 2007 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+from galaxy_api import *
+import json
+
+# Learn2Mine-Specific Imports
+import getBadges
+import lessonWriter, tutorialWriter, dmWriter
+import skillTree
+
+# Python imports
+import os
+import cgi
+import urllib
+import urllib2
+import httplib2
+import random
+import ast
+
+# Appengine imports
+import webapp2
+import jinja2
+from google.appengine.api import users
+from google.appengine.ext import db
+from apiclient.discovery import build
+from apiclient.http import MediaInMemoryUpload
+
+# OAUTH imports
+import httplib2
+import logging
+import pickle
+from apiclient.discovery import build
+from oauth2client.appengine import oauth2decorator_from_clientsecrets
+from oauth2client.client import AccessTokenRefreshError
+from oauth2client.appengine import CredentialsProperty
+from oauth2client.appengine import StorageByKeyName
+from google.appengine.api import memcache
+from google.appengine.ext import webapp
+from google.appengine.ext.webapp import template
+from google.appengine.ext.webapp.util import run_wsgi_app
+
+#Here we are using os to get the path to our templates directory
+JINJA_ENVIRONMENT = jinja2.Environment(
+    loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
+    extensions=['jinja2.ext.autoescape'])
+
+
+
+## MAIN_PAGE_FOOTER_TEMPLATE = 
+    
+
+
+
+CLIENT_SECRETS = os.path.join(os.path.dirname(__file__), 'client_secrets.json')
+
+http = httplib2.Http(memcache)
+service = build("drive", "v2", http=http) #Google-provided code -> not sure what it does
+
+
+# Set up an OAuth2Decorator object to be used for authentication.  Add one or
+# more of the following scopes in the scopes parameter below. PLEASE ONLY ADD
+# THE SCOPES YOU NEED. For more information on using scopes please see
+# <https://developers.google.com/+/best-practices>.
+decorator = oauth2decorator_from_clientsecrets(
+    CLIENT_SECRETS,
+    scope=[
+      #'https://www.googleapis.com/auth/drive',
+      #'https://www.googleapis.com/auth/drive.apps.readonly',
+      'https://www.googleapis.com/auth/drive.metadata.readonly',
+      #'https://www.googleapis.com/auth/drive.file',
+      #'https://www.googleapis.com/auth/drive.scripts',
+      #'https://www.googleapis.com/auth/drive.readonly',
+    ],
+    message='MISSING_CLIENT_SECRETS_MESSAGE')
+    
+class OAuthHandler(webapp2.RequestHandler):
+    @decorator.oauth_required
+    def get(self):
+        useremail = users.get_current_user().email()
+        users.get_current_user()
+        user_query = db.Query(User)
+        user_query.filter('EMAIL =', useremail)
+        if user_query.get() != None:
+            self.redirect('/Home')
+        else: # We need to establish them in the datastore with lessons etc.
+	    #Create a random key for the user, make sure it is unique
+	    unique = False
+	    while(not unique):
+		    randkey = str(random.randint(100000000000000000000,999999999999999999999))
+		    unique = True
+		    userIterable = db.Query(User).run(batch_size=10000)
+		    for user in userIterable:
+		    	if randkey == user.SESSION:
+				unique = False
+
+	    #Create the initial standings for the user's lessons	    
+            new_user = User(EMAIL = useremail,
+				UPLOADING = 'stillneedswork',
+                                PATTERN = "stillneedswork",
+                                CLUSTERING = "stillneedswork",
+                                KNN = "stillneedswork", 
+                                KMEANS = "stillneedswork",
+                                HC = "stillneedswork",
+                                CLASSIFICATION = "stillneedswork",
+                                NAIVEBAYES = "stillneedswork",
+                                SVM = "stillneedswork",
+                                NN = "stillneedswork",
+                                DTREE = "stillneedswork",
+                                REGRESSION = "stillneedswork",
+                                OTHER = "stillneedswork",
+                                SCALEFILTER = "stillneedswork",
+                                MARKETBASKET = "stillneedswork",
+                                PCA = "stillneedswork",
+				CASE = "stillneedswork",
+				CASE1 = "stillneedswork",
+				CASE2 = "stillneedswork",
+				CASE3 = "stillneedswork",
+				SESSION = randkey,
+				BADGESDUE = [""],
+				BADGESEARNED = [""],
+				SKILLSEARNED = [""]
+                )
+            new_user.put()
+            self.redirect('/Home')
+        
+        
+class CredentialsModel(db.Model):
+    credentials = CredentialsProperty()
+# END OAUTH CODE
+
+
+## Database entity definitions
+class User(db.Model):
+    EMAIL = db.StringProperty()
+    PATTERN = db.StringProperty()
+    CLUSTERING = db.StringProperty()
+    UPLOADING = db.StringProperty()
+    KNN = db.StringProperty()
+    KMEANS = db.StringProperty()
+    HC = db.StringProperty()
+    CLASSIFICATION = db.StringProperty()
+    NAIVEBAYES = db.StringProperty()
+    SVM = db.StringProperty()
+    NN = db.StringProperty()
+    DTREE = db.StringProperty()
+    REGRESSION = db.StringProperty()
+    OTHER = db.StringProperty()
+    SCALEFILTER = db.StringProperty()
+    MARKETBASKET = db.StringProperty()
+    PCA = db.StringProperty()
+    CASE = db.StringProperty()
+    CASE1 = db.StringProperty()
+    CASE2 = db.StringProperty()
+    CASE3 = db.StringProperty()
+    SESSION = db.StringProperty()
+    BADGESDUE = db.StringListProperty()
+    BADGESEARNED = db.StringListProperty()
+    SKILLSEARNED = db.StringListProperty()
+ #   lessons = db.ListProperty(db.Key) ##found on https://developers.google.com/appengine/articles/modeling
+                                        #Rendered unnecessary with the Relationship Model
+class Lesson(db.Model):                #possibly useless, we'll see
+    NAME = db.StringProperty()
+    DESCRIPTION = db.StringProperty()
+    
+class Leaderboard(db.Model):
+    TYPE = db.StringProperty()
+    TOP10 = db.StringListProperty()
+
+""" This is what we used to create the Leaderboard instances. These must be entered once into the Interactive Console
+
+knnLeader = Leaderboard(TYPE = "knn", TOP10 = ["user1:0","user2:0","user3:0","user4:0","user5:0","user6:0","user7:0","user8:0","user9:0","user10:0"]
+                )
+
+
+kmeansLeader = Leaderboard(TYPE = "kmeans", TOP10 = ["user1:0","user2:0","user3:0","user4:0","user5:0","user6:0","user7:0","user8:0","user9:0","user10:0"]
+                )
+
+nnLeader = Leaderboard(TYPE = "nn", TOP10 = ["user1:0","user2:0","user3:0","user4:0","user5:0","user6:0","user7:0","user8:0","user9:0","user10:0"]
+                )
+
+knnLeader.put()
+kmeansLeader.put()
+nnLeader.put()
+"""
+
+class UserLesson(db.Model):
+    user = db.ReferenceProperty(User,
+                                   required=True,
+                                   collection_name='users')
+    lesson = db.ReferenceProperty(Lesson,
+                                   required=True,
+                                   collection_name='lessons')
+    status = db.StringProperty()
+
+class newKeyHandler(webapp2.RequestHandler):
+	def get(self):
+		email = users.get_current_user().email()
+		user = db.Query(User).filter("EMAIL =", email).get()
+		unique = False
+		while(not unique):
+			randkey = str(random.randint(100000000000000000000,999999999999999999999))
+			unique = True
+			userIterable = db.Query(User).run(batch_size=10000)
+			for person in userIterable:
+			    	if randkey == person.SESSION:
+					unique = False
+					break		
+		user.SESSION = randkey
+		user.put()
+		self.redirect('/Lessons?lesson=logins')
+
+        
+class HomeHandler(webapp2.RequestHandler):
+    @decorator.oauth_required
+    def get(self):
+        template = JINJA_ENVIRONMENT.get_template('Home.html')
+	useremail = users.get_current_user().email()
+	## This block of code checks if the user exists in the datastore, if not, they are redirected to "/", which creates them
+	## This code is used in all of the Handlers
+	try:
+		db.Query(User).filter("EMAIL =", useremail).get().SESSION
+		exists = True
+	except:
+		exists = False 
+	if not exists:
+		self.redirect("/")
+	#Attempt to display user's 'Learn2mine' backpack group, calling our getBadges function
+	#The try/except fixes a problem where on first login, users would not be ready in the datastore before
+ 	#		reaching here
+	try:
+		userBadges = db.Query(User).filter("EMAIL =", useremail).get().BADGESEARNED
+		if len(userBadges) > 1:
+			badgeDisplay = ''
+			for i in range(len(userBadges)-1):
+				badgeDisplay = badgeDisplay + "<img width='100px' height='100px' src='images/"+userBadges[i+1]+".png'></img>"
+		else:
+			badgeDisplay='You have not yet earned any Badges!'
+
+		template_values = {'user':useremail,'badgeDisplay':badgeDisplay}
+		#Get the currently logged in user's info
+		user_query = db.Query(User)
+		user = user_query.filter('EMAIL =', useremail).get()
+
+		#Check if the user is due any badges, if so, issue it with the Openbadges.issue() function
+		self.response.write('<script src="https://beta.openbadges.org/issuer.js"></script>')
+		user.BADGESDUE = list(set(user.BADGESDUE))
+		if len(user.BADGESDUE) > 1:
+			self.response.write('<script>window.onload = function(){OpenBadges.issue(["http://portal.cs.cofc.edu/learn2mine/static/badges/'+useremail.split("@")[0]+user.BADGESDUE[1]+'.json"], function(errors, successes) {console.log(errors.reason);window.location = "http://learn2mine.appspot.com/Home"});}</script>')
+			if(user.BADGESDUE[1] not in user.BADGESEARNED):
+				user.BADGESEARNED.append(user.BADGESDUE.pop(1))
+			else:
+				user.BADGESDUE.pop(1)
+			user.put()
+	except:
+		badgeDisplay = 'You have not yet earned any badges!'
+		template_values = {'user':useremail,'badgeDisplay':badgeDisplay}
+
+	self.response.write(template.render(template_values))
+
+
+	# Code to retroactively give users the root badge
+	#if "datascienceMastery" not in user.BADGESEARNED:
+	#	user.BADGESDUE.append("datascienceMastery")
+	#	user.put()
+
+	#If the user requested a new key, generate a new random integer, and make sure it is unique.
+
+class LessonsHandler(webapp2.RequestHandler):
+    @decorator.oauth_required
+    def get(self):
+        template = JINJA_ENVIRONMENT.get_template('Lessons.html')        
+
+	#Get current user, to display requested user information
+	useremail = users.get_current_user().email()
+	try:
+		db.Query(User).filter("EMAIL =", useremail).get().SESSION
+		exists = True
+	except:
+		exists = False 
+	if not exists:
+		self.redirect("/")
+	session = db.Query(User).filter('EMAIL =', useremail).get().SESSION
+	rstudioUser = useremail.split('@')[0]
+	template_values = {'session': session, 'rstudioUser': rstudioUser, 'user':useremail}
+
+	#The lesson's text is created dynamically from Lessonwriter.py, based on the request to the page.
+        lesson = self.request.get("lesson")
+	lessonHTML = lessonWriter.makePage(lesson, session, rstudioUser)
+	if lessonHTML != None:
+		self.response.write(lessonHTML)
+	else:
+		self.response.write('<div class="lesson"><div class="lessontext"><h1>Lessons</h1><p>Welcome to the Lessons page! Here is where you can learn about the various data mining techniques we have to offer you, and try your hand at performing some of the tasks common to dataset analysis. If it\'s your first time here, we recommend looking at the "Getting Started", "Using Galaxy" and "Using RStudio" pages (accessible from the list on the right) to familiarize yourself with the tools we use to help you learn. In order to unlock the lessons you have to complete our tutorial located in the \"Using Galaxy\" section.<br/><br/> Once you\'ve done that, take a look at your profile to see what lessons are available for you to learn and practice! Good Luck!</p></div></div>')
+		#write the main lessons page
+	self.response.write(template.render(template_values))
+
+class GalaxyToLearn2MineHandler(webapp2.RequestHandler):
+    def post(self):
+	email = self.request.get("email")
+        user_query = db.Query(User)
+        badgeName = self.request.get("badgeName")
+	if status == 'mastered':
+		user.BADGESDUE.append(badgeName + 'Mastery')
+	#Find user by session ID (they input through galaxy)
+        #session = self.request.get("key")
+        #user_query.filter('SESSION =', session)
+	user_query.filter('EMAIL =', email)        
+	user = user_query.get()
+	
+	#Get the POSTed results of the grader.py function from Galaxy
+        whichTest = self.request.get("type")
+        score =  eval(self.request.get("score"))
+	status =  self.request.get("status")
+	
+	#Handle post-lesson status
+	statusList = ['locked','stillneedswork','learned','mastered']
+	
+#'''	if whichTest == 'standardR':
+#	    if status == 'mastered':
+#		user.BADGESDUE.append('standardRMastery')
+#
+#	if whichTest == 'advancedStandard':
+#	    if status == 'mastered':
+#		user.BADGESDUE.append('advancedStandardMastery')
+#	if whichTest == 'advancedFile':
+#	    if status == 'mastered':
+#		user.BADGESDUE.append('advancedFileMastery')
+#	if whichTest == 'advancedPrediction':
+#	    if status == 'mastered':
+#		user.BADGESDUE.append('advancedPredictionMastery')
+#	if whichTest == 'advancedUnknown':
+#	    if status == 'mastered':
+#		user.BADGESDUE.append('advancedUnknownMastery')
+#
+#	if whichTest == 'RFileIO':
+#	    if status == 'mastered':
+#		user.BADGESDUE.append('RFileIOMastery')
+#	if whichTest == 'RMissingValues':
+#	    if status == 'mastered':
+#		user.BADGESDUE.append('RMissingValuesMastery')
+#	if whichTest == 'RPrediction1':
+#	    if status == 'mastered':
+#		user.BADGESDUE.append('RPrediction1Mastery')
+#	if whichTest == 'RPrediction2':
+#	    if status == 'mastered':
+#		user.BADGESDUE.append('RPrediction2Mastery')'''
+	if user.UPLOADING == 'mastered': # This line of code is meant to retroactively give users a badge they deserve
+		user.BADGESDUE.append('uploadingMastery')
+	if whichTest == 'uploading':
+	    if statusList.index(user.UPLOADING) < statusList.index(status):
+		user.UPLOADING = status
+		if user.UPLOADING == 'learned' or user.UPLOADING == 'mastered':
+			user.KNN = 'stillneedswork'
+			user.CLUSTERING = 'stillneedswork'
+			user.KMEANS = 'stillneedswork'
+			user.PATTERN = 'stillneedswork'
+			user.OTHER = 'stillneedswork'
+			user.SCALEFILTER = 'stillneedswork'
+			user.CASE = 'stillneedswork'
+			user.CASE1 = 'stillneedswork'
+			user.CLASSIFICATION = 'stillneedswork'
+			if user.UPLOADING == 'mastered':
+				user.BADGESDUE.append('uploadingMastery')
+	elif whichTest == 'knn':# and not(user.KNN == 'locked'):
+	    if statusList.index(user.KNN) < statusList.index(status):
+            	user.KNN = status
+		if user.KNN == 'learned' or user.KNN == 'mastered':
+			user.NAIVEBAYES = 'stillneedswork'
+			user.REGRESSION = 'stillneedswork'
+			user.DTREE = 'stillneedswork'
+		if status == 'mastered':   #Award knn mastery badge
+			user.BADGESDUE.append('knnMastery')
+		elif status == 'learned':   #Award knn mastery badge
+			user.BADGESDUE.append('knnLearned')
+	elif whichTest == 'kmeans':# and not(user.KMEANS == 'locked'):
+	    if statusList.index(user.KMEANS) < statusList.index(status):
+	    	user.KMEANS = status
+		if user.KMEANS == 'learned' or user.KMEANS == 'mastered':
+			user.HC = 'stillneedswork'
+			user.MARKETBASKET = 'stillneedswork'
+		if status == 'mastered':
+			user.BADGESDUE.append('kmeansMastery')
+		elif status == 'learned':
+			user.BADGESDUE.append('kmeansLearned')
+
+	elif whichTest == 'scaleFilter':# and not(user.SCALEFILTER == 'locked'):
+	    if statusList.index(user.SCALEFILTER) < statusList.index(status):	    
+		user.SCALEFILTER = status
+		if user.SCALEFILTER == 'learned' or user.SCALEFILTER == 'mastered':
+			user.PCA = 'stillneedswork'
+		if status == 'mastered':
+			user.BADGESDUE.append('scaleFilterMastery')
+		elif status == 'learned':
+			user.BADGESDUE.append('scaleFilterLearned')
+	elif whichTest == 'pca':# and not (user.PCA == 'locked'):
+	    if statusList.index(user.PCA) < statusList.index(status):
+		user.PCA = status
+		if status == 'mastered':
+			user.BADGESDUE.append('pcaMastery')
+		elif status == 'learned':
+			user.BADGESDUE.append('pcaLearned')
+	elif whichTest == 'nn':# and not (user.NN == 'locked'):
+	    if statusList.index(user.NN) < statusList.index(status):
+		user.NN = status
+		if status == 'mastered':
+			user.BADGESDUE.append('nnMastery')
+		elif status == 'learned':
+			user.BADGESDUE.append('nnLearned')
+	elif whichTest == 'market':# and not (user.MARKETBASKET == 'locked'):
+	    if statusList.index(user.MARKETBASKET) < statusList.index(status):
+		user.MARKETBASKET = status
+		if status == 'mastered':
+			user.BADGESDUE.append('marketMastery')
+		elif status == 'learned':
+			user.BADGESDUE.append('marketLearned')
+	elif whichTest == 'pls':# and not(user.REGRESSION == 'locked'):
+	    if statusList.index(user.REGRESSION) < statusList.index(status):
+		user.REGRESSION = status
+		if user.REGRESSION in ['mastered','learned']:
+			user.NN = 'stillneedswork'
+			user.SVM = 'stillneedswork'
+		if status == 'mastered':
+			user.BADGESDUE.append('plsMastery')
+		elif status == 'learned':
+			user.BADGESDUE.append('plsLearned')
+	elif whichTest == 'algae':# and not(user.CASE1 == 'locked'):
+		if statusList.index(user.CASE1) < statusList.index(status):
+			if status == 'learned':
+				user.CASE2 = 'stillneedswork'
+				user.BADGESDUE.append('algaeLearned')			
+			elif status == 'mastered':  #Award Algae Case Study badge
+				user.BADGESDUE.append('algaeMastery')
+				user.CASE2 = 'stillneedswork'
+	elif whichTest == 'stock':# and not(user.CASE2 == 'locked'):
+		if statusList.index(user.CASE2) < statusList.index(status):
+			if status == 'learned':
+				user.BADGESDUE.append('algaeLearned')	
+				user.CASE3 = 'stillneedswork'
+			elif status == 'mastered':  #Award Stock Case Study Badge
+				user.BADGESDUE.append('stockMastery')  
+				user.CASE3 = 'stillneedswork'
+	elif whichTest == 'fraud':# and not(user.CASE3 == 'locked'):
+		if statusList.index(user.CASE3) < statusList.index(status):
+			if status == 'learned':
+				user.BADGESDUE.append('fraudLearned')	
+			elif status == 'mastered':    #Award Fraud Case Study Badge
+				user.BADGESDUE.append('fraudMastery')
+
+	### This else catches all of the added lessons, that use the numberedgrader grading method 
+	else:
+		if status == 'learned':
+			user.BADGESDUE.append(whichTest + 'Learned')
+		if status == 'mastered':
+			user.BADGESDUE.append(whichTest + 'Mastery')
+	
+#	######################################
+#	##### Skill Tree Updating Groups #####
+#	######################################
+#
+#	## If the user has learned or mastered all clustering skills, then update the overall clustering skill
+#	if (user.KMEANS in ['learned', 'mastered']): #and (user.HC in ['learned', 'mastered']):
+#		if 'learned' in [user.KMEANS]:#, user.HC]:
+#			user.CLUSTERING = 'learned'
+#		else:
+#			user.CLUSTERING = 'mastered'
+#
+#	## If the user has learned or mastered all classification skills, then update the overall classification skill
+#	if (user.KNN in ['learned', 'mastered']) and (user.REGRESSION in ['learned', 'mastered']) and (user.NN in ['learned', 'mastered']): #and (user.SVM in ['learned', 'mastered']) and (user.DTREE in ['learned', 'mastered']) and (user.NAIVEBAYES  in ['learned', 'mastered']):
+#		if 'learned' in [user.KNN, user.REGRESSION, user.NN, user.SVM, user.DTREE, user.NAIVEBAYES]:
+#			user.CLASSIFICATION = 'learned'
+#		else:
+#			user.CLASSIFICATION = 'mastered'
+#
+#	## If the user has learned or mastered all case studies, then update the overall case study skill
+#	if (user.CASE1 in ['learned', 'mastered']) and (user.CASE2 in ['learned', 'mastered']) and (user.CASE3 in ['learned', 'mastered']):
+#		if 'learned' in [user.CASE1, user.CASE2, user.CASE3]:
+#			user.CASE = 'learned'
+#		else:
+#			user.CASE = 'mastered'
+#
+#	## If the user has learned or mastered all the other skills, then update the overall other skills
+#	if (user.MARKETBASKET in ['learned', 'mastered']) and (user.SCALEFILTER in ['learned', 'mastered']) and (user.PCA in ['learned', 'mastered']):
+#		if 'learned' in [user.MARKETBASKET, user.SCALEFILTER, user.PCA]:
+#			user.OTHER = 'learned'
+#		else:
+#			user.OTHER = 'mastered'
+#
+#	## If the user has learned or mastered all skills, then update the pattern recognition skill
+#	if (user.CLUSTERING in ['learned', 'mastered']) and (user.CLASSIFICATION in ['learned', 'mastered']) and (user.CASE in ['learned', 'mastered']) and (user.OTHER in ['learned', 'mastered']):
+#		if 'learned' in [user.CLUSTERING, user.CLASSIFICATION, user.CASE, user.OTHER]:
+#			user.PATTERN = 'learned'
+#		else:
+#			user.PATTERN = 'mastered'
+
+
+
+	######################################
+	######      LEADERBOARDS      ########
+	######################################]
+	worthy = False #Assume user is not a top-10 scorer
+        if(whichTest in ['knn', 'kmeans', 'nn']):
+	    leaderboard = db.Query(Leaderboard).filter("TYPE =", whichTest).get()
+	    top10 = leaderboard.TOP10 #get current lesson leaderboard
+	    top10emails = []
+	    for item in top10:
+	        top10emails.append(item.split(":")[0]) #populates list of the top 10's emails 
+	    if(not ((user.EMAIL+":"+str(score)) in top10)): #if the user/score combo is already top 10, move on
+	        for i in range(len(top10)):#Check users score against each in the leaderboard to find where it belongs
+	    	    currentScore = eval(top10[i].split(":")[1])
+		    if(whichTest in ['knn', 'kmeans']):
+		    	    if(score > currentScore) and not worthy:
+		    	        rank = i
+				worthy = True
+		    else:
+		    	    if((score < currentScore) or currentScore == 0) and not worthy: #Neural Net leads by lowest score
+		    	        rank = i
+				worthy = True
+		if worthy:  #if they beat one of the leaderboard scores...
+	    	    if(user.EMAIL in top10emails): #...and they exist in the top 10 already, place their new score and remove their old one
+		    	toDelete = top10emails.index(user.EMAIL)
+	    	    	if(rank <= toDelete):
+		    	    top10.pop(toDelete)
+		    	    top10.insert(rank, user.EMAIL+":"+str(score))
+		    else: #...otherwise, shift everyone down and put the new score in the appropriate rank
+			top10.append("0")
+			for i in range(10, rank, -1):
+			    top10[i] = top10[i-1]
+			top10[rank] = user.EMAIL+":"+str(score)	
+		    leaderboard.TOP10 = top10[0:10]	
+		    leaderboard.put()
+	user.put() # Puts the user, considering all alterations
+        
+
+
+class ProfileHandler(webapp2.RequestHandler):
+    @decorator.oauth_required
+    def get(self):
+		useremail = users.get_current_user().email()
+		template = JINJA_ENVIRONMENT.get_template('Profile.html')
+		profile = skillTree.makeTemplateValues(useremail)
+		profile.update({'user':useremail})
+		#profile.update({'basicRLink':'/Lessons?lesson=standardR'})
+		tutorial = self.request.get("tutorial")
+		if tutorial == "True":
+			#profile.update({'basicRLink':'/Lessons?lesson=standardR&tutorial=True'})
+			self.response.write(template.render(profile))
+			self.response.write('<script type="text/javascript" SRC="./Javascript/javascriptForProfile/profileTutorial.js"></script>')
+		else:
+			self.response.write(template.render(profile))		
+
+
+## About and Help Handlers need only display the page, nothing fancy.
+class AboutHandler(webapp2.RequestHandler):
+    @decorator.oauth_required
+    def get(self):
+	useremail = users.get_current_user().email()
+	try:
+		db.Query(User).filter("EMAIL =", useremail).get().SESSION
+		exists = True
+	except:
+		exists = False 
+	if not exists:
+		self.redirect("/")        
+	template_values = {'user': useremail} # Need it to render username on page
+        template = JINJA_ENVIRONMENT.get_template('About.html')
+        self.response.write(template.render(template_values))
+
+class HelpHandler(webapp2.RequestHandler):
+    @decorator.oauth_required
+    def get(self):
+	useremail = users.get_current_user().email()
+	try:
+		db.Query(User).filter("EMAIL =", useremail).get().SESSION
+		exists = True
+	except:
+		exists = False 
+	if not exists:
+		self.redirect("/")
+        template = JINJA_ENVIRONMENT.get_template('Help.html')
+        template_values = {'user': useremail}
+        self.response.write(template.render(template_values))
+
+class SearchHandler(webapp2.RequestHandler):
+    @decorator.oauth_required
+    def get(self):
+	useremail = users.get_current_user().email()
+	try:
+		db.Query(User).filter("EMAIL =", useremail).get().SESSION
+		exists = True
+	except:
+		exists = False 
+	if not exists:
+		self.redirect("/")
+	searchUser = self.request.get("searchUser")
+	searchedUser = '' # Initialize in case they do not type in an actual user
+	if(searchUser != ''):
+		userLookup = db.Query(User).filter("EMAIL =", searchUser).get()
+		badgeDisplay = '' # Empty in case a user does not exist; prevents server error since we post it
+		if userLookup != None:
+			userBadges = userLookup.BADGESEARNED
+			if len(userBadges) > 1:
+				for i in range(len(userBadges)-1): # Due to each stringlist property in the db starting with a blank [0] element
+					badgeDisplay = badgeDisplay + "<img width='100px' height='100px' src='images/"+userBadges[i+1]+".png'></img>"
+			else:
+				badgeDisplay='This user has not yet earned any Badges!'
+			searchedUser = searchUser.split('@')[0] + '\'s Badges'
+			searchedProfile = skillTree.makeTemplateValues(searchedUser)#'dataminer',searchUser)
+			self.response.write(searchedProfile) # Creates the Tree
+			
+		else:
+			self.response.write('<p>Sorry! We could not find the user you are looking for. Did you enter their <b>full</b> email address correctly?</p>')	
+
+	else:
+		searchedUser='Search' # For first page visit
+		badgeDisplay=''       # For first page visit
+	template_values = {'user': useremail, 'badgeDisplay':badgeDisplay, "searchedUser":searchedUser}
+	template = JINJA_ENVIRONMENT.get_template('Search.html')
+        self.response.write(template.render(template_values))
+
+class LeaderboardHandler(webapp2.RequestHandler):
+    def get(self):
+	useremail = users.get_current_user().email()
+	try:
+		db.Query(User).filter("EMAIL =", useremail).get().SESSION
+		exists = True
+	except:
+		exists = False 
+	if not exists:
+		self.redirect("/")
+        template = JINJA_ENVIRONMENT.get_template('Leaderboard.html')
+        template_values = {		#Titles of the leaderboards
+	'user': useremail,
+	'knn': 'K-Nearest Neighbor',
+	'kmeans': 'K-Means Clustering',
+	'nn': 'Neural Network'
+	}
+	#image_values = {		NOT USED, but might be nice, the Leaderboard page is pretty plain
+	#'knn': 'knnTitle.png',
+	#'kmeans': 'kmeansTitle.png',
+	#'nn': 'nnTitle.png'
+	#}
+	
+	#Get the leaderboard based on the page request and retrive the info from the datastore
+	lesson = self.request.get("type")
+	leaderboard = db.Query(Leaderboard).filter("TYPE =", lesson).get()
+        self.response.write(template.render(template_values))
+
+	#make the leaderboard in the HTML
+	self.response.write('<div id="pageslide" style="left: auto; display: block; right: 0px;"><div id="modal"><h2>Leaderboards</h2></div>')
+
+	pageslideKeys = ['knn','kmeans','nn']
+	#for key in template_values:
+	#	if key != 'user':
+	#		self.response.write('<a id="leaderlink" href="?type='+key+'"><div class="lessonlink" id ='+key+'></div></a><br />')
+	for key in pageslideKeys:
+		self.response.write('<a id="leaderlink" href="?type='+key+'"><div class="lessonlink" id ='+key+'></div></a><br />')	
+		
+	self.response.write('</div>')
+	if lesson != "":
+		self.response.write('<div id="leaderboard">')
+		self.response.write('<table id="leaderboard" border="1" width="500" bgcolor="#FFFFFF"><h1 style="padding-left:90px">'+template_values[lesson]+'</h1><tr><th>User</th><th>Score</th></tr>')
+		for i in range(10):
+			self.response.write('<tr><td>'+leaderboard.TOP10[i].split(':')[0]+'</td><td>'+leaderboard.TOP10[i].split(':')[1]+'</td></tr>')
+		self.response.write('</table></div>')
+	#If no request, generate general welcome to Leaderboard message
+	else:
+		self.response.write('<div class="container" id="PStext"><h2>Welcome to the Leaderboards!<h2><h3><br /> Here, you can see how your skills stack up against other Learn2Mine users.<br/> Click a lesson from the list on the right to view the top 10 scoring users for that lesson.</div>')
+		self.response.write('</h3></div>')
+
+
+class TutorialLessonHandler(webapp2.RequestHandler):
+    @decorator.oauth_required
+    def get(self):
+		useremail = users.get_current_user().email()
+		template = JINJA_ENVIRONMENT.get_template('TutorialLesson.html')
+		page = self.request.get("page")
+		if(page=="knn"):
+			self.redirect("/Tutorial?page=knn")
+		elif page == "tutorialProfile":
+			self.redirect("/TutorialProfile")
+		template_values = tutorialWriter.main(page)
+		template_values.update({'user':useremail})
+		self.response.write(template.render(template_values))
+
+class DMLessonHandler(webapp2.RequestHandler):
+    @decorator.oauth_required
+    def get(self):
+		useremail = users.get_current_user().email()
+		template = JINJA_ENVIRONMENT.get_template('DMLesson.html')
+		page = self.request.get("page")
+		template_values = dmWriter.main(page)
+		template_values.update({'user':useremail})
+		self.response.write(template.render(template_values))
+
+
+class TutorialProfileHandler(webapp2.RequestHandler):
+    @decorator.oauth_required
+    def get(self):
+		useremail = users.get_current_user().email()
+		template = JINJA_ENVIRONMENT.get_template('TutorialProfile.html')
+		wrong = self.request.get("wrong")
+		if wrong == "True":
+			wrongText = "You clicked the wrong link. Click the Profile link at the top to go to your skill tree"
+		else:
+			wrongText = ""
+		template_values = {'user':useremail, 'wrong':wrongText}
+		self.response.write(template.render(template_values))
+
+class TutorialHandler(webapp2.RequestHandler):
+    @decorator.oauth_required
+    def get(self):
+		useremail = users.get_current_user().email()
+		template = JINJA_ENVIRONMENT.get_template('Tutorial.html')
+		page = self.request.get("page")
+		if page == "tutorialProfile":
+			self.redirect("/TutorialProfile")
+		if page == "knnLesson":
+			self.redirect("/Lessons?lesson=knn1")
+		if page == "tutorial1":
+			self.redirect("/TutorialLesson?page=tutorial1")
+		template_values = tutorialWriter.main(page)
+		template_values.update({'user':useremail})
+		self.response.write(template.render(template_values))
+		#if wrong == "True":
+		#	self.response.write("<p>You clicked the wrong link. Please reread and try again.</p>")
+
+class WelcomeHandler(webapp2.RequestHandler):
+    def get(self):
+		template = JINJA_ENVIRONMENT.get_template('Welcome.html')
+		self.response.write(template.render())
+
+class GradingHandler(webapp2.RequestHandler):
+	def post(self):
+		code = self.request.get("code")
+		email = self.request.get("email")
+		hist_id = self.request.get("hist_id")
+		workflow_id = self.request.get("workflow_id")
+		user_query = db.Query(User)
+		user_query.filter('EMAIL =', email)        
+		user = user_query.get()
+		# Now we make a galaxy api call
+		# This call will grade the student's work
+		# We should get an id back from the galaxy api call
+		api_key = "3c7d82a64160fdc165ce6542e0f918d6"
+		url = "http://portal.cs.cofc.edu/learn2mine/api/workflows/"
+		#workflow_id = "f2db41e1fa331b3e"
+		#hist_id = "63cd3858d057a6d1"
+		other=json.dumps({"email":email,"studentCode":code})
+		results = workflow_execute_parameters(api_key,url,workflow_id,"hist_id="+hist_id,"param=gradeCode=other="+other)
+
+		outputid = results['outputs'][0]
+		self.response.write(outputid)
+
+	def get(self):
+		outputid = self.request.get("outputid")
+		hist_id = self.request.get("hist_id")
+		url = "http://portal.cs.cofc.edu/learn2mine/api/histories/"+hist_id+"/contents/"+outputid+"/display"
+		results = display_result("3c7d82a64160fdc165ce6542e0f918d6",url)
+		self.response.write(json.dumps(results))
+
+	
+#Handles page redirects
+app = webapp2.WSGIApplication([
+    ('/Home', HomeHandler),
+    ('/', WelcomeHandler),
+    ('/oauth', OAuthHandler),
+    (decorator.callback_path, decorator.callback_handler()),
+    ('/Lessons', LessonsHandler),
+    ('/Profile', ProfileHandler),
+    ('/About', AboutHandler),
+    ('/Help', HelpHandler),
+    ('/Leaderboard', LeaderboardHandler),
+    ('/Grade', GalaxyToLearn2MineHandler),
+    ('/newKey', newKeyHandler),
+    ('/Search', SearchHandler),
+    ('/Tutorial', TutorialHandler),
+    ('/TutorialLesson', TutorialLessonHandler),
+    ('/TutorialProfile', TutorialProfileHandler),
+    ('/DMLesson', DMLessonHandler),
+    ('/OnsiteGrader', GradingHandler)
+], debug=True)
+

@@ -1,0 +1,40 @@
+<!DOCTYPE HTML> 
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+
+<title>Learn2Mine</title>
+
+<link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+<link type="text/css" rel="stylesheet" href="/stylesheets/tutorial.css" />
+<link rel="shortcut icon" href="./images/l2m.ico">
+
+</head>
+
+<body>
+
+	<a href="http://birg.cs.cofc.edu/index.php/Anderson_Lab"><img src="/images/Paul-labs-logo.png" align="right" title="BiRG Labs" style="width: 75px;"></a>
+	<a id="home" href="Home"><div id="banner"><img id=bannerImg src='images/learn2mine.png' title="LOOK AT BANNER, MICHAEL!"/></a></div>
+	<div id="lava">
+		<ul>
+			<li><a id="home" href="TutorialProfile?wrong=True"><div class="sitenav" id="homelink">Home</div></a></li>
+			<li><a id="profile" href="Profile?tutorial=True"><div class="sitenav" id="profileTutorial">Profile</div></a></li>
+			<li><a id="leaderboard" href="TutorialProfile?wrong=True"><div class="sitenav" id="leaderlink">Leaderboard</div></a></li>
+			<li><a id="search" href="TutorialProfile?wrong=True"><div class="sitenav" id="searchlink">Search</div></a></li>
+			<li><a id="about" href="TutorialProfile?wrong=True"><div class="sitenav" id="aboutlink">About</div></a></li>
+			<li><a id="help" href="TutorialProfile?wrong=True"><div class="sitenav" id="helplink">Help</div></a></li>
+			<li><a id="galaxy" href="TutorialProfile?wrong=True"><div class="sitenav" id="galaxylink">Galaxy</div></a></li>
+			<li><a id="rstudio" href="TutorialProfile?wrong=True"><div class="sitenav" id="rstudiolink">Rstudio</div></a></li>
+		</ul>
+		<div class="loggedin">{{user}}</div>
+	</div>
+
+	<div class="container" id="tutorialText">
+		<h2>Go to Your Profile</h2>
+		<div id="tutorialText">
+			Now that you've completed your tutorial lessons, let's look at your progress in respect to the whole of Learn2Mine. To see your progress or access a new lesson, you'll need to view the skill tree on your profile to see what lessons are available to you. You can get to the profile by clicking the "Profile" link in the heading of this page. We've highlighted it in green for you here.<br><br>
+			{{wrong}}
+		</div>
+	</div>
+
+</body>
