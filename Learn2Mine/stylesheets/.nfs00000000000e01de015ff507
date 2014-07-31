@@ -1,0 +1,435 @@
+body {
+	color: black; 
+    font-family: Calibri, Verdana, Helvetica, sans-serif;/*sets fonts to be used*/
+    background-image:url('../images/l2m-bg.png');
+    h1 {
+    font-family: Calibri, Helvetica, Geneva, Arial,
+          SunSans-Regular, sans-serif }
+          
+    address {
+    margin-top: 1em;
+    padding-top: 1em;
+    border-top: thin dotted }
+    
+    
+}
+
+.loggedin{
+	float: right;
+	margin-right: 250px;
+	padding-top: 8px;
+	color:#FFFFFF;
+}
+
+h1.header {
+	color: #47BE3E;
+	font-family: 'Baumans', Candara, cursive;
+    background-color: #0266C8;
+    margin: 0;
+	margin-top:-10px;
+	padding-top:10px;
+	margin-left:-10px;
+	padding-left:10px;
+	margin-right:-10px;
+}
+h1 span {
+	color: #F41F31;
+	font-family: 'Baumans', Candara, cursive;
+
+}
+
+h3.headerdescription {
+	color: #FFCF2F; 
+	font-family: 'Baumans', Candara, cursive;
+    background-color: #0266C8;/*gives a lighter background color than body*/
+    margin: 0;
+    margin-bottom: 20;
+    margin-top:-10px;
+	padding-top:10px;
+	margin-left:-10px;
+	padding-left:10px;
+	margin-right:-10px;
+	padding-bottom:5px;
+}
+
+ a {list-style:none;}
+ a:link {color: black;}
+ a:visited {color: black;}
+ a:hover {color: #25BFC4;}
+ a:active {color: #1A29B3;}
+
+div#welcome{
+	padding:20px 25% 0px 20px;
+}
+
+#lava {
+    /* you must set it to relative, so that you can use absolute position for children elements */
+    position:relative; 
+    text-align:center; 
+    width:100%; 
+    height:36px;
+    margin-left:0px;
+    background-color:#313131;
+    
+}
+ 
+#lava ul {
+    /* remove the list style and spaces*/
+    margin:0; 
+    padding:0; 
+    padding-left:0px;
+    padding-top: 3px;
+    list-style:none; 
+    display:inline;
+             
+    /* position absolute so that z-index can be defined */
+    position:absolute; 
+     
+    /* center the menu, depend on the width of you menu*/
+    left:0; 
+    top:0; 
+     
+    /* should be higher than #box */
+    z-index:100;
+    
+ 
+}
+ 
+#lava ul li {
+     
+    /* give some spaces between the list items */
+    margin:0 10px; 
+     
+    /* display the list item in single row */
+    float:left;
+}
+
+
+#header2 a{
+    display:block;
+    padding:5px 15px 4px 6px;
+    }
+   
+    
+
+#header2 #current a {
+    padding-bottom:5px;
+    }
+    
+textarea.Title {font-size: 150%;
+border: none;
+background:#DAE0D2;
+font-family: Calibri, Verdana, Helvetica, sans-serif;
+}
+
+textarea.TitleTitle {font-size: 180%;
+font-weight: bold;
+border: none;
+background:#DAE0D2;
+font-family: Calibri, Verdana, Helvetica, sans-serif;
+}
+
+textarea.Description {font-size: 125%;
+	border: none;
+	background:#DAE0D2;
+	font-family: Calibri, Verdana, Helvetica, sans-serif;
+}
+
+div#pageslide{
+	overflow:auto;
+}
+
+/*LESSON FORMATTING*/
+.lessontext{
+	margin: 20px 300px 50px 15px;
+	padding: 10px 20px 10px 20px;
+	background-color: rgba(255,255,255,.7);
+	border: 8px solid #818181;
+	overflow:auto;
+	position:fixed;
+	top: 150px;
+	bottom: 75px;
+}
+
+.lessontext#helplessontext{
+	width: 60%;
+}
+
+.lesson {
+	margin: 20px 300px 10px 15px;
+	padding: 10px 0px 10px 20px;
+	position:fixed;
+	top: 150px;
+	bottom: 25px;
+	width: 100%;
+}
+
+/*LEADERBOARDS*/
+table{
+	color:#FFFFFF
+}
+table#leaderboard{
+	background-image:url('../images/leaderboard.png');
+	background-size:450px 300px;
+	border-collapse:collapse;
+	border:1px solid #828282;
+}
+table#leaderboard td{
+	padding: 5px 12px;
+	border:1px solid #828282;
+}
+table#leaderboard th{
+	padding: 5px 12px;
+	border:1px solid #494949;
+	background-color:#494949;
+}
+table#leaderboard tr:hover td{
+	background:#9b9b9b;
+	color:#000000
+}
+div#leaderboard{
+	padding-left:10%;
+	padding-top:20px;
+}
+
+/*TOP NAVIGATION LINKS*/
+.sitenav{
+	height:30px;
+	width:80px;
+	background-size:80px 30px;
+	position: absolute;
+}
+
+div#homelink{
+	background-image:url('../images/home_U.png');
+	left:10px;
+}
+div#lessonslink{
+	background-image:url('../images/lessons_U.png');
+	left:100px;
+}
+div#profilelink{
+	background-image:url('../images/profile_U.png');
+	left:190px;
+}
+div#leaderlink{
+	background-image:url('../images/leaderboards_U.png');
+	left:280px;
+}
+div#aboutlink{
+	background-image:url('../images/about_U.png');
+	left:370px;
+}
+div#helplink{
+	background-image:url('../images/help_U.png');
+	left:460px;
+}
+/*site nav hover images*/
+div#homelink:hover{
+	background-image:url('../images/home_S.png');
+}
+div#lessonslink:hover{
+	background-image:url('../images/lessons_S.png');
+}
+div#profilelink:hover{
+	background-image:url('../images/profile_S.png');
+}
+div#leaderlink:hover{
+	background-image:url('../images/leaderboards_S.png');
+}
+div#aboutlink:hover{
+	background-image:url('../images/about_S.png');
+}
+div#helplink:hover{
+	background-image:url('../images/help_S.png');
+}
+
+
+/*LESSON LINKS*/
+.lessonlink{
+	height:40px;
+	width:200px;
+	background-size:100% 40px;
+}
+
+div#starting{
+	background-image:url('../images/welcomeLink_U.png');
+}
+div#knn{
+	background-image:url('../images/knnLink_U.png');
+}
+div#kmeans{
+	background-image:url('../images/kmeansLink_U.png');
+}
+div#galaxy{
+	background-image:url('../images/galaxyLink_U.png');
+}
+div#rstudio{
+	background-image:url('../images/rstudioLink_U.png');
+}
+div#sf{
+	background-image:url('../images/sfLink_U.png');
+}
+div#pca{
+	background-image:url('../images/pcaLink_U.png');
+}
+div#pls{
+	background-image:url('../images/plsLink_U.png');
+}
+div#techniques{
+	background-image:url('../images/techniquesLink_U.png');
+}
+div#nn{
+	background-image:url('../images/nnLink_U.png');
+}
+div#mb{
+	background-image:url('../images/mbLink_U.png');
+}
+div#case{
+	background-image:url('../images/caseLink_U.png');
+}
+div#algae{
+	background-image:url('../images/algaeLink_U.png');
+}
+div#stocks{
+	background-image:url('../images/stocksLink_U.png');
+}
+div#fraud{
+	background-image:url('../images/fraudLink_U.png');
+}
+div#share{
+	background-image:url('../images/shareLink_U.png');
+}
+div#logins{
+	background-image:url('../images/loginsLink_U.png');
+}
+
+/*lesson link hover images*/
+div#knn:hover{
+	background-image:url('../images/knnLink_S.png');
+}
+div#kmeans:hover{
+	background-image:url('../images/kmeansLink_S.png');
+}
+div#starting:hover{
+	background-image:url('../images/welcomeLink_S.png');
+}
+div#galaxy:hover{
+	background-image:url('../images/galaxyLink_S.png');
+}
+div#rstudio:hover{
+	background-image:url('../images/rstudioLink_S.png');
+}
+div#pca:hover{
+	background-image:url('../images/pcaLink_S.png');
+}
+div#pls:hover{
+	background-image:url('../images/plsLink_S.png');
+}
+div#techniques:hover{
+	background-image:url('../images/techniquesLink_S.png');
+}
+div#nn:hover{
+	background-image:url('../images/nnLink_S.png');
+}
+div#sf:hover{
+	background-image:url('../images/sfLink_S.png');
+}
+div#mb:hover{
+	background-image:url('../images/mbLink_S.png');
+}
+div#case:hover{
+	background-image:url('../images/caseLink_S.png');
+}
+div#algae:hover{
+	background-image:url('../images/algaeLink_S.png');
+}
+div#stocks:hover{
+	background-image:url('../images/stocksLink_S.png');
+}
+div#fraud:hover{
+	background-image:url('../images/fraudLink_S.png');
+}
+div#share:hover{
+	background-image:url('../images/shareLink_S.png');
+}
+div#logins:hover{
+	background-image:url('../images/loginsLink_S.png');
+}
+
+/*BANNER*/
+#banner{
+	background: #0076A3 url('../images/bannerfiller.png') repeat-x; padding:0em; height:80px;
+}
+img#bannerImg{
+	height:80px;
+	width:580px;
+}
+
+/*LESSON NAVIGATION ARROWS*/
+.arrow{
+	height:75px;
+	width:125px;
+	background-size:125px 75px;
+	position:absolute;
+	bottom: 5px;
+}
+div#forwardArrow{
+	background-image:url('../images/forward_U.png');
+	right: 350px;
+}
+div#backArrow{
+	background-image:url('../images/back_U.png');
+	left: 50px;
+}
+div#forwardArrow:hover{
+	background-image:url('../images/forward_S.png');
+}
+div#backArrow:hover{
+	background-image:url('../images/back_S.png');
+}
+
+/*PROFILE NAVIGATION ARROWS*/
+div#forwardProfileArrow{
+	background-image:url('../images/forward_U.png');
+	left: 550px;
+	bottom: -100px;
+}
+div#backProfileArrow{
+	background-image:url('../images/back_U.png');
+	left: 10px;
+	bottom: -100px;
+}
+div#forwardProfileArrow:hover{
+	background-image:url('../images/forward_S.png');
+}
+div#backProfileArrow:hover{
+	background-image:url('../images/back_S.png');
+}
+
+/*BADGE DISPLAY STYLING*/
+a#badge{
+	color:#CCCCCC
+}
+a#badge:hover{
+	color:#FFFFFF
+}
+img#skBadge{
+	padding-left:60px;
+}
+
+/************SPECIFIC STUFF***************/
+/*SCALE & FILTER*/
+a#easteregg{
+	width:15px;
+	height:15px;
+	background-image:url('../images/l2m.ico');
+	background-size:15px 15px;
+	position:fixed;
+	bottom:15px;
+}
+
+img#openBadgesImg{
+	display:block;
+	margin: 0 auto;
+}

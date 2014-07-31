@@ -1,0 +1,83 @@
+<!DOCTYPE HTML> 
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+
+<title>Learn2Mine</title>
+
+<link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+<link type="text/css" rel="stylesheet" href="./Javascript/pageslide/jquery.pageslide.css" />
+<link rel="shortcut icon" href="./images/l2m.ico">
+
+<script type="text/javascript" SRC="./Javascript/jquery.js"></script>
+<script type="text/javascript" SRC="./Javascript/pageslide/jquery.pageslide.js"></script>
+
+
+
+</head>
+
+<body>
+	<a href="http://birg.cs.cofc.edu/index.php/Anderson_Lab"><img src="/images/Paul-labs-logo.png" align="right" title="BiRG Labs" style="width: 75px;"></a>
+	<a id="home" href="Home"><div id="banner"><img id=bannerImg src='images/learn2mine.png' title="LOOK AT BANNER, MICHAEL!"/></a></div>
+	<div id="lava">
+		<ul>
+			<li><a id="home" href="Home"><div class="sitenav" id="homelink">Home</div></a></li>
+			<li><a id="profile" href="Profile"><div class="sitenav" id="profilelink">Profile</div></a></li>
+			<li><a id="leaderboard" href="Leaderboard"><div class="sitenav" id="leaderlink">Leaderboard</div></a></li>
+                        <li><a id="grade" href="Grader"><div class="sitenav" id="gradelink">Grade</div></a></li>
+			<li><a id="about" href="About"><div class="sitenav" id="aboutlink">About</div></a></li>
+			<li><a id="help" href="Help"><div class="sitenav" id="helplink">Help</div></a></li>
+                        <li><a id="rstudio" target="_blank" href="http://portal.cs.cofc.edu/learn2mine-rstudio"><div class="sitenav" id="rstudiolink">Rstudio</div></a></li>
+                        <li><a id="LessonCreator" href="LessonCreator"><div class="sitenav" id="lessoncreatorlink">Create</div></a></li>
+		</ul>
+		<div class="loggedin">{{user}}</div>
+	</div>
+
+
+	<div class="container" id="PStext">
+		<h1>
+		Welcome to Learn2Mine!<br/>
+		</h1>
+		<p>
+			Learn2Mine hopes to be an effective way for people of all backgrounds and domains specialties to be able learn and practice the growing discipline of data science. You can select from our wide range of lessons by going viewing your profile. If it's your first time here we recommend trying the <a href="DMLesson?page=BasicR">Basic R Lesson</a>, the <a href="DMLesson?page=empiricalNaiveBayes">Empirical Naive Bayes Lesson</a>, or the  <a href="DMLesson?page=LeaveOneOutCV">Leave-one-out Cross-validation Lesson</a>. These lessons will allow you to start by getting your feet wet in the world of data science practice.
+		</p>
+	</div>
+	<div id="pageslide" style="left: auto; display: block; right: 0px;">
+		<div id="modal">
+			<h2>Badges</h2>
+				<p>{{badgeDisplay}}<p>
+				<!-- Mozilla Open Badges Widget. Commenting out so we can use our own
+					badge images and stop users from having to go through the hassle with Mozilla backpack
+					in order to view their badges
+				<div id="bhwidget">Create a 'Learn2Mine' badge group on Mozilla Open Badges to view your Learn2Mine achievements!</div>
+				<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>    
+				<script type="text/javascript">
+
+				var url = "http://beta.openbadges.org/displayer/"+{{badgeID}}+"/group/"+{{groupID}}+".json";
+				    $.getJSON(url,
+					function(data) {
+					    var i=0;
+					    var widgetcode = "<table>";
+					    while (i < data.badges.length < 4) {
+						widgetcode = widgetcode + "<tr><td align='center'>";
+						badgeName = data.badges[i].assertion.badge.name;
+						imgUrl = data.badges[i].assertion.badge.image;
+						critUrl = data.badges[i].assertion.badge.criteria;
+						assertUrl = data.badges[i].hostedUrl;
+						widgetcode = widgetcode + "<a href='" + assertUrl + "'><img id='badge' src='"+imgUrl+"' width='50' height='50' border='0'/></a><br /><a id='badge' href='" + critUrl + "'>" + badgeName + "</a>";                
+						widgetcode = widgetcode + "</td></tr>";
+						i = i+1;
+						    if (i === data.badges.length || i === 3) {
+						    widgetcode = widgetcode + "</table>";
+						    document.getElementById("bhwidget").innerHTML=widgetcode;
+						    return;
+						    }
+					    }
+					}
+				    );
+				</script>-->
+
+		</div>
+	</div>
+
+</body>

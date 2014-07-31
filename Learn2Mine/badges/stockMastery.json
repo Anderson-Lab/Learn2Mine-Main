@@ -1,0 +1,8 @@
+{
+  "name": "Stocks Case Study Mastery Badge",
+  "description": "For successfully learning R through an Stock Market prediction case study",
+  "image": "http://learn2mine.appspot.com/images/stocksMastery.png",
+  "criteria": "http://learn2mine.appspot.com/Home.html",
+  "tags": ["stocks", "case study","mastery"],
+  "issuer": "http://learn2mine.appspot.com/badges/organization.json"
+}

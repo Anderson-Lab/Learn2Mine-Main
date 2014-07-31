@@ -1,0 +1,703 @@
+<!DOCTYPE HTML> 
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+
+<title>Learn2Mine</title>
+
+<link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+<link type="text/css" rel="stylesheet" href="./Javascript/pageslide/jquery.pageslide.css" />
+<link type="text/css" rel="stylesheet" href="./Javascript/jqueryui/jquery-ui-1.8.21.custom.css" />
+<link type="text/css" rel="stylesheet" href="./stylesheets/lessontabs.css" />
+<link rel="shortcut icon" href="./images/l2m.ico">
+
+<script type="text/javascript" SRC="./Javascript/jquery.js"></script>
+<script type="text/javascript" SRC="./Javascript/pageslide/jquery.pageslide.js"></script>
+<script type="text/javascript" SRC="./Javascript/jqueryui/jquery-ui-1.8.21.custom.min.js"></script>
+<script type="text/javascript" SRC="./Javascript/jqueryui/jquery.cookie.js"></script>
+
+<script type="text/javascript" SRC="./Javascript/learn2mineLessons/filesubmit.js"></script>
+<script src="http://beta.openbadges.org/issuer.js"></script>
+
+</head>
+
+<body
+	style="position: relative; height: 100%; overflow: hidden; margin: 0px; padding: 0px; padding-left: 0px; padding-top: 0px; border: none; overflow: auto; overflow-x: hidden;">
+
+	<a id="home" href="Home.html"><div id="banner"><img id=bannerImg src='images/learn2mine.png' title="YOU'RE KILLING ME, BUSTER!"/></a></div>
+
+	<div id="lava">
+		<ul>
+			<li><a id="home" href="Home.html"><div id="homelink"></div></a></li>
+			<li class="selected"><a id="lessons" href="Lessons.html"><div id="lessonslink"></div></a></li>
+			<li><a id="profile" href="Profile.html"><div id="profilelink"></div></a></li>
+			<li><a id="leaderboard" href="Leaderboard.html"><div id="leaderlink"></div></a></li>
+			<li><a id="about" href="About.html"><div id="aboutlink"></div></a></li>
+			<li><a id="help" href="Help.html"><div id="helplink"></div></a></li>
+		</ul>
+		
+
+	</div>
+
+	<div id="pageslide" style="left: auto; display: block; right: 0px;">
+		<div id="modal">
+			<h2>Lessons</h2>
+		</div>
+	</div>
+
+<div id="selector">
+		<div id="tabs-left">
+			<ul>
+				<li><a href="#Lesson-1">Getting Started</a></li>
+				<li><a href="#lesson-2">Galaxy</a></li>
+				<li><a href="#lesson-3">R-Studio</a></li>
+				<li><a href="#lesson-4">Techniques</a></li>
+				<li><a href="#lesson-5">KNN</a></li>
+				<li><a href="#lesson-6">K-Means</a></li>
+				<li><a href="#lesson-7">Scaling & Filtering</a></li>
+				<li><a href="#lesson-8">PCA</a></li>
+				<li><a href="#lesson-9">Regression</a></li>
+				<li><a href="#lesson-10">Neural Networks</a></li>
+				<li><a href="#lesson-11">Hierarchical</a></li>
+				<li><a href="#lesson-12">Decision Trees</a></li>
+				<li><a href="#lesson-13">Random Forests</a></li>
+				<li><a href="#lesson-14">Cross-Validation</a></li>
+				<li><a href="#lesson-15">Programming</a></li>
+
+			</ul>
+			<div id="Lesson-1"><!-- Description and Usage of Learn2Mine -->
+				<div class="accordion">
+
+					<h3>
+						<a href="#">Welcome</a>
+					</h3>
+					<div>
+						<p>Welcome to Learn2Mine, an Open-Source Cloud-Based Informatics Platform For Integrated Teaching and Data
+						Exploration. Learn2Mine is a one-stop shop for analyzing and making sense of data, as well as for learning 
+						the techniques that give life and meaning to big data. </p>
+					</div>
+					<h3>
+						<a href="#">Lessons</a>
+					</h3>
+					<div>
+						<p>Every technique that we offer will have an associative lesson with it (sometimes there will be more than one). 
+						Sometimes the lessons are as trivial as figuring out an optimal heuristic (just a number) for an algorithm with 
+						data provided to you, while lessons, other times, could involve writing code for an algorithm. Whenever you 
+						complete a lesson, you will have a score associated with what you did. This score is how we grade whether or not 
+						you pass a lesson, as well as being a way for us to rank you against others doing the same lesson.</p>
+					</div>
+					<h3>
+						<a href="#">Skill Tree and Leaderboards</a>
+					</h3>
+					<div>
+						<p>Each user has a skill tree that keeps track of their progress. This skill tree is
+							located in the Profile section of the site. Initially, you will not have access to a lot of the 
+							techniques that we have to offer. This is done in such a way that you will learn the simpler techniques first - lesson difficulty also 								follows a very similar manner.<br /><br /> In your skill tree, 
+							when you do not have access to a technique, then that technique shows up as locked (red), when you have
+							access to a technique, but have not completed the lesson for that method, then that technique shows up as
+							still needs work (yellow). Whenever you have completed and passed the lesson for a technique, then it will 
+							show up as learned (green). When you have shown exceptional mastery of the technique then it will show up 
+							as mastered (blue). Sometimes technique mastery may require you to undergo lessons where you customize 
+							algorithms in order to improve or expand upon their functionality.<br /><br />Finally, when you complete a 
+							lesson, your score is then recorded for grading. In addition to grading your score is also used to rank you 
+							against other people that have completed that same lesson. In the leaderboards section of the site, you can 
+							check the leaderboards for each of the lessons. We keep track of the top 10 scores for each lesson.</p>
+					</div>
+					<h3>
+						<a href="#">Open Badges</a>
+					</h3>
+					<div>
+						<p>During your progression here you will be able to earn badges in order to show off your progress within Learn2Mine and on your own site. We implement Mozilla's <a href="http://openbadges.org/">Open Badges</a>. Open Badges allows you to collect badges from a multitude of academic services on the Web. Once you start earning badges, you will be able to access them in your <a href="http://backpack.openbadges.org/backpack">backpack</a>. To view your Learn2Mine badges within our site, you will need to create a "Collection" named "Learn2Mine" on the backpack site. Unfortunately, you cannot create a collection until you have earned at least one badge. Also, you will need to tick the checkbox that makes your collection public, otherwise we will not have access to your badges for displaying purposes. Typically, badges will represented remarkable success in learning algorithms and data science techniques here.</p>
+					</div>
+					
+				</div>
+			</div>
+			<div id="lesson-2"><!-- Description and Usage of Galaxy -->
+				<div class="accordion">
+
+			<h3>
+				<a href="#">Uploading Data</a>
+			</h3>
+                        <div>
+                            <p><img src="images/uploadData.png" align="left" style="height:250px; padding-right:20px"/>Galaxy is our back-end framework for Learn2Mine so now we will briefly show you how it works. When you are going through lessons you will be required to upload data in order to perform various analyses. The data files are supplied to you on a lesson-by-lesson basis. When you start a lesson you will be redirected to Galaxy. On the left-hand side of Galaxy is a list of tools that you can use. Right now we will be focusing on the "Get Data" toolset. Once you have clicked "Get Data" you will have the option to upload a file from your computer and this is when you would submit the files you received from Learn2Mine. When you have submitted these files, they will appear on the right-hand side of Galaxy as "jobs." Typically, you should not need to specify a datatype as Galaxy will auto-select the correct format. Files that are uploading to Galaxy appear as blue whenever they are in the process of being uploaded and green whenever they are done being uploaded.</p>
+                        </div>
+
+			<h3>
+				<a href="#">Using Our Tools</a>
+			</h3>
+                        <div>
+                            <p><img src="images/ourTools.png" align="left" style="padding-right:20px; height:250px"/>As you likely saw whenever you navigated to the "Get Data" toolset there is a special set of tools that we have created for your use. When you open up the "Learn2Mine Toolset" you will see a list of algorithms and a few other specialized tools. The algorithm-specific tools are discussed in each of their sections here on the Lessons page. Right now we will focus on the other tools to further your understanding of Galaxy and our integration with it. <br /><br />The "Submit To Learn2Mine" tool is how you will actually pass information from Galaxy to Learn2Mine. This tool will ask you for the key you created (this will be explained in the next section), the algorithm output file, and the type of grading you want conducted. The type of grading you want conducted comes straight from the lesson you are undergoing. For example, you would use the K-Means Grader if you were conducting a lesson on the K-Means algorithm.<br /><br />Lastly, we have extra descriptions how to use our tools and common mistakes at the bottom of each tool's input page.</p>
+                        </div>
+			
+			<h3>
+				<a href="#">Using The Job History</a>
+			</h3>
+                        <div>
+                            <p><img src="images/history.png" align="left" style="padding-right:20px; width:150px"/>So you understand what information you need to pass to various tools in Galaxy, but how exactly do you do this? Galaxy keeps track of every job you perform in the right panel. You can use the output of these jobs as inputs to new jobs. As aforementioned, you need to feed your Learn2Mine key to the "Submit to Learn2Mine" tool. After you have created the key inside of Galaxy, you can select your key as an option in the "Submit to Learn2Mine" tool. It will be referenced by the job number and name (Key in this case). This works in the exact same way that you would give data to your algorithms.<br /><br />In addition to using past jobs to conduct new jobs, the history serves another useful function. Whenever you run an algorithm here it is always useful to have meaningful, graphical output. We dynamically generate HTML pages that format output for your algorithms. As you will see, Galaxy will output two jobs when you conduct algorithms. For example, K-Means Clustering will output an HTML page and a results file. If you click the eye next to the HTML page job, then you will see the HTML output in the main panel of Galaxy. If you were to click results, then you will see some identifiers of your output. The HTML output we give you will usually have labels such as "Principal Component X" on the axes. This is because the data we are working with is impossible to view because of how many features exist in the data. We conduct Principal Component Analysis, a dimensionality reduction technique, in order to give you the most meaningful output possible in the HTML.</p>
+                        </div>
+
+
+                        <h3>
+                            <a href="#">Your Key</a>
+                        </h3>
+        		<div>
+			    <p>The "Create Learn2Mine Key" tool is vital for keeping track of your progress. We use this key in order to persist your results and score so that we can store your success in our database, as well as giving you access to new tools and adding you to our leaderboards. This key is uniquely generated whenever you first sign in to Learn2Mine. The "Create Learn2Mine Key" tool asks for your key for these reasons and you can find your unique key below. Please do not share your key with anyone else as it is how you are uniquely identified.<br /></p>
+                            <p>{{session}}</p><!--Pulled from LessonHandler in main.py to give user's their Galaxy key -->
+			    <p>If you feel that your unique key has been compromised, then click <a href="/Home.html?newKey=True">here</a> to generate a new key. Please note that you will need to recreate your key with the "Create Learn2Mine Key" tool in Galaxy after doing this.</p>
+                        </div>
+			
+			<h3>
+				<a href="#">FAQs</a>
+			</h3>
+                        <div>
+                            <p><b>My job seems to be running forever &lt;-</b> Usually just restarting the job or conducting a different job will push the job through and finish it. The only time you might have to exit the job and completely retry it is when using the upload data tool. Signs of this typically include jobs being hung up whilst they are colored blue (unique to upload data) or grey (job not running).<br /><b></b></p>
+                        </div>	
+
+				</div>
+			</div>
+			<div id="lesson-3"><!-- Description and Usage of RStudio -->
+				<div class="accordion">
+					<h3>
+						<a href="#">What Is R?</a>
+					</h3>
+					<div>
+						<p>R is a programming language that is specialized for the implementation of statistics and modeling. R is open-source and runs on a multitude of platforms. There are many free packages and suites within R and there are even more available libraries that have a large, dedicated group of developers. The algorithms in our lessons are coded in R and whenever you start customizing and running your own code it will also be in R. <br /><br /> For more information, please visit <a href="http://www.r-project.org/">R-Project</a></p>
+					</div>
+					<h3>
+						<a href="#">What Is RStudio?</a>
+					</h3>
+					<div>
+						<p>RStudio is an IDE (integrated development environment) for modifying and executing R code. We have our own instance of RStudio on our server and you will be able to log in to RStudio and run code on the fly. The IDE has its own output frame so you will not have to install any dependencies for RStudio to work on your machine since it is handled entirely in the cloud. Additionally, the graphics that we utilize run optimally in RStudio as the developers of RStudio also created the graphics library we adopted.<br /><br />For more information, please visit <a href="http://www.rstudio.com/about/">RStudio</a></p>
+					</div>
+					<h3>
+						<a href="#">Custom Code & Modifications</a>
+					</h3>
+					<div>
+						<p>We have created a git repository that contains framework code that we aim for you, our users, to modify in order to demonstrate topic mastery. When you log in to RStudio (authentication information is in the next section) you will want to start by grabbing this code we have prepared for you. From the menu bar, select "Project", then "Create Project". From there you will select "Version Control" and then "Git." In the "Repository URL you will enter: "https://jldierks@bitbucket.org/jldierks/rstudio-test.git" The other options are for use by you. Your project directory will be important for transferring information back to Learn2Mine.<br /><br />Once you have created some custom code, you will want to send files back to Learn2Mine for grading. For example, if you customized a K-Nearest Neighbor classifier and you want to submit it for grading, then you will go to the KNN tool in Galaxy and select "Yes" on the custom code radio button. After this, you will be required to input the path to your custom KNN file. Your file, however, will have been saved on our server. This server utilizes your username for RStudio and the directory you need to key in will look as follows: <b>{{rstudioUser}}</b>/path/to/project/myCustomFile.R</p> NOTE: Our tools look for an output in the form of a csv file called "results.csv"; so write what you want to send to galaxy in one such file (see our code for examples). If you do not write to a "results.csv", Galaxy will randomly pick a different ".csv" file you do write to, with apparent favoritism that we do not understand. Just use "results.csv".
+					</div>
+					<h3>
+						<a href="#">Your Authentication</a>
+					</h3>
+					<div>
+						<p>Here we provide you with authentication information for you to use our server instance of RStudio. Your username is based upon your Google account and your password is based upon your unique key that you used in Galaxy.
+					
+
+					<br /><br />Username: {{rstudioUser}}<br />Password: {{session}}</p><!--Pulled from LessonHandler in main.py to give user's their RStudio Info -->
+					<p><a href="learn2mineserver:8787">Link to RStudio</a></p>
+					</div>
+				</div>
+			</div>
+			<div id="lesson-4"><!-- Techniques -->
+				<div class="accordion">
+					<h3>
+						<a href="#">Learning</a>
+					</h3>
+					<div>
+						<p>Data comes in many different flavors. Sometimes you will have data that you are very familiar 
+						with and you want to use that data in order to learn about new data you collect. Other times you 
+						may have lots of useful data, but it is difficult to determine what in the data is even meaningful. 
+						Regardless of the type of data you collect, there will always be different algorithmic approaches 
+						in order to make sense and learn from the data. Here we will discuss the two main approaches to 
+						machine learning.</p>
+					</div>
+					<h3>
+						<a href="#">Supervised Learning</a>
+					</h3>
+					<div>
+						<p>Supervised Learning is a type of learning that encompasses algorithms and techniques where you 
+						are presented with training data for which you know the correct classification. This training data 
+						is used to create a generalization for new, testing data. If the training data is 'trained' well, 
+						then the training set will be able to generalize and classify unknown data with a minimal error rate. 
+						There are techniques that handle working with different types of data (i.e. continuous vs categorical); 
+						some algorithms can handle all types and others may specialize and only work with one type.</p>
+					</div>
+					<h3>
+						<a href="#">Unsupervised Learning</a>
+					</h3>
+					<div>
+						<p>Unsupervised Learning, sometimes called density estimation, is a type of learning where correct 
+						classifications, or responses, are not given. This does away with the idea of training and testing 
+						data as seen in supervised learning. The goal of unsupervised learning is to group data together 
+						based on similarities, commonly done through clustering algorithms.</p>
+					</div>
+					<h3>
+						<a href="#">Optimization</a>
+					</h3>
+					<div>
+						<p>In many advanced lessons here you will be presented with a problem that needs optimizing. For example, in the first advanced lesson (For K-Nearest Neighbors) you are required to weight features of a dataset in order to create an improved solution. Oftentimes brute-forcing a solution might not even be possible or could be more hassle than it is worth. Instead, tackling a problem like this can be handled with optimization techniques. Optimization techniques tend to find a great solution, but not necessarily the best solution - and that is perfectly fine. Techniques you might want to research in order to conduct optimization include Hill Climbing, <a href="http://cran.r-project.org/web/packages/GenSA/GenSA.pdf" target="_blank">Simulated Annealing</a>, and <a href="http://cran.r-project.org/web/packages/GA/GA.pdf" target="_blank">Genetic Algorithms</a>. We recommend the use of the GA package for R as it is what we utilized to optimize our KNN classifier and Genetic Algorithms, while more complex, are very powerful techniques once you understand how to use them.</p>
+					</div>
+				</div>
+			</div>
+			<div id="lesson-5"><!-- K-Nearest Neighbors (Classification I) -->
+				<div class="accordion">
+					<h3>
+						<a href="#">What Is K-Nearest Neighbors?</a>
+					</h3>
+					<div>
+						<p>K-Nearest Neighbors (KNN) is a basic classification
+							algorithm. KNN is a lazy (generalizing past the training data is 
+                                    pushed off until a query is made to the system), non-parametric algorithm 
+                                    (the data does not belong to a particular distribution). 
+                                    Typically, KNN uses euclidean distances to measure between points.
+							 In a training set, the scientist has data and knows the classifications 
+                                    of points. This data is fed into the KNN algorithm as training data. 
+                                    Whenever a datapoint without a classification is sent to the algorithm, 
+                                    then the data is tested on the aforementioned training data.</p>
+					</div>
+					<h3>
+						<a href="#">Efficiency</a>
+					</h3>
+					<div>
+						<p>To reiterate, KNN is non-parametric and thus makes no assumptions about data distribution.
+                                    This is useful because real-world data tends to not fall into nice distributions
+                                    that other algorithms may assume.	Additionally, KNN is lazy, making it a costly algorithm:
+							 whenever testing occurs on new data points, KNN needs to use
+							 every single training point in order to classify. So,
+                                    KNN does not cost many computational resources to train a set of data, but 
+                                    testing comes with a higher cost.</p>
+					</div>
+					<h3>
+						<a href="#">Optimizing K</a>
+					</h3>
+					<div>
+						<p>First, the K in KNN represents how many neighbors used in
+							order to classify new points. Consider the following image: 
+                                   <img src="images/KNN/knnclassification.png" title="Adopted from absoluteastronomy.com"
+                                         align="left" style="padding: 10px">
+
+
+                                In this example, the green circle is a new datapoint and the squares/triangles 
+                                    are the training data. The dark circle is what to consider when K = 3. The inside
+                                    of this circle contains the 3 closest neighbors to the new datapoint. There are two 
+                                    triangles and one square so, by majority, the new datapoint is classified as a triangle.
+                                    Now consider the dotted line. The dotted line represents K = 5 since there are now 5
+                                    neighbors. With three of the neighbors being squares and two being triangles, this time
+                                    the datapoint is classified as a square. So, as you can see, altering the K value can
+                                    alter the classification of new, "test" points. There are tradeoffs for 
+                                    using high and low numbers for K. Low numbers tend to specialize the data and make points
+							over-influential and high numbers tend to broaden the data and
+							make points under-influential. A lot of times, it helps to
+							visualize the data to understand it better. Otherwise, though, the data
+                                    may require domain expertise in order to make the best decision. 
+
+                                </p>
+					</div>
+					<h3>
+						<a href="#">Lesson</a>
+					</h3>
+					<div>
+                            <p>
+                                Datasets Required: <a href="datasets/DiabetesTrain.csv">Diabetes Training Set</a>&nbsp;&nbsp;   
+                                                   <a href="datasets/DiabetesTest.csv">Diabetes Testing Set</a><br />
+                                Our KNN algorithm utilizes two datasets: a training set and a testing set.
+                                You can observe how the test data can vary by manipulating the value of K. This is a
+                                very basic lesson insomuch that you will be observing what happens when doing this. 
+                                First, you will upload the provided diabetes datasets to Galaxy (see Galaxy tab). Then,
+                                you will select the KNN tool from the Learn2Mine tools in the left panel of Galaxy. 
+                                Galaxy will prompt you to input a value K and Galaxy will prompt you to select data 
+                                that you have previously uploaded to Galaxy. Once you have completed this, you will see
+                                a KNN job pop up in your history on the right. This file is then sent to the "Submit To Learn2Mine"
+                                tool - this is how you will be graded.
+                                
+                            </p>
+						<form target="_blank" action="http://learn2mine-server:8081"> <!-- LINKS TO GALAXY -->
+						    <input type="submit" value="Try Our First KNN Lesson">
+						</form>
+                              
+					</div>
+					<h3>
+						<a href="#">Advanced Lesson</a>
+					</h3>
+					<div>
+						<p>Datasets Required: <a href="datasets/DiabetesTrain.csv">Diabetes Training Set</a>&nbsp;&nbsp;   
+                                                   <a href="datasets/DiabetesTest.csv">Diabetes Testing Set</a><br />
+				This next lesson will allow you to earn KNN Mastery, so get ready to do some coding! <br />You likely received a score in the high 70's or low 80's in the previous KNN lesson, but now you are going to do better than that. Using the same dataset, we want you to write code in RStudio to figure out how to get a higher KNN score (accuracy). You will not be able to do this by simply changing the value of K. You need to think about the variables for this dataset at hand. Some of the variables are likely to explain more about the classification of a person. A way to represent this algorithmically is to multiply the column (or feature) of the dataset by a number. For example, multiplying a feature by 2 yields a KNN classifier that puts 2x weight on that feature. We do not expect you to simply use trial-and-error to figure out what weights will give you a good accuracy. Instead, however, we want you to create an algorithm that will give you the weights that you want to use for each feature. After finding these weights, use our KNN backbone code (access to this is explained in the RStudio tab) to program the weights in. You can then run the KNN classifier using your custom, weighted code and, if your score is good enough, then you will have proven that you have mastered the KNN algorithm. For help creating an algorithm to find these weights for you, see the Optimization section in the Techniques Tab.</p>
+					</div>
+				</div>
+			</div>
+			<div id="lesson-6"><!-- K-Means Clustering (Clustering I) -->
+				<div class="accordion">
+					<h3>
+						<a href="#">What Is K-Means?</a>
+					</h3>
+					<div>
+						<p>K-Means is one of the most widely used clustering algorithms. We will be working 
+						with one of the more popular versions of the K-means algorithms: Lloyd's algorithm. 
+						The K-means algorithm requires users to give it a set amount of clusters in order to start. 
+						The algorithm then selects random datapoints to be the cluster centers (or centroids). Each 
+						datapoint is then iterated over in order to find the centroid closest to it. Once this centroid 
+						is found, then that datapoint is set as belonging to the cluster associated with that centroid. 
+						Once this is done for each of the datapoints, then new cluster centers are found. The process 
+						of assigning datapoints to clusters is then repeated. The algorithm terminates when 
+						consecutive iterations of the algorithm produce the same cluster assignments or whenever a 
+						maximum number of iterations is reached.
+						<br />
+						All this considered, K-Means is an np-hard problem with complexity O(n<sup>fk+1</sup>*log(n)) where f is the amount of features in the dataset, k is the 							amount of clusters, and n is the amount of datapoints.</p>
+					</div>
+					<h3>
+						<a href="#">Illustrated Example</a>
+					</h3>
+					<div>
+						<p>Now imagine that you are given a dataset (with three clusters) with the initial cluster centroids already decided. 
+					 Here the red, blue, and green circles are centroids representative of the three clusters. 
+					So the next step is to classify each of the grey squares as to being a part of a single cluster, via euclidean distance.  
+					From the datapoints (and centroid) a voronoi diagram can be produced (Don't worry, this 
+					is not part of the lesson). The voronoi diagram shows which datapoints belong to which clusters, indicated by color. The next step 
+					in the process is to move the center of the cluster to the center of the datapoints within the cluster. So the cluster center 
+					is in a new location so the process is repeated until termination, as prescribed in "What is K-Means?" 
+					<div style="width: 800px">
+					<img src="http://upload.wikimedia.org/wikipedia/commons/5/5e/K_Means_Example_Step_1.svg" title="Step 1: Adopted from Wikimedia"
+                                        style="float:left; width:200px"/>
+					<img src="http://upload.wikimedia.org/wikipedia/commons/a/a5/K_Means_Example_Step_2.svg" title="Step 2: Adopted from Wikimedia"
+                                         style="float:left; width:200px"/> 
+					<img src="http://upload.wikimedia.org/wikipedia/commons/3/3e/K_Means_Example_Step_3.svg" title="Step 3: Adopted from Wikimedia"
+                                         style="float:left; width:200px"/> 
+					<img src="http://upload.wikimedia.org/wikipedia/commons/d/d2/K_Means_Example_Step_4.svg" title="Step 4: Adopted from Wikimedia"  						style="float:left; width:200px"/> 
+					</div>
+					</div>
+					<h3>
+						<a href="#">Optimizing K</a>
+					</h3>
+					<div>
+						<p>The goal of K-Means Clustering is to try to group your data while 
+						maintaining a balance between number of clusters and the uniformity within 
+						those clusters. The more clusters you have, the more specialized they will 
+						be. However, more specialized does not necessarily mean better, as too many
+					 	clusters can lead to divisions between points that are more similar than now. 
+						Therefore, evaluating performance of a K-Means test can be a bit arbitrary, 
+						but the test should strive to find an optimal balance between keeping the 
+						Sum-Of-Squares Error between clusters high, and the Sum-Of-Squares Error within 
+						clusters low. 
+						</p>
+					</div>
+					<h3>
+						<a href="#">Lesson</a>
+					</h3>
+					<div>
+						<p>Dataset Required: <a href="datasets/Quake.csv">Earthquake Data Set</a><br />
+
+						</p>
+						Using the above dataset containing various attributes of earthquakes, your job for 
+						this lesson is to group those earthquakes using K-means clustering algorithm. Load 
+						the data into Galaxy, and then run the K-Means tool. You will have the option of 
+						choosing your own k (number of clusters) and number of iterations of the algorithm 
+						(we recommend leaving the default value). By manipulating these variables, your goal 
+						is to create an optimum balance between the Sum-of-Squares Error within clusters 
+						(aiming low) and between clusters (aiming high)fall within the right range of both to 
+						pass this lesson.
+						<br><br>
+						<form target="_blank" action="http://learn2mine-server:8081"> <!-- LINKS TO GALAXY -->
+						    <input type="submit" value="Try Our First K-Means Lesson">
+						</form>
+					</div>
+				</div>
+			</div>
+			<div id="lesson-7"><!-- Scaling and Filtering (Data Manipulation I) -->
+				<div class="accordion">
+					<h3>
+						<a href="#">What Is Scaling And Filtering?</a>
+					</h3>
+					<div>
+						<p>Now we will be working on performing techniques that will modify data. Often data will 
+						have missing values and outliers or the data may need scaling in order to reduce bias. We 
+						are providing you tools that will enable you to delete missing data, delete outliers, and 
+						scale data. </p>
+					</div>
+					<h3>
+						<a href="#">Dealing With Missing Data</a>
+					</h3>
+					<div>
+						<p>Missing data occurs often with datasets for many reasons (such as data 
+						involving temperature - someone may forget to record data for a day). Sometimes using the 
+						data that is there in lieu of the missing data is still very valuable, but sometimes that 
+						data becomes useless without key variables. This will become very apparent in the upcoming 
+						lesson. Also, you may have algorithms written in such a way that all the data is required 
+						to be present in order to effectively produce meaningful output.</p>
+					</div>
+					<h3>
+						<a href="#">Dealing With Outliers</a>
+					</h3>
+					<div>
+						<p>Outliers are very 
+						fickle beings in datasets. There are many beliefs on whether or not excluding outliers is 
+						a fair way to modify data, but having the option is important. Our tool will give you the 
+						option to exclude outliers based on a z-score (effectively the amount of standard deviations 
+						away from the mean a datapoint is). This exclusion is based off of every single feature of a 
+						datapoint. So if you select a z-score of 3.0 and the datapoint has a feature that goes over 
+						the third standard deviation, then the entire datapoint will be considered an outlier and will 
+						be thrown out.</p>
+					</div>
+					<h3>
+						<a href="#">Normalization</a>
+					</h3>
+					<div>
+						<p>Scaling is a way to normalize data. The scale 
+						option within our tool will center your data and scale each feature of the dataset, normalizing your data. 
+						This will accomplish a reduction in bias. So features will large amounts of variance will 
+						not skew data or be over-emphasized in results. Also, scaling assumes you fit the statistical requirements 
+						for normalization (typically you need at least 30 datapoints).</p>
+					</div>
+
+					<h3>
+						<a href="#">Lesson</a>
+					</h3>
+					<div>
+						<p>Dataset Required: <a href="datasets/Vertebral_Column_2C_MV.csv">Vertebral Column Data Set</a> (Edited)<br />
+						For this lesson, you'll be using a dataset filled with outliers and missing data. Upload the above dataset into Galaxy,
+						then filter it in the following ways:
+							<ul>
+								<li>Delete all data missing 10% or more of their fields</li>
+								<li>Remove any data that contains a field with a z-score of higher than 2.5</li>
+								<li>Scale the data</li>
+							</ul>
+						Other Things to Know: The missing data fields in this set are signified by a question mark (?). In addition, this dataset 
+						contains a categorical variable (vertebrae classification located in column 7) be sure to specify this at the bottom, otherwise the
+						filtering tool will try to find the z-score of a categorical variable, which does not make sense!
+						<br /><br />
+						These are some pretty harsh rules we are weeding through this data by, and in the real world you'll want to be more cautious with your datasets.
+						This lesson is just to illustrate the idea of filtering data.
+						</p>
+						<form target="_blank" action="http://learn2mine-server:8081"> <!-- LINKS TO GALAXY -->
+						    <input type="submit" value="Try Our Scaling & Filtering Lesson">
+						</form>
+						<p>(NOTE: The dataset above is a trimmed version of a full dataset, with a few random values deleted from it to fit our purposes. If you'd like to 
+						see the full dataset, you can download it below!)
+						<br /> <a href="datasets/Vertebral_Column_2C.csv">Vertebral Column Data Set (Full)</a></p>
+					</div>
+				</div>
+			</div>
+			<div id="lesson-8"><!-- Principal Component Analysis (Data Manipulation II) -->
+				<div class="accordion">
+					<h3>
+						<a href="#">What Is Principal Component Analysis?</a>
+					</h3>
+					<div>
+						<p>Principal Component Analysis (PCA) is a dimensionality reduction technique. You may have noticed the references to "Principal Components" in outputs of your previous lessons. We performed this technique so that you would be able to visualize your output. For example, if you did the KNN lesson, then you were working with a problem who's data would have taken 7 dimensions to visualize because there are 7 features in the Diabetes dataset. PCA, however, gets around this by figuring out how much of the variability of the dataset is explained by each feature. For each feature, there is a principal component that is created. The first principal component is the one that points along the axis of greatest variance. If you add the "variance explained" from each principal component of a dataset, then you will get 100%, but then you have not gained anything by using PCA as you will have the same amount of dimensions as before. So, in practice, you will typically use two principal components for visualization and more for analysis depending upon your problem-at-hand and your dataset. When you visualize your data this way, then your data is projected onto the first two principal components. This will lead to visually shocking results when dealing with clustering algorithms. This is because the clusters may be linearly separable in higher dimensions, when considering all the data, but clusters will not look correct whenever projecting down to only two features.</p>
+					</div>
+					<h3>
+						<a href="#">A Glimpse At The Algorithm</a>
+					</h3>
+					<div>
+						<img src="http://web.media.mit.edu/~tristan/phd/dissertation/figures/PCA.jpg" title="Adopted from http://web.media.mit.edu/~tristan/phd/dissertation/figures/PCA.jpg" style="height:200px; padding: 10px" align="left">
+						<p>When finding principal components, a PCA algorithm creates a covariance matrix. This matrix relates each feature with all the other features and itself in order to find the axis with the greatest spread (variance). For those with linear algebra experience, the eigenvectors of this matrix point in the direction of the axes with the greatest spread, referred to as principal axes. The eigenvector with the highest eigenvalue is the eigenvector pointing the direction of greatest variance. After doing this, PCA projects the full data onto the principal components that it is using (amount can vary). At this point, the principal components can be used to visualize the data.<br /> On the left you will see a two-dimensional dataset. For example purposes, let's try and get the principal component so we can project the data onto one dimension. You can see what the spread is for each of the principal components that have been drawn out for you. The v1 axis has a much higher spread - the datapoints are much more spread out than in the v2 direction. This is evident when considering the normal curves along each of the principal axes.</p>
+					</div>
+					<h3>
+						<a href="#">Lesson</a>
+					</h3>
+					<div>
+						<p>Dataset Required: <a href="datasets/Quake.csv">Earthquake Data Set</a><br /><br />This lesson will not require a lot of work from you, but, rather, we are asking that you pay a lot of attention to the results and take the meaning away from it. You will be using the Earthquake dataset. There are only four features in this dataset so there will only be four principal components. Pay attention to the file to check if there is a header so you know what to pick for that option in the PCA tool. Upon viewing the html output of PCA, you will see an output that consists of the "Percent Variance Explained" by each principal component (these will total to 100 if you add them as we are showing you every principal component). Following this, we give you the standard deviations (<span style="white-space: nowrap">&radic;<span style="text-decoration:overline;">&nbsp;Variance&nbsp;</span></span>) of each component. Lastly, we output a screeplot - a way to view the percent variance explained for the principal components graphically. In order for us to make sure you followed the instructions and performed PCA correctly, we output a second file, much like in the other lessons, for you to submit to us using the "Submit to Learn2Mine" tool.
+</p>							
+						<form target="_blank" action="http://learn2mine-server:8081"> <!-- LINKS TO GALAXY -->
+						    <input type="submit" value="Try Our PCA Lesson">
+						</form>
+					</div>
+				</div>
+			</div>
+			<div id="lesson-9"><!-- Partial Least Squares Regression -->
+				<div class="accordion">
+					<h3>
+						<a href="#">What Is Regression?</a>
+					</h3>
+					<div>
+						<img src="http://upload.wikimedia.org/wikipedia/commons/3/3a/Linear_regression.svg" title="Adopted from http://upload.wikimedia.org/wikipedia/commons/3/3a/Linear_regression.svg" style="height:150px; padding: 10px" align="right"><p>Regression is a statistical technique which predicts a response (dependent variable) from given features (independent/predictor variables). There are a multitude of regression techniques. In Statistics classes you typically will learn the Ordinary Least Squares model of regression, which minimizes the sum of squared distances between the regression model and actual datapoints (minimizes the residual). So the purpose of regression is making a prediction conditioned by the features of the dataset. As data scientists, we would like to work with a powerful form of regression. We will be using Partial Least Squares Regression.</p>
+					</div>
+					<h3>
+						<a href="#">Partial Least Squares Regression</a>
+					</h3>
+					<div>
+						<p>Partial Least Squares Regression (PLS) finds a linear regression model by projecting the features and response into a new space. A PLS model will look into this new space and attempt to find the direction in the feature space that explains the maximum variance direction of the response space. This is all done in multiple dimensions and it is a lot simpler to think about PLS as applying PCA techniques to the features of regression. PLS is tailored to work in a starkly different manner than typical regression models - PLS functions better whenever there are more features than observations and when there exists multicollinearity between the features. This is because PLS utilizes not only observed variables (directly measured), but also <a href="http://en.wikipedia.org/wiki/Latent_variable" target="_blank">latent variables</a>. These latent variables are not directly measured, but rather are pseudo-observed variables because they are inferred from the observed variables. So one of the tradeoffs that PLS receives is that the data's dimensionality is significantly less than it could be due to the use of the latent variables.<br /><br />For more detailed information, see this <a href="http://en.wikipedia.org/wiki/Partial_least_squares_regression" target="_blank">article</a></p>
+					</div>
+					<h3>
+						<a href="#">Lesson</a>
+					</h3>
+					<div>
+
+						<p>Dataset Required: <a href="datasets/Basketball.csv">Basketball Dataset</a><br />
+						For this lesson, we want you to predict the amount of shots that a basketball player makes per minute, based upon a player's assists per minute, height (in cm), age, and time played. We are providing you with a full dataset. The PLS tool asks you how much of your data you want to turn into testing data. Keep in mind that you do not want to get rid of too much data as to make your regression model really weak, but you also do not want to overtrain and leave yourself with nothing for which to test. Our grader for this lesson takes into account how much data you used for testing, so keep that in mind when deciding. Your goal is to reduce the mean squared error of the residuals of the test data matched against your trained regression model. You also get to decide which evaluation method you want to use for your model. This does not matter so much for this lesson because we are grading you based upon the percentage you enter. For your own knowledge, though, 10-fold cross validation divides the data into ten segments and evaluates your model based upon 10% of the data and Leave-One-Out cross validation leaves on test point out to evaluate your regression model. These evaluation techniques run multiple times to reinforce your model's strength.</p>
+						<form target="_blank" action="http://learn2mine-server:8081"> <!-- LINKS TO GALAXY -->
+						    <input type="submit" value="Try Our PLS Lesson">
+						</form>
+
+						<p>More information on our PLS implementation available <a href="http://www.jstatsoft.org/v18/i02/paper" target="_blank">here</a></p>
+					</div>
+				</div>
+			</div>
+			<div id="lesson-10">
+				<div class="accordion">
+					<h3>
+						<a href="#">What Are Neural Networks?</a>
+					</h3>
+					<div>
+						<p>Oftentimes referred to as a Multi-Layer Perceptron, Neural Networks (NN) are used in order to predict a response variable from given features. Unlike regression, however, NNs use a very unique method of evaluating the predictors. Some NNs are written in such a way that class labels (commonly represented by 0's, 1's, etc.) are output from a series of calculations, while other NNs may be used to predict a real, continuous value.<br /><br />The predictors are broken up into individual predictor variables and are fed into the NN as input. These inputs are fed into what are referred to as 'nodes' and then they progress through the NN, being fed through more nodes until the output, or outputs, is reached. For example, an input is </p>
+					</div>
+
+					
+					<h3>
+						<a href="#">Neural Network Terminology</a>
+					</h3>
+					<div>
+						<p><b>Hidden Layers</b>: 
+						<br /><b>Repetitions</b>:
+						<br /><b>Activation Function</b>: </p>
+					</div>
+					<h3>
+						<a href="#">Behind The Scenes</a>
+					</h3>
+					<div>
+						<p><b>Back-Propagation</b>:
+						<br /><b>Forward-Propagation</b>: </p>
+					</div>
+					<h3>
+						<a href="#">Lesson</a>
+					</h3>
+					<div>
+						<p>Dataset Required: <a href="datasets/Basketball.csv">Basketball Dataset</a><br />
+						For this lesson, we want you to predict the amount of shots that a basketball player makes per minute, based upon a player's assists per minute, height (in cm), age, and time played. We are providing you with a full dataset. Our NN tool will utilize of the data for training your NN and then it will evaluate itself by running the training data through it again. Something that should bother you at this point is the fact that a minimal error could very easily be the result of your NN being overtrained. This is a very important thing to consider whenever making your NNs. Remember that more hidden layers and nodes tends to create a NN that is more closely tied to the training data. When you input your hidden layers in our tool, we are expecting comma-separated values. For example: 4,2,3 would represent 3 hidden layers with 4 nodes, 2 nodes, and 3 nodes (not including the bias node), respectively.</p>
+						<form target="_blank" action="http://learn2mine-server:8081"> <!-- LINKS TO GALAXY -->
+						    <input type="submit" value="Try Our NN Lesson">
+						</form>
+						<p>More information on our NN implementation available <a href="http://cran.r-project.org/web/packages/neuralnet/neuralnet.pdf" target="_blank">here</a></p>
+					</div>
+				</div>
+			</div>
+			<div id="lesson-11">
+				<div class="accordion">
+					<h3>
+						<a href="#">What Is Hierarchical Clustering?</a>
+					</h3>
+					<div>
+						<p></p>
+					</div>
+					<h3>
+						<a href="#">Efficiency</a>
+					</h3>
+					<div>
+						<p></p>
+					</div>
+					<h3>
+						<a href="#">Lesson</a>
+					</h3>
+					<div>
+					</div>
+					
+				</div>
+			</div>
+			
+			<div id="lesson-12">
+				<div class="accordion">
+					<h3>
+						<a href="#">What Are Decision Trees?</a>
+					</h3>
+					<div>
+						<p></p>
+					</div>
+					<h3>
+						<a href="#">Efficiency</a>
+					</h3>
+					<div>
+						<p></p>
+					</div>
+					<h3>
+						<a href="#">Lesson</a>
+					</h3>
+					<div>
+						
+					</div>
+				</div>
+			</div>
+			<div id="lesson-13">
+				<div class="accordion">
+					<h3>
+						<a href="#">What Are Random Forests?</a>
+					</h3>
+					<div>
+						<p></p>
+					</div>
+					<h3>
+						<a href="#">Efficiency</a>
+					</h3>
+					<div>
+						<p></p>
+					</div>
+					<h3>
+						<a href="#">Lesson</a>
+					</h3>
+					<div>
+						
+					</div>
+				</div>
+			</div>
+			<div id="lesson-14">
+				<div class="accordion">
+					<h3>
+						<a href="#">What Is Cross-Validation?</a>
+					</h3>
+					<div>
+						<p></p>
+					</div>
+					<h3>
+						<a href="#">Folds</a>
+					</h3>
+					<div>
+						<p></p>
+					</div>
+					<h3>
+						<a href="#">Leave One Out</a>
+					</h3>
+					<div>
+						<p></p>
+					</div>
+					<h3>
+						<a href="#">Lesson</a>
+					</h3>
+					<div>
+						
+					</div>
+				</div>
+			</div>
+			<div id="lesson-15"></div>
+
+		</div>
+	</div>
+
+	<div id="pageslide" style="left: auto; display: block; right: 0px;">
+		<div id="modal">
+			
+			<h1>
+				<u>Lessons</u>
+			</h1>
+			
+		</div>
+	</div>
+
+	<script>
+    $(".second").pageslide({ direction: "left", modal: true });
+</script>
+	<script>
+		$(function() {
+			$(".accordion").accordion({
+				event : "click"
+			});
+		});
+         $( ".accordion" ).accordion({ heightStyle: "content", autoHeight: false, clearStyle: true,
+});
+	</script>
+	<script>
+		$(function() {
+			$("#tabs-left").tabs().find(".ui-tabs-nav");
+		});
+	</script>
+	<script>
+		$(document).ready(function() {
+			$("#selector").tabs({
+				cookie : {
+					name : 'tab_cookie',
+					expires : 365
+				}
+			});
+			$(".ui-tabs-nav, .ui-tabs-nav > *")
+
+		});
+	</script>
+	
+</body>

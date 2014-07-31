@@ -1,0 +1,15 @@
+{
+	"uid":"000000",
+	"recipient": {
+		"type":"email",
+		"hashed": false,
+		"identity": "zigabawhat2@gmail.com"
+	},
+	"image":"http://learn2mine.appspot.com/images/knnMastery.png",
+	"badge":"http://learn2mine.appspot.com/badges/knnMastery.json",
+	"issuedOn":1359217910,
+	"verify": {
+		"type":"hosted",
+		"url": "http://learn2mine.appspot.com/badges/yourKnnMastery.json"
+	}
+}
