@@ -1,0 +1,8 @@
+{
+   "name": "Artificial Intelligence Mastery Badge",
+   "description": "For completing the Artificial Intelligence Lessons of Learn2Mine",
+   "image": "http://learn2mine.appspot.com/images/aiMastery.png",
+   "criteria": "http://learn2mine.appspot.com/Home",
+   "tags": ["aritifical", "intelligence","mastery"],
+   "issuer": "http://learn2mine.appspot.com/badges/organization.json"
+}

@@ -1,0 +1,15 @@
+{
+   "uid":"830537274033755553681",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "pkbrewer@g.cofc.edu"
+   },
+   "image":"http://learn2mine.appspot.com/images/loopsMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/loopsMastery.json",
+   "issuedOn":1382748278,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/pkbrewerloopsMastery.json"
+   }
+}

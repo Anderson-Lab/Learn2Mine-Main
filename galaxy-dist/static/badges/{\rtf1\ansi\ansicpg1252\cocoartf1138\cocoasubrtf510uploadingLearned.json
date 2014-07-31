@@ -1,0 +1,16 @@
+{
+   "uid":"{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fnil\fcharset0 Monaco;}
+",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "{\rtf1\ansi\ansicpg1252\cocoartf1138\cocoasubrtf510"
+   },
+   "image":"http://learn2mine.appspot.com/images/uploadingLearned.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/uploadingLearned.json",
+   "issuedOn":1378311234,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/{\rtf1\ansi\ansicpg1252\cocoartf1138\cocoasubrtf510uploadingMastery.json"
+   }
+}

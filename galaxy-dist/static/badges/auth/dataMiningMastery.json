@@ -1,0 +1,8 @@
+{
+   "name": "Data Mining Mastery Badge",
+   "description": "For completing the Data Mining Lessons of Learn2Mine",
+   "image": "http://learn2mine.appspot.com/images/dataMiningMastery.png",
+   "criteria": "http://learn2mine.appspot.com/Home",
+   "tags": ["data", "mining","mastery"],
+   "issuer": "http://learn2mine.appspot.com/badges/organization.json"
+}

@@ -1,0 +1,8 @@
+{
+   "name": "k-Fold CV Mastery Badge",
+   "description": "For mastering the k-Fold Cross Validation Method",
+   "image": "http://learn2mine.appspot.com/images/kFoldMastery.png",
+   "criteria": "http://learn2mine.appspot.com/Home",
+   "tags": ["k-Fold", "mastery"],
+   "issuer": "http://learn2mine.appspot.com/badges/organization.json"
+}

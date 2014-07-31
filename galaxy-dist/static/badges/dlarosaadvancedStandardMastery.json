@@ -1,0 +1,15 @@
+{
+   "uid":"714835028535724920817",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "dlarosa@g.cofc.edu"
+   },
+   "image":"http://learn2mine.appspot.com/images/advancedStandardMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/advancedStandardMastery.json",
+   "issuedOn":1381342558,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/dlarosaadvancedStandardMastery.json"
+   }
+}

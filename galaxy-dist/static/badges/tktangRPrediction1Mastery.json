@@ -1,0 +1,15 @@
+{
+   "uid":"983114671435104747571",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "tktang@g.cofc.edu"
+   },
+   "image":"http://learn2mine.appspot.com/images/RPrediction1Mastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/RPrediction1Mastery.json",
+   "issuedOn":1380034777,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/tktangRPrediction1Mastery.json"
+   }
+}

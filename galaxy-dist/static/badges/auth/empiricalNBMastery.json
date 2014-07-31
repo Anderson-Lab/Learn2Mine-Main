@@ -1,0 +1,8 @@
+{
+   "name": "Empirical Naive Bayes Badge",
+   "description": "For mastering the Empirical Naive Bayes Algorithm",
+   "image": "http://learn2mine.appspot.com/images/empiricalNBMastery.png",
+   "criteria": "http://learn2mine.appspot.com/Home",
+   "tags": ["bayes","naive", "empirical", "mastery"],
+   "issuer": "http://learn2mine.appspot.com/badges/organization.json"
+}

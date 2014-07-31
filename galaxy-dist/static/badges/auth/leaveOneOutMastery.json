@@ -1,0 +1,8 @@
+{
+   "name": "Leave-One-Out CV Mastery Badge",
+   "description": "For mastering the Leave-One-Out Cross Validation Method",
+   "image": "http://learn2mine.appspot.com/images/leaveOneOutMastery.png",
+   "criteria": "http://learn2mine.appspot.com/Home",
+   "tags": ["LOO", "mastery"],
+   "issuer": "http://learn2mine.appspot.com/badges/organization.json"
+}

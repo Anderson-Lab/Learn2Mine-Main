@@ -1,0 +1,15 @@
+{
+   "uid":"116588519352488498551",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "maranbg@g.cofc.edu"
+   },
+   "image":"http://learn2mine.appspot.com/images/simulatedTraderMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/simulatedTraderMastery.json",
+   "issuedOn":1386697845,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/maranbgsimulatedTraderMastery.json"
+   }
+}

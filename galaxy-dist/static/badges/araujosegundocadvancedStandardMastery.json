@@ -1,0 +1,15 @@
+{
+   "uid":"966860895301435633183",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "araujosegundoc@g.cofc.edu"
+   },
+   "image":"http://learn2mine.appspot.com/images/advancedStandardMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/advancedStandardMastery.json",
+   "issuedOn":1381042366,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/araujosegundocadvancedStandardMastery.json"
+   }
+}

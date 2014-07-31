@@ -1,0 +1,15 @@
+{
+   "uid":"511287564402168456719",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "redelea@g.cofc.edu"
+   },
+   "image":"http://learn2mine.appspot.com/images/uploadingLearned.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/uploadingLearned.json",
+   "issuedOn":1377182433,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/redeleauploadingMastery.json"
+   }
+}

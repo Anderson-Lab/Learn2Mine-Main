@@ -1,0 +1,40 @@
+1)
+[1] 1524545
+2)
+[1]  1 -4 -3  5
+3)
+[1]  8 12 20 -6
+4)
+f
+CITA CSCI DATA 
+   1    5    3
+5)
+ [1]  1  4  7 10 13 16 19 22 25 28
+[11] 31 34 37 40 43 46 49 52 55 58
+[21] 61 64 67
+6)
+[1] 105 156
+7)
+[1] 1 6
+8)
+     [,1] [,2]
+[1,]  105  400
+[2,]   56 -105
+[3,]  303  156
+9)
+[1] "Paul"   "Edward" "Mike"
+10)
+  students grades
+1     Paul      A
+2   Edward      B
+3     Mike      F
+11)
+  students grades
+1     Paul      A
+2   Edward      B
+3     Mike      D
+12)
+  Students Grades
+1     Paul      A
+2   Edward      B
+3     Mike      D

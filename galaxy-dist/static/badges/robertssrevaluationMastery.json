@@ -1,0 +1,15 @@
+{
+   "uid":"485765587986513311365",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "robertssr@g.cofc.edu"
+   },
+   "image":"http://learn2mine.appspot.com/images/evaluationMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/evaluationMastery.json",
+   "issuedOn":1385427580,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/robertssrevaluationMastery.json"
+   }
+}

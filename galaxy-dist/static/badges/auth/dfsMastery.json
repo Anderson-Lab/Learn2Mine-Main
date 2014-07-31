@@ -1,0 +1,8 @@
+{
+   "name": "DFS Mastery Badge",
+   "description": "For completing the DFS Lesson of Learn2Mine",
+   "image": "http://learn2mine.appspot.com/images/dfsMastery.png",
+   "criteria": "http://learn2mine.appspot.com/Home",
+   "tags": ["dfs","mastery"],
+   "issuer": "http://learn2mine.appspot.com/badges/organization.json"
+}

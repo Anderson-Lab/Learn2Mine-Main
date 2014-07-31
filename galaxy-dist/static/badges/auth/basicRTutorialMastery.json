@@ -1,0 +1,8 @@
+{
+   "name": "Basic R Tutorial",
+   "description": "completing the basic R Tutorial on Learn2Mine",
+   "image": "http://learn2mine.appspot.com/images/basicRTutorialMastery.png",
+   "criteria": "http://learn2mine.appspot.com/Home",
+   "tags": ["tutorial", "basic"],
+   "issuer": "http://learn2mine.appspot.com/badges/organization.json"
+}

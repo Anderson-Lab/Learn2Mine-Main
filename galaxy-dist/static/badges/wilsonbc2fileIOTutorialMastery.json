@@ -1,0 +1,15 @@
+{
+   "uid":"wilsonbc2@g.cofc.edu",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "wilsonbc2@g.cofc.edu"
+   },
+   "image":"http://learn2mine.appspot.com/images/fileIOTutorialMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/fileIOTutorialMastery.json",
+   "issuedOn":1395191673,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/wilsonbc2fileIOTutorialMastery.json"
+   }
+}

@@ -1,0 +1,15 @@
+{
+   "uid":"830537274033755553681",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "pkbrewer@g.cofc.edu"
+   },
+   "image":"http://learn2mine.appspot.com/images/advancedStandardMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/advancedStandardMastery.json",
+   "issuedOn":1381021706,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/pkbreweradvancedStandardMastery.json"
+   }
+}

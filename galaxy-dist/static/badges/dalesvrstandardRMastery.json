@@ -1,0 +1,15 @@
+{
+   "uid":"205443662594482691862",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "dalesvr@g.cofc.edu"
+   },
+   "image":"http://learn2mine.appspot.com/images/standardRMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/standardRMastery.json",
+   "issuedOn":1378322796,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/dalesvrstandardRMastery.json"
+   }
+}

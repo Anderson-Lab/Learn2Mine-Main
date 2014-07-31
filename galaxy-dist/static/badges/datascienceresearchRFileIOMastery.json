@@ -1,0 +1,15 @@
+{
+   "uid":"datascienceresearch@gmail.com",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "datascienceresearch@gmail.com"
+   },
+   "image":"http://learn2mine.appspot.com/images/RFileIOMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/RFileIOMastery.json",
+   "issuedOn":1395163644,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/datascienceresearchRFileIOMastery.json"
+   }
+}

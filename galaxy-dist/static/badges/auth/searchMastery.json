@@ -1,0 +1,8 @@
+{
+   "name": "Search Mastery Badge",
+   "description": "For completing the Search Lesson of Learn2Mine",
+   "image": "http://learn2mine.appspot.com/images/searchMastery.png",
+   "criteria": "http://learn2mine.appspot.com/Home",
+   "tags": ["search","mastery"],
+   "issuer": "http://learn2mine.appspot.com/badges/organization.json"
+}

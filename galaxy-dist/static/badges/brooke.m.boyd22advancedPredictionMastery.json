@@ -1,0 +1,15 @@
+{
+   "uid":"916697031499902506174",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "brooke.m.boyd22@gmail.com"
+   },
+   "image":"http://learn2mine.appspot.com/images/advancedPredictionMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/advancedPredictionMastery.json",
+   "issuedOn":1381435000,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/brooke.m.boyd22advancedPredictionMastery.json"
+   }
+}

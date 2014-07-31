@@ -1,0 +1,8 @@
+{
+   "name": "UCS Mastery Badge",
+   "description": "For completing the UCS Lesson of Learn2Mine",
+   "image": "http://learn2mine.appspot.com/images/ucsMastery.png",
+   "criteria": "http://learn2mine.appspot.com/Home",
+   "tags": ["ucs","mastery"],
+   "issuer": "http://learn2mine.appspot.com/badges/organization.json"
+}

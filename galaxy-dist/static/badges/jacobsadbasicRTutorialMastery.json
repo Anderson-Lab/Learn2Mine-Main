@@ -1,0 +1,15 @@
+{
+   "uid":"jacobsad@g.cofc.edu",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "jacobsad@g.cofc.edu"
+   },
+   "image":"http://learn2mine.appspot.com/images/basicRTutorialMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/basicRTutorialMastery.json",
+   "issuedOn":1395327560,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/jacobsadbasicRTutorialMastery.json"
+   }
+}

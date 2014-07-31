@@ -1,0 +1,15 @@
+{
+   "uid":"774274761435625288241",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "zigabawhat@gmail.com"
+   },
+   "image":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/images/standardRMastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/standardRMastery.json",
+   "issuedOn":1377122776,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/zigabawhatstandardRMastery.json"
+   }
+}

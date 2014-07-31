@@ -1,0 +1,15 @@
+{
+   "uid":"660664737791643426699",
+   "recipient": {
+      "type":"email",
+      "hashed": false,
+      "identity": "fluetteka@g.cofc.edu"
+   },
+   "image":"http://learn2mine.appspot.com/images/RPrediction1Mastery.png",
+   "badge":"http://portal.cs.cofc.edu/learn2mine/static/badges/auth/RPrediction1Mastery.json",
+   "issuedOn":1380111858,
+   "verify": {
+      "type":"hosted",
+      "url": "http://portal.cs.cofc.edu/learn2mine/static/badges/fluettekaRPrediction1Mastery.json"
+   }
+}
