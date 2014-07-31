@@ -9,7 +9,7 @@ import time
 import subprocess
 import difflib
 
-# usage: $html_file' '$initializationCode' '$finalizationCode' '$instructorCode' '$badgeName' '$other'
+# usage: $html_file' '$other'
 
 # fix the strings in argv
 replaceList = ['__at__','__cr__','__cn__','__ob__','__cb__','__dq__','__sq__','__as__','__ds__','__oc__','__cc__','__lt__','__gt__','__pd__','__fs__','__bs__','__ti__','__pe__','__sc__','__vb__']
@@ -21,12 +21,12 @@ for j in range(len(sys.argv)):
 	sys.argv[j] = results
 
 htmlfile = sys.argv[1]
-initCode = sys.argv[2]
-finalCode = sys.argv[3]
-insCode = sys.argv[4]
-language = sys.argv[5]
-badgeName = sys.argv[6]
-other = json.loads(sys.argv[7])
+other = json.loads(sys.argv[2])
+initCode = other['initializationCode']
+finalCode = other['finalizationCode']
+insCode = other['instructorCode']
+language = other['language']
+badgeName = other['badgeName']
 stuCode = other['studentCode']
 email = other['email']
 
