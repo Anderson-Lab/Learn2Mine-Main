@@ -12,7 +12,7 @@ __pycache__/
 #build/
 #develop-eggs/
 #dist/
-#eggs/
+eggs/
 #lib/
 #lib64/
 #parts/
@@ -53,3 +53,7 @@ coverage.xml
 docs/_build/
 
 universe_wsgi.ini
+
+database/
+tmp
+compiled_templates
