@@ -1,16 +1,8 @@
 <tool id="gradeCode" name="Grade Code">
   <description>Grade code specified by the student by comparing standard out</description>
-  <command interpreter="python">gradeCode.py '$html_file' '$initializationCode' '$finalizationCode' '$instructorCode' '$language' '$badgeName' '$other'</command>
+  <command interpreter="python">gradeCode.py '$html_file' '$other'</command>
  <inputs>
-    <param name="initializationCode" type= "text" area="True" size="10x100" label="Initialization Code"/>
-    <param name="finalizationCode" type="text" area="True" size="10x100" label="Finalization Code"/>
-    <param name="instructorCode" type="text" area="True" size="10x100" label="Instructor Code"/>
-    <param name="language" type="select" label="Select Language to Grade">
-	<option value="python27">Python 2.7</option>
-	<option value="R">R</option>
-    </param>
-    <param name="badgeName" type="text" area="True" size="1x100" value="None" label="Badge Name"/>
-    <param name="other" type="text" area="True" size="20x100" value='{"email": "a@b.com", "studentCode": "a=1"}' label="Other Parameters"/>
+    <param name="other" type="text" area="True" size="20x100" value='{"badgeName": "None", "language": "python27|R", "instructorCode": "", "finalizationCode": "", "initializationCode": "", "email": "a@b.com", "studentCode": "a=1"}' label="Other Parameters"/>
     <!--kdkd -->
   </inputs>
   <outputs>
