@@ -30,18 +30,17 @@ function updateProgressBar(problemNumber) {
 		value: experience,
 	});
 };
-	function grade(index,workflow_id,hist_id) {
+	function grade(index) {
 		//code = $('.answer').val();
 		code = $('.answer'+index).val();
-		//email = '{{user}}';
-		email = 'nashtf@g.cofc.edu';
-		//workflow_id = "f2db41e1fa331b3e";
-		//hist_id = "e89067bb68bee7a0";
+		email = '{{user}}';
+		language = "python";
+		page = "kmeans";
 		try {
 		$.ajax({
 			url: '/OnsiteGrader',
 			type: 'POST',
-			data: {code:code,email:email,workflow_id:workflow_id,hist_id:hist_id},
+			data: {code:code,language:language,page:page},
 			success: function(outputid){
 				//alert("HTTP 200 Returned");
 				$(".results"+index).css('display','inline');
@@ -136,7 +135,7 @@ function updateProgressBar(problemNumber) {
 				{{reminder}}
 			</p>
 			<p>
-				<form method="post" id="gradeform" action="http://portal.cs.cofc.edu/learn2mine">
+				<form method="post" id="gradeform" action="http://localhost:8081/learn2mine">
 				<ol>
 					{% for i in range(problems|length) %}
 					<script type="text/javascript">
@@ -146,10 +145,10 @@ function updateProgressBar(problemNumber) {
 						<textarea class="answer{{ loop.index }}" cols="50" rows="5" placeholder="Enter code or answer here"></textarea>
 						<br>
                                                 {%- if workflow_ids_R|length > 0  -%}
-						  <input type="button" value="Grade R Code" onclick="grade({{ loop.index }},'{{workflow_ids_R[i]}}','a799d38679e985db')"/>
+						<input type="button" value="Grade R Code" onclick="grade({{ loop.index }})"/>
                                                 {%- endif %}
                                                 {%- if workflow_ids_python27|length > 0  -%}
-						<input type="button" value="Grade Python Code" onclick="grade({{ loop.index }},'{{workflow_ids_python27[i]}}','a799d38679e985db')"/>
+						<input type="button" value="Grade Python Code" onclick="grade({{ loop.index }})"/>
                                                 {%- endif %}
 						<p>
 						<div class="outputid{{ loop.index }}">No submission</div>
