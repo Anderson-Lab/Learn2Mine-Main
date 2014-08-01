@@ -52,6 +52,8 @@ if language == "python27":
 	interp = "python"
 elif language == "R":
 	interp = "Rscript"
+else:
+	interp = "python"
 
 cmd = [interp,"student.file"]
 print " ".join(cmd)

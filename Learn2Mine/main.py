@@ -489,13 +489,12 @@ class DMLessonHandler(webapp2.RequestHandler):
         useremail = users.get_current_user()
         template = JINJA_ENVIRONMENT.get_template('DMLesson.html')
         page = self.request.get("page")
-        template_values = dmWriter.getLesson(page)
-#        q = UsermadeLesson.query()
-#        query = q.filter(UsermadeLesson.name == page).fetch(1)
-#	if len(query) > 0:
-#            template_values = { 'user':useremail, 'problems':query.problems,'paragraph':query.paragraph,'header':query.header,'reminder':query.reminder }
-#        else:
-#            template_values = {}
+        q = UsermadeLesson.query()
+        query = q.filter(UsermadeLesson.name == page).fetch(1)
+	if len(query) > 0:
+            template_values = { 'user':useremail, 'problems':query[0].problems,'paragraph':query[0].paragraph,'header':query[0].header,'reminder':query[0].reminder }
+        else:
+            template_values = {}
         self.response.write(template.render(template_values))
 
 class TutorialProfileHandler(webapp2.RequestHandler):
@@ -534,43 +533,91 @@ class WelcomeHandler(webapp2.RequestHandler):
         template = JINJA_ENVIRONMENT.get_template('Welcome.html')
 	self.response.write(template.render())
 
+
 class GradingHandler(webapp2.RequestHandler):
 	def post(self):
-		code = self.request.get("code")
-		email = self.request.get("email")
-		hist_id = self.request.get("hist_id")
-		workflow_id = self.request.get("workflow_id")
-		user_query = db.Query(User)
-		user_query.filter('EMAIL =', email)        
-		user = user_query.get()
+		studentCode = self.request.get("code")
+		email = str(users.get_current_user())
+		query = UsermadeLesson.query()
+		thisLesson = query.filter(UsermadeLesson.name == self.request.get("page")).fetch(1)[0]
+		language = self.request.get("language")
+		if language == "":
+			language="python"
+		if language == "python":
+			instructCode = thisLesson.pythonInstruct[0]
+			initCode = thisLesson.pythonInit[0]
+			finalCode = thisLesson.pythonFinal[0]
+		elif language == "rcode":
+			instructCode = thisLesson.rcodeInstruct
+			initCode = thisLesson.rcodeInit
+			finalCode = thisLesson.rcodeFinal
+		else:
+			instructCode = thisLesson.pythonInstruct[0]
+			initCode = thisLesson.pythonInit[0]
+			finalCode = thisLesson.pythonFinal[0]
+
+		galaxy = GalaxyInsance()
+		galaxy.api_key = "2562b8f5fe6886e3490254cd1965d261"
+		galaxy.url = "http://127.0.0.1:8081/api/"
+		galaxy.workflow_id = "8237ee2988567c1c"
+		galaxy.put()
 		# Now we make a galaxy api call
 		# This call will grade the student's work
 		# We should get an id back from the galaxy api call
-		api_key = "16f0632a174c3615588f17f402b5e7c2"
-		url = "http://localhost:8081/api/workflows/"
 
-		hist_id = self.request.get("history")
-		workflow_id = self.request.get("workflow_id")
-		hist_id="0b05a232e89ad8e8"
-		other=json.dumps({"email":email,"studentCode":code})
-                print "\n\nOther:",other
-#		results = workflow_execute_parameters(api_key,url,workflow_id,"hist_id="+hist_id,"param=gradeCode=other="+other)
-		results = workflow_execute_parameters(api_key,url,workflow_id,"param=gradeCode=other="+other)
-
-                print "\n\nResults",results
+		other=json.dumps({"email":email,"studentCode":studentCode, "instructorCode":instructCode, "initializationCode":initCode, "finalizationCode":finalCode, "language":language, "badgeName":""})
+		results = workflow_execute_parameters(api_key,url,workflow_id,historyid,"param=gradeCode=other="+other)
 		outputid = results['outputs'][0]
-		self.response.write(outputid)
+		hist_id = results['history'][0]
+		self.response.write(outputid,hist_id)
 
 	def get(self):
 		outputid = self.request.get("outputid")
 		hist_id = self.request.get("hist_id")
-		hist_id="a7e42332dab8f5db"
-		outputid="a21c530ff78f8d17"
-                print "\n\n",outputid
-                print "\n\n",hist_id
 		url = "http://localhost:8081/api/histories/"+hist_id+"/contents/"+outputid+"/display"
-		results = display_result("16f0632a174c3615588f17f402b5e7c2",url)
+		results = display_result("2562b8f5fe6886e3490254cd1965d261",url)
 		self.response.write(json.dumps(results))
+
+"""
+#class GradingHandler(webapp2.RequestHandler):
+#	def post(self):
+#		code = self.request.get("code")
+#		email = self.request.get("email")
+#		hist_id = self.request.get("hist_id")
+#		workflow_id = self.request.get("workflow_id")
+#		user_query = db.Query(User)
+#		user_query.filter('EMAIL =', email)        
+#		user = user_query.get()
+#		# Now we make a galaxy api call
+#		# This call will grade the student's work
+#		# We should get an id back from the galaxy api call
+#		api_key = "16f0632a174c3615588f17f402b5e7c2"
+#		url = "http://localhost:8081/api/workflows/"
+#
+#		hist_id = self.request.get("history")
+#		workflow_id = self.request.get("workflow_id")
+#		hist_id="0b05a232e89ad8e8"
+#		print "\n\n",code
+#		other=json.dumps({"email":email,"studentCode":code})
+#               print "\n\nOther:",other
+#		results = workflow_execute_parameters(api_key,url,workflow_id,"hist_id="+hist_id,"param=gradeCode=other="+other)
+#		results = workflow_execute_parameters(api_key,url,workflow_id,"param=gradeCode=other="+other)
+#
+#               print "\n\nResults",results
+#		outputid = results['outputs'][0]
+#		self.response.write(outputid)
+#
+#	def get(self):
+#		outputid = self.request.get("outputid")
+#		hist_id = self.request.get("hist_id")
+#		hist_id="a7e42332dab8f5db"
+#		outputid="a21c530ff78f8d17"
+#                print "\n\n",outputid
+#                print "\n\n",hist_id
+#		url = "http://localhost:8081/api/histories/"+hist_id+"/contents/"+outputid+"/display"
+#		results = display_result("16f0632a174c3615588f17f402b5e7c2",url)
+#		self.response.write(json.dumps(results))
+"""
 
 class GradeHandler(webapp2.RequestHandler):
 	@decorator.oauth_required
@@ -597,6 +644,13 @@ class GradeHandler(webapp2.RequestHandler):
 				
 		template_values = {'user':useremail, 'gradeHTML':gradeHTML}
 		self.response.write(template.render(template_values))
+
+class GalaxyParams(ndb.Model):
+    """Models an individual User Lesson entry with author, content, and date."""
+
+    url = ndb.StringProperty(indexed=True)
+    api_key = ndb.StringProperty(indexed=True)
+    workflow_id = ndb.StringProperty(repeated=True)
 
 class UsermadeLesson(ndb.Model):
     """Models an individual User Lesson entry with author, content, and date."""
