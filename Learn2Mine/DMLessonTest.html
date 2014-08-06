@@ -12,10 +12,12 @@
 <script type="text/javascript" SRC="./Javascript/jquery.js"></script>
 <script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
 <script type="text/javascript">
+/*
+function updateProgressBar(problemNumber) {
+
 var correct = 0;
 var totalProblems = 0;
 var problemsCorrect = new Array();
-function updateProgressBar(problemNumber) {
 	if(problemNumber == totalProblems){
 		var experience = 100;
 	}
@@ -27,39 +29,13 @@ function updateProgressBar(problemNumber) {
 		}
 	}
 	$( "#progressbar" ).progressbar({
-		value: experience,
+		value: {{exp}},
 	});
+
 };
-	function grade(index) {
-		//code = $('.answer').val();
-		code = $('.answer'+index).val();
-		email = '{{user}}';
-		language = "python";
-		page = "kmeans";
-		try {
-		$.ajax({
-			url: '/OnsiteGrader',
-			type: 'POST',
-			data: {code:code,language:language,page:page},
-			success: function(outputid){
-				//alert("HTTP 200 Returned");
-				$(".results"+index).css('display','inline');
-				$(".refresh"+index).css('display','inline');
-				$(".outputid"+index).html(outputid); // This populates the result
-				$(".results"+index).val("Click refresh to see the results");
-			},
-			failure: function(response){
-				alert("An error occurred when sending results and your work was not graded. Contact us if this problem persists.");
-			}
-		})//.done(alert("done"+code.val()));
-		} catch (error) {
-		        $(".outputid"+index).html("An error occurred. Please try again later.");
-		}
-	}
 
 	function refresh(index,hist_id) {
                 outputid = $(".outputid"+index).html();
-               	//hist_id = "e89067bb68bee7a0";
 		$.ajax({
 			url: '/OnsiteGrader',
 			type: 'GET',
@@ -100,6 +76,12 @@ function updateProgressBar(problemNumber) {
     	value: 0
     });
   });
+*/
+$(function() {
+$( "#progressbar" ).progressbar({
+value: {{ exp }}
+});
+});
 </script>
 
 </head>
@@ -120,7 +102,7 @@ function updateProgressBar(problemNumber) {
 		</ul>
 		<div class="loggedin">{{user}}</div>
 	</div>
-
+        {% if errorCatch != "yes" %} 
 	<div class="container" id="tutorialText">
 		<h2>{{header}}</h2>
 		<div id="tutorialText">
@@ -132,36 +114,56 @@ function updateProgressBar(problemNumber) {
 			</p>
 			<div id="progressbar"></div><div id="progress-label">XP</div>
 			<p>
-				Enter your code in the box provided if the answer is not correct, the difference between the answer produces by running the correct solution and yours will be shown.
+                                Enter your code in the box provided if the answer is not correct, the difference between the answer produces by running the correct solution and yours will be shown.
 			</p>
 			<p>
-				<form method="post" id="gradeform" action="http://localhost:8081/learn2mine">
 				<ol>
-					{% for i in range(problems|length) %}
-					<script type="text/javascript">
-						totalProblems += 1;
-					</script>
-						<li>{{problems[i]}}</li>
-						<textarea class="answer{{ loop.index }}" cols="50" rows="5" placeholder="Enter code or answer here"></textarea>
-						<br>
-                                                {%- if workflow_ids_R|length > 0  -%}
-						<input type="button" value="Grade R Code" onclick="grade({{ loop.index }})"/>
-                                                {%- endif %}
-                                                {%- if workflow_ids_python27|length > 0  -%}
-						<input type="button" value="Grade Python Code" onclick="grade({{ loop.index }})"/>
-                                                {%- endif %}
-						<p>
-						<div class="outputid{{ loop.index }}">No submission</div>
-						<br>
-					        <textarea class="results{{ loop.index }}" cols="50" rows="5" placeholder="Click refresh to see the results" style="display:none;"></textarea>
-					        <br>
-					        <input type="button" class="refresh{{ loop.index }}" value="Refresh" style="display:none;" onclick="refresh({{ loop.index }},'a799d38679e985db')"/>
-						<br>
-						<img src="" class="badge{{ loop.index }}" style="display:none;" >
+					{% for problem in problems %}
+						{% if result[loop.index0] == "Job running" %}
+							<form name="refreshResult" method="post" id="refreshResult" action="/RefreshGrade">
+							<input type="hidden" name="question" value="{{loop.index}}"/>
+							<input type="hidden" name="page" value="{{ page }}"/>
+							<li>{{ problem }}</li>
+							<textarea name="studentCode" class="answer{{ loop.index }}" cols="50" rows="5" placeholder="Enter code or answer here"></textarea>
+							<br>
+							<div class="outputid{{ loop.index }}">
+							Job is running, click below to refresh results
+							</div><br>
+							<input type="submit" value="Refresh results"><br><br>
+							</form>
+
+							<script type="text/javascript">
+							function submitRefresh() {
+								document.refreshResult.submit();
+							}
+							</script>
+						{% else %}
+							<form name="grade{{ loop.index }}" method="post" id="gradeform" action="/OnsiteGrader">
+							<input type="hidden" name="page" value="{{ page }}"/>
+							<input type="hidden" name="question" value="{{loop.index}}"/>
+							<li>{{ problem }}</li>
+							<textarea name="studentCode" class="answer{{ loop.index }}" cols="50" rows="5" placeholder="Enter code or answer here"></textarea>
+							<br>
+                                        	        {% if "rcode" in languages %}
+				                	<input type="submit" name="language" value="Grade R Code">
+	                                                {% endif  %}
+        	                                        {% if "python" in languages %}
+					                <input type="submit" name="language" value="Grade Python Code">
+                        	                        {% endif %}
+							<p>
+							<div class="outputid{{ loop.index }}">
+							{{ result[loop.index0] }}
+							</div><br><br>
+							</form>
+						{% endif %}
 					{% endfor %}
 				</ol>
 
-				</form>
+
+
+
+
+
 				<!--<form method="get" action="">
 					<input type="submit" value="Refresh" />
 					<br>-->
@@ -170,5 +172,10 @@ function updateProgressBar(problemNumber) {
 			</p>
 		</div>
 	</div>
+	{% else %}
+            <br><br>
+            <center><b>Error in accessing page. Either page does not exist or you do not have access.<br></b>
+            <br><br><br>
+	{% endif %}
 
 </body>
