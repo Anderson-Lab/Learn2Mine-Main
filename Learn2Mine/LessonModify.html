@@ -2,7 +2,7 @@
 {% autoescape true %}
 <html>
 <head>
-<meta http-equiv="refresh" content="30">
+<!--<meta http-equiv="refresh" content="30">-->
 </head>
 <link rel="shortcut icon" href="./images/l2m.ico">
 <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
@@ -130,9 +130,13 @@
 
 	Initialization Code - Code that is run before the student code<br>
 
-	Finalization Code - Code that is run after the student code<br>
+	Instructor Code - Code that is used to generate the answer<br>
 
-	Instructor Code - Code that is used to generate the answer<br><br><br>
+	Finalization Code - Code that is run after the student code<br><br><br>
+
+	NOTE: Line breaks in problem statements will be translated properly in HTML (no need for break tags). <br>
+	Other HTML tags can be used for bold, underline, etc. if so desired.<br><br><br>
+
 	<form action="/LessonModify" method="post" name="lessonModify">
 
 		Full Lesson Name: <input type="text" name=fullLesson value='{{ fullLesson }}'><br><br>

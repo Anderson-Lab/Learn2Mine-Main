@@ -41,7 +41,8 @@ def get( api_key, url ):
     except ValueError, e:
         print "URL did not return JSON data: %s" % e
 	print urllib2.urlopen( url ).read()
-        sys.exit(1)
+	return "Running"
+        #sys.exit(1)
 
 def get_raw( api_key, url ):
     """
