@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+from __future__ import division
 from galaxy_api import *
 from common import *
 import json
@@ -28,6 +28,7 @@ import skillTree
 import issueBadge
 
 # Python imports
+import fnmatch
 import os
 import cgi
 import urllib
@@ -487,14 +488,41 @@ class DMLessonHandler(webapp2.RequestHandler):
     @decorator.oauth_required
     def get(self):
         useremail = users.get_current_user()
-        template = JINJA_ENVIRONMENT.get_template('DMLesson.html')
+        template = JINJA_ENVIRONMENT.get_template('DMLessonTest.html')
         page = self.request.get("page")
         q = UsermadeLesson.query()
         query = q.filter(UsermadeLesson.name == page).fetch(1)
 	if len(query) > 0:
-            template_values = { 'user':useremail, 'problems':query[0].problems,'paragraph':query[0].paragraph,'header':query[0].header,'reminder':query[0].reminder }
+            thisLesson = query[0]
+            returnLanguages = []
+            if "Python" in thisLesson.languages:
+                returnLanguages.append("python")
+            if "R" in thisLesson.languages:
+                returnLanguages.append("rcode")
         else:
-            template_values = {}
+            template_values = {'user':useremail,'errorCatch':"yes"}
+            self.response.write(template.render(template_values))
+            return
+        existingUserLessonKey = User2Lesson.query().filter(User2Lesson.user == users.get_current_user()).filter(User2Lesson.lesson == page).fetch(1)
+        if not existingUserLessonKey:
+            userLesson = User2Lesson()
+            userLesson.python = [""] * len(thisLesson.problems)
+            userLesson.rcode = [""] * len(thisLesson.problems)
+            userLesson.user = users.get_current_user()
+            userLesson.historyId = [""] * len(thisLesson.problems)
+            userLesson.outputId = [""] * len(thisLesson.problems)
+            userLesson.lesson = page 
+            userLesson.experience = 0
+            userLesson.returnStatements = ["No submission"] * len(thisLesson.problems)
+            userLesson.put()
+        else:
+            userLesson = existingUserLessonKey[0]
+        returnVals = userLesson.returnStatements[:]
+        experience = userLesson.experience
+        printProblems = []
+        for problem in thisLesson.problems:
+           printProblems.append("<br />".join(problem.split("\n")))
+	template_values = { 'user':users.get_current_user(), 'problems':printProblems,'paragraph':thisLesson.paragraph,'header':thisLesson.header,'languages':returnLanguages, 'page':thisLesson.name, 'result':returnVals, 'exp':experience }
         self.response.write(template.render(template_values))
 
 class TutorialProfileHandler(webapp2.RequestHandler):
@@ -536,47 +564,79 @@ class WelcomeHandler(webapp2.RequestHandler):
 
 class GradingHandler(webapp2.RequestHandler):
 	def post(self):
-		studentCode = self.request.get("code")
+		studentCode = self.request.get("studentCode")
 		email = str(users.get_current_user())
 		query = UsermadeLesson.query()
 		thisLesson = query.filter(UsermadeLesson.name == self.request.get("page")).fetch(1)[0]
 		language = self.request.get("language")
-		if language == "":
-			language="python"
-		if language == "python":
-			instructCode = thisLesson.pythonInstruct[0]
-			initCode = thisLesson.pythonInit[0]
-			finalCode = thisLesson.pythonFinal[0]
-		elif language == "rcode":
-			instructCode = thisLesson.rcodeInstruct
-			initCode = thisLesson.rcodeInit
-			finalCode = thisLesson.rcodeFinal
-		else:
-			instructCode = thisLesson.pythonInstruct[0]
-			initCode = thisLesson.pythonInit[0]
-			finalCode = thisLesson.pythonFinal[0]
+		page = self.request.get("page")
+		problem = self.request.get("question")
+		if "Python Code" in language:
+			language = "python"
+			instructCode = thisLesson.pythonInstruct[int(problem)-1]
+			initCode = thisLesson.pythonInit[int(problem)-1]
+			finalCode = thisLesson.pythonFinal[int(problem)-1]
+		elif "R Code" in language:
+			language = "rcode"
+			instructCode = thisLesson.rcodeInstruct[int(problem)-1]
+			initCode = thisLesson.rcodeInit[int(problem)-1]
+			finalCode = thisLesson.rcodeFinal[int(problem)-1]
 
-		galaxy = GalaxyInsance()
-		galaxy.api_key = "2562b8f5fe6886e3490254cd1965d261"
-		galaxy.url = "http://127.0.0.1:8081/api/"
-		galaxy.workflow_id = "8237ee2988567c1c"
-		galaxy.put()
+		newQuery = GalaxyParams.query()
+		if not newQuery.fetch(1):
+			galaxy = GalaxyParams()
+			galaxy.api_key = "2562b8f5fe6886e3490254cd1965d261"
+			galaxy.url = "http://127.0.0.1:8081/api/"
+			galaxy.workflow_id = "8237ee2988567c1c"
+			galaxy.put()
+
 		# Now we make a galaxy api call
 		# This call will grade the student's work
 		# We should get an id back from the galaxy api call
 
-		other=json.dumps({"email":email,"studentCode":studentCode, "instructorCode":instructCode, "initializationCode":initCode, "finalizationCode":finalCode, "language":language, "badgeName":""})
-		results = workflow_execute_parameters(api_key,url,workflow_id,historyid,"param=gradeCode=other="+other)
-		outputid = results['outputs'][0]
-		hist_id = results['history'][0]
-		self.response.write(outputid,hist_id)
+		galaxyInstance = GalaxyParams.query().fetch(1)[0]
+		api_key = galaxyInstance.api_key
+		workflow_id = galaxyInstance.workflow_id
+		url = galaxyInstance.url
+		historyid = page
 
-	def get(self):
-		outputid = self.request.get("outputid")
-		hist_id = self.request.get("hist_id")
-		url = "http://localhost:8081/api/histories/"+hist_id+"/contents/"+outputid+"/display"
-		results = display_result("2562b8f5fe6886e3490254cd1965d261",url)
-		self.response.write(json.dumps(results))
+		other=json.dumps({"email":email,"studentCode":studentCode, "instructorCode":instructCode, "initializationCode":initCode, "finalizationCode":finalCode, "language":language, "badgeName":""})
+		results = workflow_execute_parameters(api_key,url+'workflows/',workflow_id,historyid,"param=gradeCode=other="+other)
+		outputid = results['outputs'][0]
+		hist_id = results['history']
+
+		userLesson = User2Lesson.query().filter(User2Lesson.user == users.get_current_user()).filter(User2Lesson.lesson == page).fetch(1)[0]
+
+		if language == "python":
+			userLesson.python[int(problem)-1] = studentCode
+		elif language == "rcode":
+			userLesson.rcode[int(problem)-1] = studentCode
+		userLesson.historyId[int(problem)-1] = hist_id
+		userLesson.outputId[int(problem)-1] = outputid
+		userLesson.put()
+                url = str(galaxyInstance.url) + "histories/" + hist_id + "/contents/" + outputid + "/display"
+		print "\n\nDisplaying Results"
+                results = display_result(galaxyInstance.api_key,url)
+		print "\n\nResults:",results
+		if results == "Running":
+			returnStatement = "Job running"
+		elif results['return'] == "correct":
+			returnStatement = "Congratulations! You've solved this problem."
+		elif results['return'] == "incorrect":
+			returnAdd = "<br />".join(results['difference_stdout'].split("\n"))
+			returnStatement = "The code you entered is incorrect.<br>The following shows what output correctly matched and what<br>output was different (shown using + and -) : <br>" + returnAdd
+		returnLanguages = []
+		if "Python" in thisLesson.languages:
+			returnLanguages.append("python")
+		if "R" in thisLesson.languages:
+			returnLanguages.append("rcode")
+		userLesson.returnStatements[int(problem)-1] = returnStatement
+		returnVals = userLesson.returnStatements[:]
+		experience = len(fnmatch.filter(returnVals,'Congratulations*'))/len(thisLesson.problems)
+		experience = experience*100
+		userLesson.experience = experience
+		userLesson.put()
+		self.redirect("/DMLessonTest?page="+page)
 
 """
 #class GradingHandler(webapp2.RequestHandler):
@@ -618,6 +678,32 @@ class GradingHandler(webapp2.RequestHandler):
 #		results = display_result("16f0632a174c3615588f17f402b5e7c2",url)
 #		self.response.write(json.dumps(results))
 """
+class GradeRefreshHandler(webapp2.RequestHandler):
+	@decorator.oauth_required
+	def post(self):
+		page = self.request.get("page")
+		problem = self.request.get("question")
+                userLesson = User2Lesson.query().filter(User2Lesson.user == users.get_current_user()).filter(User2Lesson.lesson == page).fetch(1)[0]		
+                galaxyInstance = GalaxyParams.query().fetch(1)[0]
+                thisLesson = UsermadeLesson.query().filter(UsermadeLesson.name == self.request.get("page")).fetch(1)[0]
+                hist_id = userLesson.historyId[int(problem)-1]
+                output_id = userLesson.outputId[int(problem)-1]
+                url = str(galaxyInstance.url) + "histories/" + hist_id + "/contents/" + output_id + "/display"
+                results = display_result(galaxyInstance.api_key,url)
+                if results == "Running":
+                        returnStatement = "Job running"
+                elif results['return'] == "correct":
+                        returnStatement = "Congratulations! You've solved this problem."
+                elif results['return'] == "incorrect":
+                        returnAdd = "<br />".join(results['difference_stdout'].split("\n"))
+                        returnStatement = "The code you entered is incorrect.<br>The following shows what output correctly matched and what<br>output was different (shown using + and -) : <br>" + returnAdd
+                userLesson.returnStatements[int(problem)-1] = returnStatement
+		returnVals = userLesson.returnStatements[:]   
+                experience = len(fnmatch.filter(returnVals,'Congratulations*'))/len(thisLesson.problems)
+                experience = experience*100
+                userLesson.experience = experience
+                userLesson.put()
+                self.redirect("/DMLessonTest?page="+page)
 
 class GradeHandler(webapp2.RequestHandler):
 	@decorator.oauth_required
@@ -650,7 +736,18 @@ class GalaxyParams(ndb.Model):
 
     url = ndb.StringProperty(indexed=True)
     api_key = ndb.StringProperty(indexed=True)
-    workflow_id = ndb.StringProperty(repeated=True)
+    workflow_id = ndb.StringProperty(indexed=True)
+
+class User2Lesson(ndb.Model):
+    user = ndb.UserProperty(indexed=True)
+    lesson = ndb.StringProperty(indexed=True)
+    historyId = ndb.StringProperty(repeated=True)
+    outputId = ndb.StringProperty(repeated=True)
+    experience = ndb.FloatProperty()
+
+    python = ndb.TextProperty(repeated=True)
+    rcode = ndb.TextProperty(repeated=True)
+    returnStatements = ndb.TextProperty(repeated=True)
 
 class UsermadeLesson(ndb.Model):
     """Models an individual User Lesson entry with author, content, and date."""
@@ -676,7 +773,6 @@ class UsermadeLesson(ndb.Model):
 
     header = ndb.TextProperty(indexed=False)
     paragraph = ndb.TextProperty(indexed=True)
-    reminder = ndb.TextProperty(indexed=False)
 
 class Learn2MineLesson(ndb.Model):
     """Models an individual L2M Lesson entry with author, content, and date."""
@@ -696,7 +792,6 @@ class Learn2MineLesson(ndb.Model):
 
     header = ndb.TextProperty(indexed=False)
     paragraph = ndb.TextProperty(indexed=True)
-    reminder = ndb.TextProperty(indexed=False)
 
 class LessonCreatorHandler(webapp2.RequestHandler):
     @decorator.oauth_required
@@ -773,7 +868,7 @@ class LessonPreviewHandler(webapp2.RequestHandler):
 
         if userLesson:
             template_values = {
-                'user':thisUser, 'problems':userLesson.problems, 'languages': userLesson.languages, 'paragraph':userLesson.paragraph, 'header':userLesson.header, 'reminder':userLesson.reminder
+                'user':thisUser, 'problems':userLesson.problems, 'languages': userLesson.languages, 'paragraph':userLesson.paragraph, 'header':userLesson.header
             }
 
         else:
@@ -934,7 +1029,6 @@ class LessonModifyHandler(webapp2.RequestHandler):
                 userLesson.publicExecute = "False"
                 userLesson.name = lessonName
                 userLesson.author = thisUser
-                userLesson.reminder = 'Enter your code in the box provided if the answer is not correct, the difference between the answer produces by running the correct solution and yours will be shown.'
                 userLesson.problems= [""] * int(questionCount)
                 userLesson.pythonInstruct= [""] * int(questionCount)
                 userLesson.pythonInit= [""] * int(questionCount)
@@ -952,6 +1046,7 @@ class LessonModifyHandler(webapp2.RequestHandler):
             userLesson.languages = tempLanguages[:]
             if len(questionCount) == 1:
                 if not newLesson:
+                    print "Problem Statements:",self.request.get_all("problem")
                     userLesson.problems = self.request.get_all("problem")
                     userLesson.pythonInstruct = self.request.get_all("Python-instruct")
                     userLesson.pythonInit = self.request.get_all("Python-init")
@@ -987,10 +1082,12 @@ app = webapp2.WSGIApplication([
     ('/TutorialLesson', GradeHandler),
     ('/TutorialProfile', TutorialProfileHandler),
     ('/DMLesson', DMLessonHandler),
+    ('/DMLessonTest', DMLessonHandler),
     ('/Grader', GradeHandler),
     ('/LessonModify', LessonModifyHandler),
     ('/OnsiteGrader', GradingHandler),
     ('/LessonCreator', LessonCreatorHandler),
-    ('/LessonPreview', LessonPreviewHandler)
+    ('/LessonPreview', LessonPreviewHandler),
+    ('/RefreshGrade', GradeRefreshHandler)
 ], debug=True)
 
