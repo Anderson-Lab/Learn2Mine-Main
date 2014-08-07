@@ -513,6 +513,7 @@ class DMLessonHandler(webapp2.RequestHandler):
             userLesson.outputId = [""] * len(thisLesson.problems)
             userLesson.lesson = page 
             userLesson.experience = 0
+            userLesson.badge = "images/"+page+"Mastery.png"
             userLesson.returnStatements = ["No submission"] * len(thisLesson.problems)
             userLesson.put()
         else:
@@ -522,7 +523,7 @@ class DMLessonHandler(webapp2.RequestHandler):
         printProblems = []
         for problem in thisLesson.problems:
            printProblems.append("<br />".join(problem.split("\n")))
-	template_values = { 'user':users.get_current_user(), 'problems':printProblems,'paragraph':thisLesson.paragraph,'header':thisLesson.header,'languages':returnLanguages, 'page':thisLesson.name, 'result':returnVals, 'exp':experience }
+	template_values = { 'user':users.get_current_user(), 'problems':printProblems,'paragraph':thisLesson.paragraph,'header':thisLesson.header,'languages':returnLanguages, 'page':thisLesson.name, 'result':returnVals, 'exp':experience, 'badge':userLesson.badge }
         self.response.write(template.render(template_values))
 
 class TutorialProfileHandler(webapp2.RequestHandler):
@@ -615,27 +616,39 @@ class GradingHandler(webapp2.RequestHandler):
 		userLesson.outputId[int(problem)-1] = outputid
 		userLesson.put()
                 url = str(galaxyInstance.url) + "histories/" + hist_id + "/contents/" + outputid + "/display"
-		print "\n\nDisplaying Results"
                 results = display_result(galaxyInstance.api_key,url)
-		print "\n\nResults:",results
+		print "\n\nResults",results
+		print "\n\nPre Return statements:",userLesson.returnStatements,"\n\n"
 		if results == "Running":
-			returnStatement = "Job running"
-		elif results['return'] == "correct":
-			returnStatement = "Congratulations! You've solved this problem."
-		elif results['return'] == "incorrect":
-			returnAdd = "<br />".join(results['difference_stdout'].split("\n"))
-			returnStatement = "The code you entered is incorrect.<br>The following shows what output correctly matched and what<br>output was different (shown using + and -) : <br>" + returnAdd
+			if "Congratulations!" in userLesson.returnStatements[int(problem)-1]:
+				returnStatement = "Job running - previous correct"
+			elif "code you entered is incorrect" in userLesson.returnStatements[int(problem)-1]:
+				returnStatement = "Job running - previous incorrect"
+			else:
+				returnStatement = "Job running"
+		else:
+			if results['return'] == "correct":
+				returnStatement = "Congratulations! You've solved this problem."
+			else:
+				if "previous correct" in userLesson.returnStatements[int(problem)-1]:
+					returnStatement = "Your submission is incorrect but you've previously solved this problem.<br>You will not be penalized."
+				else:
+					returnAdd = "<br />".join(results['difference_stdout'].split("\n"))
+					returnStatement = "The code you entered is incorrect.<br>The following shows what output correctly matched and what<br>output was different (shown using + and -) : <br>" + returnAdd
+			returnVals = userLesson.returnStatements[:]
+			experience = len(fnmatch.filter(returnVals,'*solved this problem.'))/len(thisLesson.problems)
+			experience = experience*100
+			userLesson.experience = experience
+
+		userLesson.returnStatements[int(problem)-1] = returnStatement
+		print "Post Return statements:",userLesson.returnStatements,"\n\n"
 		returnLanguages = []
 		if "Python" in thisLesson.languages:
 			returnLanguages.append("python")
 		if "R" in thisLesson.languages:
 			returnLanguages.append("rcode")
-		userLesson.returnStatements[int(problem)-1] = returnStatement
-		returnVals = userLesson.returnStatements[:]
-		experience = len(fnmatch.filter(returnVals,'Congratulations*'))/len(thisLesson.problems)
-		experience = experience*100
-		userLesson.experience = experience
 		userLesson.put()
+		time.sleep(0.75)
 		self.redirect("/DMLessonTest?page="+page)
 
 """
@@ -677,6 +690,7 @@ class GradingHandler(webapp2.RequestHandler):
 #		url = "http://localhost:8081/api/histories/"+hist_id+"/contents/"+outputid+"/display"
 #		results = display_result("16f0632a174c3615588f17f402b5e7c2",url)
 #		self.response.write(json.dumps(results))
+#		print 
 """
 class GradeRefreshHandler(webapp2.RequestHandler):
 	@decorator.oauth_required
@@ -690,46 +704,35 @@ class GradeRefreshHandler(webapp2.RequestHandler):
                 output_id = userLesson.outputId[int(problem)-1]
                 url = str(galaxyInstance.url) + "histories/" + hist_id + "/contents/" + output_id + "/display"
                 results = display_result(galaxyInstance.api_key,url)
-                if results == "Running":
-                        returnStatement = "Job running"
-                elif results['return'] == "correct":
-                        returnStatement = "Congratulations! You've solved this problem."
-                elif results['return'] == "incorrect":
-                        returnAdd = "<br />".join(results['difference_stdout'].split("\n"))
-                        returnStatement = "The code you entered is incorrect.<br>The following shows what output correctly matched and what<br>output was different (shown using + and -) : <br>" + returnAdd
-                userLesson.returnStatements[int(problem)-1] = returnStatement
-		returnVals = userLesson.returnStatements[:]   
-                experience = len(fnmatch.filter(returnVals,'Congratulations*'))/len(thisLesson.problems)
-                experience = experience*100
-                userLesson.experience = experience
-                userLesson.put()
+
+
+		print "\n\nPre Return statements:",userLesson.returnStatements,"\n\n"
+		if results == "Running":
+			if "Congratulations!" in userLesson.returnStatements[int(problem)-1]:
+				returnStatement = "Job running - previous correct"
+			elif "code you entered is incorrect" in userLesson.returnStatements[int(problem)-1]:
+				returnStatement = "Job running - previous incorrect"
+			else:
+				returnStatement = "Job running"
+		else:
+			print "Results:",results['return'],"\n\n"
+			if results['return'] == "correct":
+				returnStatement = "Congratulations! You've solved this problem."
+			else:
+				if "previous correct" in userLesson.returnStatements[int(problem)-1]:
+					returnStatement = "Your submission is incorrect but you've previously solved this problem.<br>You will not be penalized."
+				else:
+					returnAdd = "<br />".join(results['difference_stdout'].split("\n"))
+					returnStatement = "The code you entered is incorrect.<br>The following shows what output correctly matched and what<br>output was different (shown using + and -) : <br>" + returnAdd
+			userLesson.returnStatements[int(problem)-1] = returnStatement
+			print "Post Return statements:",userLesson.returnStatements,"\n\n"
+			returnVals = userLesson.returnStatements[:]
+			experience = len(fnmatch.filter(returnVals,'*solved this problem.'))/len(thisLesson.problems)
+			experience = experience*100
+			userLesson.experience = experience
+		userLesson.put()
+		time.sleep(0.75)
                 self.redirect("/DMLessonTest?page="+page)
-
-class GradeHandler(webapp2.RequestHandler):
-	@decorator.oauth_required
-	def get(self):
-		useremail = users.get_current_user().email()
-		template = JINJA_ENVIRONMENT.get_template('Grade.html')
-		page = self.request.get("page")
-		hist_id = "63cd3858d057a6d1"
-		workflow_id = "ff5476bcf6c921fa"
-		api_key = "3c7d82a64160fdc165ce6542e0f918d6"
-		url = "http://portal.cs.cofc.edu/learn2mine/api/workflows/"
-		results = workflow_execute_parameters(api_key,url,workflow_id,"hist_id="+hist_id,"param=return_grades=email="+useremail)
-		outputid = results['outputs'][0]
-
-		url = "http://portal.cs.cofc.edu/learn2mine/api/histories/"+hist_id+"/contents/"+outputid+"/display"
-		maxNumTries = 10
-		numTries = 0
-		while numTries < maxNumTries:
-			gradeHTML = get_raw(api_key,url)
-			if 'img' in gradeHTML:
-				break
-			time.sleep(5)
-			numTries += 1
-				
-		template_values = {'user':useremail, 'gradeHTML':gradeHTML}
-		self.response.write(template.render(template_values))
 
 class GalaxyParams(ndb.Model):
     """Models an individual User Lesson entry with author, content, and date."""
@@ -744,6 +747,7 @@ class User2Lesson(ndb.Model):
     historyId = ndb.StringProperty(repeated=True)
     outputId = ndb.StringProperty(repeated=True)
     experience = ndb.FloatProperty()
+    badge = ndb.StringProperty(indexed=True)
 
     python = ndb.TextProperty(repeated=True)
     rcode = ndb.TextProperty(repeated=True)
@@ -867,8 +871,11 @@ class LessonPreviewHandler(webapp2.RequestHandler):
                     return
 
         if userLesson:
+            printProblems = []
+            for problem in userLesson.problems:
+                printProblems.append("<br />".join(problem.split("\n")))
             template_values = {
-                'user':thisUser, 'problems':userLesson.problems, 'languages': userLesson.languages, 'paragraph':userLesson.paragraph, 'header':userLesson.header
+                'user':thisUser, 'problems':printProblems, 'languages': userLesson.languages, 'paragraph':userLesson.paragraph, 'header':userLesson.header
             }
 
         else:
