@@ -651,7 +651,6 @@ class GradingHandler(webapp2.RequestHandler):
 		time.sleep(0.75)
 		self.redirect("/DMLessonTest?page="+page)
 
-"""
 #class GradingHandler(webapp2.RequestHandler):
 #	def post(self):
 #		code = self.request.get("code")
@@ -691,7 +690,7 @@ class GradingHandler(webapp2.RequestHandler):
 #		results = display_result("16f0632a174c3615588f17f402b5e7c2",url)
 #		self.response.write(json.dumps(results))
 #		print 
-"""
+
 class GradeRefreshHandler(webapp2.RequestHandler):
 	@decorator.oauth_required
 	def post(self):
