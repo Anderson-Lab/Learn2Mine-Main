@@ -617,12 +617,10 @@ class GradingHandler(webapp2.RequestHandler):
 		userLesson.put()
                 url = str(galaxyInstance.url) + "histories/" + hist_id + "/contents/" + outputid + "/display"
                 results = display_result(galaxyInstance.api_key,url)
-		print "\n\nResults",results
-		print "\n\nPre Return statements:",userLesson.returnStatements,"\n\n"
 		if results == "Running":
-			if "Congratulations!" in userLesson.returnStatements[int(problem)-1]:
+			if any(string in userLesson.returnStatements[int(problem)-1] for string in ["Congratulations!","- previous correct"]):
 				returnStatement = "Job running - previous correct"
-			elif "code you entered is incorrect" in userLesson.returnStatements[int(problem)-1]:
+			elif any(string in userLesson.returnStatements[int(problem)-1] for string in ["code you entered is incorrect","- previous incorrect","submission is ioncorrect"]):
 				returnStatement = "Job running - previous incorrect"
 			else:
 				returnStatement = "Job running"
@@ -631,17 +629,16 @@ class GradingHandler(webapp2.RequestHandler):
 				returnStatement = "Congratulations! You've solved this problem."
 			else:
 				if "previous correct" in userLesson.returnStatements[int(problem)-1]:
-					returnStatement = "Your submission is incorrect but you've previously solved this problem.<br>You will not be penalized."
+					returnStatement = "Your submission is incorrect, but you won't be penalized as<br>you previously solved this problem."
 				else:
 					returnAdd = "<br />".join(results['difference_stdout'].split("\n"))
 					returnStatement = "The code you entered is incorrect.<br>The following shows what output correctly matched and what<br>output was different (shown using + and -) : <br>" + returnAdd
+			userLesson.returnStatements[int(problem)-1] = returnStatement
 			returnVals = userLesson.returnStatements[:]
 			experience = len(fnmatch.filter(returnVals,'*solved this problem.'))/len(thisLesson.problems)
 			experience = experience*100
 			userLesson.experience = experience
-
 		userLesson.returnStatements[int(problem)-1] = returnStatement
-		print "Post Return statements:",userLesson.returnStatements,"\n\n"
 		returnLanguages = []
 		if "Python" in thisLesson.languages:
 			returnLanguages.append("python")
@@ -703,32 +700,29 @@ class GradeRefreshHandler(webapp2.RequestHandler):
                 output_id = userLesson.outputId[int(problem)-1]
                 url = str(galaxyInstance.url) + "histories/" + hist_id + "/contents/" + output_id + "/display"
                 results = display_result(galaxyInstance.api_key,url)
-
-
-		print "\n\nPre Return statements:",userLesson.returnStatements,"\n\n"
 		if results == "Running":
-			if "Congratulations!" in userLesson.returnStatements[int(problem)-1]:
-				returnStatement = "Job running - previous correct"
-			elif "code you entered is incorrect" in userLesson.returnStatements[int(problem)-1]:
-				returnStatement = "Job running - previous incorrect"
-			else:
-				returnStatement = "Job running"
-		else:
+                        if any(string in userLesson.returnStatements[int(problem)-1] for string in ["Congratulations!","- previous correct"]):
+                                returnStatement = "Job running - previous correct"
+			elif any(string in userLesson.returnStatements[int(problem)-1] for string in ["code you entered is incorrect","- previous incorrect","submission is ioncorrect"]):
+                                returnStatement = "Job running - previous incorrect"
+                        else:
+                                returnStatement = "Job running"
+                else:
 			print "Results:",results['return'],"\n\n"
-			if results['return'] == "correct":
-				returnStatement = "Congratulations! You've solved this problem."
-			else:
-				if "previous correct" in userLesson.returnStatements[int(problem)-1]:
-					returnStatement = "Your submission is incorrect but you've previously solved this problem.<br>You will not be penalized."
-				else:
-					returnAdd = "<br />".join(results['difference_stdout'].split("\n"))
+                        if results['return'] == "correct":
+                                returnStatement = "Congratulations! You've solved this problem."
+                        else:
+                                if "previous correct" in userLesson.returnStatements[int(problem)-1]:
+                                        returnStatement = "Your submission is incorrect, but you won't be penalized as<br>you previously solved this problem."
+                                else:
+                                        returnAdd = "<br />".join(results['difference_stdout'].split("\n"))
 					returnStatement = "The code you entered is incorrect.<br>The following shows what output correctly matched and what<br>output was different (shown using + and -) : <br>" + returnAdd
-			userLesson.returnStatements[int(problem)-1] = returnStatement
-			print "Post Return statements:",userLesson.returnStatements,"\n\n"
-			returnVals = userLesson.returnStatements[:]
-			experience = len(fnmatch.filter(returnVals,'*solved this problem.'))/len(thisLesson.problems)
-			experience = experience*100
-			userLesson.experience = experience
+                        userLesson.returnStatements[int(problem)-1] = returnStatement
+                        returnVals = userLesson.returnStatements[:]
+                        experience = len(fnmatch.filter(returnVals,'*solved this problem.'))/len(thisLesson.problems)
+                        experience = experience*100  
+                        userLesson.experience = experience
+                userLesson.returnStatements[int(problem)-1] = returnStatement
 		userLesson.put()
 		time.sleep(0.75)
                 self.redirect("/DMLessonTest?page="+page)
