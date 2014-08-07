@@ -260,33 +260,29 @@ div#leaderlink{
 	background-color:#313131;
 	left:230px;
 }
-div#gradelink{
-	background-color:#313131;
-	left:350px;
-}
 div#searchlink{
 	background-color:#313131;
 	left:350px;
 }
 div#aboutlink{
 	background-color:#313131;
-	left:450px;
+	left:350px;
 }
 div#helplink{
 	background-color:#313131;
-	left:550px;
+	left:450px;
 }
 div#galaxylink{
 	background-color:#313131;
-	left:650px;
+	left:550px;
 }
 div#rstudiolink{
 	background-color:#313131;
-	left:650px;
+	left:550px;
 }
 div#lessoncreatorlink{
 	background-color:#313131;
-	left:750px;
+	left:650px;
 }
 /*site nav hover images*/
 div#homelink:hover{
