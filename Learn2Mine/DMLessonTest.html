@@ -12,71 +12,6 @@
 <script type="text/javascript" SRC="./Javascript/jquery.js"></script>
 <script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
 <script type="text/javascript">
-/*
-function updateProgressBar(problemNumber) {
-
-var correct = 0;
-var totalProblems = 0;
-var problemsCorrect = new Array();
-	if(problemNumber == totalProblems){
-		var experience = 100;
-	}
-	else{
-		if( $.inArray(problemNumber,problemsCorrect) === -1 ){
-			problemsCorrect.push(problemNumber);
-			correct += 1;
-			var experience = ((correct*100)/(totalProblems*100))*100;
-		}
-	}
-	$( "#progressbar" ).progressbar({
-		value: {{exp}},
-	});
-
-};
-
-	function refresh(index,hist_id) {
-                outputid = $(".outputid"+index).html();
-		$.ajax({
-			url: '/OnsiteGrader',
-			type: 'GET',
-			data: {hist_id:hist_id,outputid:outputid},
-			success: function(results){
-				$(".results"+index).val("No status yet. Check back again shortly.");
-				obj = JSON.parse(results);
-				if (obj.return == "correct") {
-					$(".results"+index).val("Congratulations! You've solved this problem. ");
-					updateProgressBar(index);
-					if (obj.badge_image_url != "None") {
-						$(".badge"+index).attr("src",obj.badge_image_url)
-					        $(".badge"+index).css('display','inline');
-					} else {
-					        $(".badge"+index).css('display','none');
-					}
-				} else {
-					$(".results"+index).val("The code you entered is incorrect. \nThe following shows what output correctly matched and what output was different (shown using + and -): \n" + obj.difference_stdout);
-					$(".badge"+index).attr("src","")
-				        $(".badge"+index).css('display','none');
-				}
-			},
-			failure: function(response){
-				alert("An error occurred when sending results and your work was not graded. Contact us if this problem persists.");
-			},
-			statusCode: {
-			        500: function() {
-		                        $(".results"+index).val("Still starting submission... Hit refresh again.");
-                        	}
-    			}
-
-		})//.done(alert("done"+code.val()));
-
-	
-	}
-	$(function() { // Initialize Progress Bar
-    	$( "#progressbar" ).progressbar({
-    	value: 0
-    });
-  });
-*/
 $(function() {
 $( "#progressbar" ).progressbar({
 value: {{ exp }}
@@ -95,10 +30,10 @@ value: {{ exp }}
 			<li><a id="home" href="Home"><div class="sitenav" id="homelink">Home</div></a></li>
 			<li><a id="profile" href="Profile"><div class="sitenav" id="profilelink">Profile</div></a></li>
 			<li><a id="leaderboard" href="Leaderboard"><div class="sitenav" id="leaderlink">Leaderboard</div></a></li>
-                        <li><a id="grade" href="Grader"><div class="sitenav" id="gradelink">Grade</div></a></li>
 			<li><a id="about" href="About"><div class="sitenav" id="aboutlink">About</div></a></li>
 			<li><a id="help" href="Help"><div class="sitenav" id="helplink">Help</div></a></li>
                         <li><a id="rstudio" target="_blank" href="http://portal.cs.cofc.edu/learn2mine-rstudio"><div class="sitenav" id="rstudiolink">Rstudio</div></a></li>
+                        <li><a id="LessonCreator" href="LessonCreator"><div class="sitenav" id="lessoncreatorlink">Create</div></a></li>
 		</ul>
 		<div class="loggedin">{{user}}</div>
 	</div>
@@ -119,28 +54,22 @@ value: {{ exp }}
 			<p>
 				<ol>
 					{% for problem in problems %}
-						{% if result[loop.index0] == "Job running" %}
+						{% if "Job running" in result[loop.index0] %}
 							<form name="refreshResult" method="post" id="refreshResult" action="/RefreshGrade">
 							<input type="hidden" name="question" value="{{loop.index}}"/>
 							<input type="hidden" name="page" value="{{ page }}"/>
 							<li>{{ problem }}</li>
-							<textarea name="studentCode" class="answer{{ loop.index }}" cols="50" rows="5" placeholder="Enter code or answer here"></textarea>
+							<textarea name="studentCode" class="answer{{ loop.index }}" cols="50" rows="5"></textarea>
 							<br>
 							<div class="outputid{{ loop.index }}">
 							Job is running, click below to refresh results
 							</div><br>
 							<input type="submit" value="Refresh results"><br><br>
 							</form>
-
-							<script type="text/javascript">
-							function submitRefresh() {
-								document.refreshResult.submit();
-							}
-							</script>
 						{% else %}
 							<form name="grade{{ loop.index }}" method="post" id="gradeform" action="/OnsiteGrader">
-							<input type="hidden" name="page" value="{{ page }}"/>
 							<input type="hidden" name="question" value="{{loop.index}}"/>
+							<input type="hidden" name="page" value="{{ page }}"/>
 							<li>{{ problem }}</li>
 							<textarea name="studentCode" class="answer{{ loop.index }}" cols="50" rows="5" placeholder="Enter code or answer here"></textarea>
 							<br>
@@ -157,18 +86,11 @@ value: {{ exp }}
 							</form>
 						{% endif %}
 					{% endfor %}
+					{% if exp == 100 %}
+						<img width='100px' height='100px' src='{{ badge }}' /img>
+					{% endif %}
+
 				</ol>
-
-
-
-
-
-
-				<!--<form method="get" action="">
-					<input type="submit" value="Refresh" />
-					<br>-->
-				<!--</form>-->
-				<br>
 			</p>
 		</div>
 	</div>
