@@ -739,8 +739,10 @@ class Learn2MineClass(ndb.Model):
 
     instructor = ndb.UserProperty(indexed=True)
     student = ndb.UserProperty(repeated=True)
-    lessonPlan = ndb.StringProperty(repeated=True)
-    className = ndb.StringProperty()
+    PublicLessonplan = ndb.StringProperty(repeated=True)
+    DMLessonplan = ndb.StringProperty(repeated=True)
+    className = ndb.StringProperty(indexed=True)
+    classKey = ndb.StringProperty(indexed=True)
 
 class User2Lesson(ndb.Model):
     user = ndb.UserProperty(indexed=True)
@@ -1078,13 +1080,22 @@ class ClassPortalHandler(webapp2.RequestHandler):
 	def get(self):
 		template = JINJA_ENVIRONMENT.get_template('Class.html')
 	        thisUser = users.get_current_user()
-        	if thisUser:   
-        	    url = users.create_logout_url(self.request.uri)
-        	    url_linktext = 'Logout'
-        	else:
-        	    url = users.create_login_url(self.request.uri)
-        	    url_linktext = 'Login'
-		template_values = {'user':thisUser, 'url_linktext':url_linktext}
+        	if not thisUser:
+			url = users.create_login_url(self.request.uri)
+			url_linktext = 'Login'
+			template_values = {'user':thisUser, 'url_linktext':url_linktext}
+		        self.response.write(template.render(template_values))
+			return
+		instructing = Learn2MineClass.query().filter(Learn2MineClass.instructor == thisUser).fetch(10)
+#		enrolled = Learn2MineClass.query().filter(Learn2MineClass.student == thisUser).fetch(10)
+		instructingClasses = []
+		for lesson in instructing:
+			instructingClasses.append(lesson.className)
+		enrolled = []
+		enrolledClasses = []
+		for inClass in enrolled:
+			enrolledClasses.append(inClass.className)
+		template_values = {'user':thisUser, 'instructingClasses':instructingClasses, 'enrolledClasses':enrolledClasses}
 	        self.response.write(template.render(template_values))
 
 	def post(self):
@@ -1107,41 +1118,49 @@ class ClassCreatorHandler(webapp2.RequestHandler):
         	if thisUser:   
         	    url = users.create_logout_url(self.request.uri)
         	    url_linktext = 'Logout'
-
-		print "\n\nDMLessons:",DMLessons
-		print "\n\nPublic Lessons:",PublicLessons
 		template_values = {'user':thisUser, 'url_linktext':url_linktext, 'AddDMLessons':DMLessons,'AddPublicLessons':PublicLessons}
 	        self.response.write(template.render(template_values))
 
 	def post(self):
 		thisUser = users.get_current_user()
-		DMLessons = self.request.get_all("addDMLessons")
-		PublicLessons = self.request.get_all("addPublicLessons")
+		DMLessons = self.request.get_all("addDMLesson")
+		PublicLessons = self.request.get_all("addPublicLesson")
 		className = self.request.get("className")
 		newClass = Learn2MineClass()
-		newClass.lessonPlan = PublicLessons + DMLessons
+		newClass.PublicLessonplan = PublicLessons
+		newClass.DMLessonplan = DMLessons
 		newClass.instructor = thisUser
 		newClass.className = className
+		newClass.classKey = ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(20)])
 		newClass.put()
 		self.redirect('/ClassManager?class='+className)
 
 class ClassManagerHandler(webapp2.RequestHandler):
-	@decorator.oauth_required
-
+        @decorator.oauth_required
 	def get(self):
+		time.sleep(0.2)
 		template = JINJA_ENVIRONMENT.get_template('ClassManager.html')
 	        thisUser = users.get_current_user()
-		existingClassQuery = Learn2MineClass.query().filter(Learn2MineClass.instructor == thisUser).filter(Learn2MineClass.className == self.request.get("class")).fetch(1)
+		className = self.request.get("class")
+		existingClassQuery = Learn2MineClass.query().filter(Learn2MineClass.instructor == thisUser).filter(Learn2MineClass.className == className).fetch(1)
 		if len(existingClassQuery) > 0:
 			thisClass = existingClassQuery[0]
 		else:
 			template_values = {'user':thisUser,'errorCatch':"yes"}
 			self.response.write(template.render(template_values))
 			return
-        	if thisUser:   
-        	    url = users.create_logout_url(self.request.uri)
-        	    url_linktext = 'Logout'
-		template_values = {'user':thisUser, 'url_linktext':url_linktext, 'class':thisClass.className}
+		removeDMLessons = thisClass.DMLessonplan
+		removePublicLessons = thisClass.PublicLessonplan
+		addDMLessons = []
+		addPublicLessons = []
+		for lesson in UsermadeLesson.query().fetch(10):
+			if lesson.header not in removePublicLessons:
+				addPublicLessons.append(lesson.header)
+		for lesson in Learn2MineLesson.query().fetch(10):
+			if lesson.header not in removeDMLessons:
+				addDMLessons.append(lesson.header)
+		template_values = {'user':thisUser, 'class':className, 'RemovePublicLessons':removePublicLessons, 'RemoveDMLessons':removeDMLessons, 'AddPublicLessons':addPublicLessons, 
+		'AddDMLessons':addDMLessons, 'classKey':thisClass.classKey }
 	        self.response.write(template.render(template_values))
 
 	def post(self):
@@ -1151,7 +1170,12 @@ class ClassManagerHandler(webapp2.RequestHandler):
 		RemoveDMLessons = self.request.get_all("removeDMLessons")
 		RemovePublicLessons = self.request.get_all("removePublicLessons")
 		className = self.request.get("class")
+		newClassName = self.request.get("newClassName")
 		thisClass = Learn2MineClass().query().filter(Learn2MineClass.instructor == thisUser).filter(Learn2MineClass.className == className).fetch(1)[0]
+		if newClassName:
+			thisClass.className = newClassName
+			className = newClassName
+			thisClass.put()
 		self.redirect('/ClassManager?class='+className)
 
 #Handles page redirects
@@ -1181,4 +1205,3 @@ app = webapp2.WSGIApplication([
     ('/ClassCreator', ClassCreatorHandler),
     ('/ClassManager', ClassManagerHandler)
 ], debug=True)
-
