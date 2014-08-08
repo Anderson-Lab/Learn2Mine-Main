@@ -51,41 +51,53 @@
                 </ul>
                 <div class="loggedin">{{user}}</div>
         </div>
-	<h1> {{ class }} Properties </h1>
-	<form name="ClassCreator" action="/ClassCreator" method="post">
-	<h2> Modify Class Settings </h2>
-	<h3>Change the class name:</h3><input type="text" name="className"><br>
-	<h3>Add lessons to lessonplan:<h3>
+	<div id="NPStext">
+	<h1> {{ class }} Class Manager </h1>
+	<b>Share this URL with students for them to join your class:</b><br>http://localhost:8080/EnrollClass?key={{classKey}}<br><br>
+	<b>View your students' progress <a href="/ClassManager?grades={{classKey}}">here</a>
+	<form name="ClassCreator" action="/ClassManager" method="post">
+	<input type="hidden" name="class" value="{{class}}">
+	<h3>Change the class name:</h3><input type="text" name="newClassName"><br>
+	<h3>Add lessons to lessonplan:</h3>
 	{% if AddDMLessons|length > 0 %}
-	<br>Learn2Mine Lessons:<br>
+	Learn2Mine Lessons:<br>
 		{% for DMLesson in AddDMLessons %}
 		<input type="checkbox" name="addDMLesson" value="{{DMLesson}}">{{DMLesson}}<br>
 		{% endfor %}
+		<br>
 	{% endif %}
 	{% if AddPublicLessons|length > 0 %}
-	<br>Public Lessons:<br>
+	Public Lessons:<br>
 		{% for PublicLesson in AddPublicLessons %}
 		<input type="checkbox" name="addPublicLesson" value="{{PublicLesson}}">{{PublicLesson}}<br>
 		{% endfor %}
 	{% endif %}
+	{% if AddPublicLessons|length == 0 and AddDMLessons|length == 0%}
+		No more lessons to add
+	{% endif %}
 	<br>
-	<h3>Remove lessons from lessonplan:<h3>
+	<h3>Remove lessons from lessonplan:</h3>
 	{% if RemoveDMLessons|length > 0 %}
-	<br>Learn2Mine Lessons:<br>
+	Learn2Mine Lessons:<br>
 		{% for DMLesson in RemoveDMLessons %}
 		<input type="checkbox" name="removeDMLesson" value="{{DMLesson}}">{{DMLesson}}<br>
 		{% endfor %}
+		<br>
 	{% endif %}
 	{% if RemovePublicLessons|length > 0 %}
-	<br>Public Lessons:<br>
+	Public Lessons:<br>
 		{% for PublicLesson in RemovePublicLessons %}
 		<input type="checkbox" name="removePublicLesson" value="{{PublicLesson}}">{{PublicLesson}}<br>
 		{% endfor %}
 	{% endif %}
+	{% if RemovePublicLessons|length == 0 and RemoveDMLessons|length == 0%}
+		No more lessons to remove
+	{% endif %}
 	<br>
 	<br>
-	<input type="submit" value="Create">
+	<input type="submit" value="Update">
 	</form>
+	</div>
 
 {% if not user %}
 <a href="{{ url|safe }}">{{ url_linktext }}</a>
