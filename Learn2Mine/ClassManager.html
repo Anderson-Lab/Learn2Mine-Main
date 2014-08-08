@@ -56,13 +56,13 @@
 	<h2> Modify Class Settings </h2>
 	<h3>Change the class name:</h3><input type="text" name="className"><br>
 	<h3>Add lessons to lessonplan:<h3>
-	{% if AddDMLessons|length > 1 %}
+	{% if AddDMLessons|length > 0 %}
 	<br>Learn2Mine Lessons:<br>
 		{% for DMLesson in AddDMLessons %}
 		<input type="checkbox" name="addDMLesson" value="{{DMLesson}}">{{DMLesson}}<br>
 		{% endfor %}
 	{% endif %}
-	{% if AddPublicLessons|length > 1 %}
+	{% if AddPublicLessons|length > 0 %}
 	<br>Public Lessons:<br>
 		{% for PublicLesson in AddPublicLessons %}
 		<input type="checkbox" name="addPublicLesson" value="{{PublicLesson}}">{{PublicLesson}}<br>
@@ -70,13 +70,13 @@
 	{% endif %}
 	<br>
 	<h3>Remove lessons from lessonplan:<h3>
-	{% if RemoveDMLessons|length > 1 %}
+	{% if RemoveDMLessons|length > 0 %}
 	<br>Learn2Mine Lessons:<br>
 		{% for DMLesson in RemoveDMLessons %}
 		<input type="checkbox" name="removeDMLesson" value="{{DMLesson}}">{{DMLesson}}<br>
 		{% endfor %}
 	{% endif %}
-	{% if RemovePublicLessons|length > 1 %}
+	{% if RemovePublicLessons|length > 0 %}
 	<br>Public Lessons:<br>
 		{% for PublicLesson in RemovePublicLessons %}
 		<input type="checkbox" name="removePublicLesson" value="{{PublicLesson}}">{{PublicLesson}}<br>
