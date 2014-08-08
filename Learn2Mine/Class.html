@@ -90,16 +90,24 @@ function validateDelete() {
         </div>
 <input type="hidden" id="lessonsArray" name="lessonName" value={{ existingLessons|join(',') }} />
 {% if user %}
+        <div id="NPStext">
 	<h1>Learn2Mine Class Portal</h1>
 	<div><b>Create and manage your own class or view your current class status</b></div><br>
 	<h2> Start a class </h2>
 	Click <a href="/ClassCreator">here</a> to start your own class and enroll students
+	{% if currentClasses|length > 1: %}
 	<h2> Your currently enrolled classes: </h2>
 		{% for class in currentClasses %}
 		    <a href="/ClassViewer?page={{ class }}">{{ class }}</a><br>
 		{% endfor %}
-
-	<h2> Class invitations </h2>
+	{% endif %}
+	{% if instructingClasses|length > 1: %}
+	<h2> Classes you are instructing: </h2>
+		{% for teaching in instructingClasses %}
+		    <a href="/ClassViewer?page={{ teaching }}">{{ teaching }}</a><br>
+		{% endfor %}
+	{% endif %}
+	</div>
 {% else %}
     <br><br>
     <center><b>Login below in order to view this page<br></b>

@@ -1100,16 +1100,17 @@ class ClassCreatorHandler(webapp2.RequestHandler):
 		DMLessons = []
 		for DMLesson in DMLessonQuery:
 			DMLessons.append(DMLesson.header)
-
 		PublicLessonQuery = UsermadeLesson.query().fetch(1)
 		PublicLessons = []
 		for PublicLesson in PublicLessonQuery:
 			PublicLessons.append(PublicLesson.header)		
-
         	if thisUser:   
         	    url = users.create_logout_url(self.request.uri)
         	    url_linktext = 'Logout'
-		template_values = {'user':thisUser, 'url_linktext':url_linktext, 'DMLessons':DMLessons,'PublicLessons':PublicLessons}
+
+		print "\n\nDMLessons:",DMLessons
+		print "\n\nPublic Lessons:",PublicLessons
+		template_values = {'user':thisUser, 'url_linktext':url_linktext, 'AddDMLessons':DMLessons,'AddPublicLessons':PublicLessons}
 	        self.response.write(template.render(template_values))
 
 	def post(self):
