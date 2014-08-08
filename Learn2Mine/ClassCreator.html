@@ -51,22 +51,30 @@
                 </ul>
                 <div class="loggedin">{{user}}</div>
         </div>
+	<div id="NPStext">
 	<h1> Design Class Lessonplan </h1>
 	<form name="ClassCreator" action="/ClassCreator" method="post">
 	<h3>Step 1) Set a name for your class:</h3><input type="text" name="className"><br>
 	<h3>Step 2) Choose from the lessons below to populate your lessonplan<h3>
-	<br>Learn2Mine Lessons:<br>
-		{% for DMLesson in DMLessons %}
-		<input type="checkbox" name="addDMLesson" value="{{DMLesson}}">{{DMLesson}}<br>
-		{% endfor %}
-	<br>Public Lessons:<br>
-		{% for PublicLesson in PublicLessons %}
-		<input type="checkbox" name="addPublicLesson" value="{{PublicLesson}}">{{PublicLesson}}<br>
-		{% endfor %}
+
+        <h3>Add lessons to lessonplan:<h3>
+        {% if AddDMLessons|length > 0 %}
+        Learn2Mine Lessons:<br>
+                {% for DMLesson in AddDMLessons %}
+                <input type="checkbox" name="addDMLesson" value="{{DMLesson}}">{{DMLesson}}<br>
+                {% endfor %}
 	<br>
+        {% endif %}
+        {% if AddPublicLessons|length > 0 %}
+        Public Lessons:<br>
+                {% for PublicLesson in AddPublicLessons %}
+                <input type="checkbox" name="addPublicLesson" value="{{PublicLesson}}">{{PublicLesson}}<br>
+                {% endfor %}
+        {% endif %}
 	<br>
 	<input type="submit" value="Create">
 	</form>
+	</div>
 
 {% if not user %}
 <a href="{{ url|safe }}">{{ url_linktext }}</a>

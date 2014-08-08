@@ -47,10 +47,12 @@
                         <li><a id="help" href="Help"><div class="sitenav" id="helplink">Help</div></a></li>
                         <li><a id="rstudio" target="_blank" href="http://portal.cs.cofc.edu/learn2mine-rstudio"><div class="sitenav" id="rstudiolink">Rstudio</div></a></li>
                         <li><a id="LessonCreator" href="LessonCreator"><div class="sitenav" id="lessoncreatorlink">Create</div></a></li>
+                        <li><a id="Class" href="Class"><div class="sitenav" id="classviewlink">Class</div></a></li>
                 </ul>
                 <div class="loggedin">{{user}}</div>
         </div>
 	{% if errorCatch != "yes" %}
+	<div id="NPStext">
 	<h1>Submit code for Learn2Mine Lesson</h1>
 
                 <form name="updateLesson" action="/LessonModify" id="updateLesson" method="post" onsubmit="return validateUpdate();">
@@ -177,7 +179,6 @@
                 {% endfor %}
 
 {% else %}
-
 		{% for i in range(0,(questionCount|int)) %}
 		      	Problem Statement: Question {{ i+1 }}<br>
 			<textarea id="lessonMakerTextarea" name="problem" rows="6" cols="80">{{ problems[loop.index0] }}</textarea></div><br><br>
@@ -203,6 +204,7 @@
 		<input type="hidden" name="urlKey" value={{ urlKey }} />
 		<div id="lessonMakerSubmit"><input type="submit" value="Update Lesson Plan"></div>
 	</form><br>
+	</div>
 {% else %}
     <br><br>
     <center><b>Error in accessing page. Either page does not exist or you do not have acess.<br></b>
