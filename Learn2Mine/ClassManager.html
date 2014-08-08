@@ -2,11 +2,8 @@
 {% autoescape true %}
 <html>
 <head>
-<!--<meta http-equiv="refresh" content="30">-->
-</head>
 <link rel="shortcut icon" href="./images/l2m.ico">
 <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
-<title>Learn2Mine Class Modifier</title>
 <script type="text/javascript">
     function validateUpdate() {
 	var checked = 0;
@@ -35,9 +32,12 @@
 	return true;
     }
 </script>
+<!--<meta http-equiv="refresh" content="30">-->
+<title>Learn2Mine Class Modifier</title>
+</head>
 <body>
 <a href="http://birg.cs.cofc.edu/index.php/Anderson_Lab"><img src="/images/Paul-labs-logo.png" align="right" title="BiRG Labs" style="width: 75px;"></a>
-        <a id="home" href="Home"><div id="banner"><img id=bannerImg src='images/learn2mine.png' title="LOOK AT BANNER, MICHAEL!"/></a></div>
+        <a id="home" href="Home"><div id="banner"><img id=bannerImg src='images/learn2mine.png' title="LOOK AT BANNER, MICHAEL!"/></div></a>
         <div id="lava">
                 <ul>
                         <li><a id="home" href="Home"><div class="sitenav" id="homelink">Home</div></a></li>
@@ -52,6 +52,7 @@
                 <div class="loggedin">{{user}}</div>
         </div>
 	<div id="NPStext">
+{% if errorCatch != "yes" %}
 	<h1> {{ class }} Class Manager </h1>
 	<b>Share this URL with students for them to join your class:</b><br>http://localhost:8080/EnrollClass?key={{classKey}}<br><br>
 	<b>View your students' progress <a href="/ClassManager?grades={{classKey}}">here</a>
@@ -98,7 +99,11 @@
 	<input type="submit" value="Update">
 	</form>
 	</div>
-
+{% else %}
+    <br><br>
+    <center><b>Error in accessing page. Either page does not exist or you do not have acess.<br></b>
+    <br><br><br>
+{% endif %}
 {% if not user %}
 <a href="{{ url|safe }}">{{ url_linktext }}</a>
 <br><br>

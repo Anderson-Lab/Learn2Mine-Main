@@ -738,7 +738,7 @@ class Learn2MineClass(ndb.Model):
     """Models an individual User Lesson entry with author, content, and date."""
 
     instructor = ndb.UserProperty(indexed=True)
-    student = ndb.UserProperty(repeated=True)
+    students = ndb.UserProperty(repeated=True)
     PublicLessonplan = ndb.StringProperty(repeated=True)
     DMLessonplan = ndb.StringProperty(repeated=True)
     className = ndb.StringProperty(indexed=True)
@@ -1178,6 +1178,54 @@ class ClassManagerHandler(webapp2.RequestHandler):
 			thisClass.put()
 		self.redirect('/ClassManager?class='+className)
 
+class EnrollmentHandler(webapp2.RequestHandler):
+        @decorator.oauth_required
+	def get(self):
+		lessonKey = self.request.get("key")
+		thisUser = users.get_current_user()
+		if not lessonKey:
+                        template_values = {'user':thisUser,'errorCatch':"yes"}
+                        self.response.write(template.render(template_values))
+                        return
+		template = JINJA_ENVIRONMENT.get_template('EnrollClass.html')
+		classQuery = Learn2MineClass.query().filter(Learn2MineClass.classKey==lessonKey).fetch(1)
+		if len(classQuery) == 0:
+                        template_values = {'user':thisUser,'errorCatch':"yes"}
+                        self.response.write(template.render(template_values))
+                        return
+		thisLesson = classQuery[0]
+		if thisUser in thisLesson.students:
+                        template_values = {'user':thisUser,'errorCatch':"yes", 'enrolled':yes }
+                        self.response.write(template.render(template_values))
+                        return
+		template_values = {'user':thisUser, 'className':thisLesson.className,'classInstructor':thisLesson.instructor, 'classKey':lessonKey }
+		self.response.write(template.render(template_values))
+	def post(self):
+		lessonKey = self.request.get("key")
+		thisUser = users.get_current_user()
+		enrollmentStatus = self.request.get("join")
+		if enrollmentStatus == "Yes":
+			thisClass = Learn2MineClass.query().filter(Learn2MineClass.classKey == lessonKey).fetch(1)[0]
+			thisClass.students.append(thisUser)
+			thisClass.put()
+			time.sleep(0.5)
+	                self.redirect('/GradeViewer?key='+lessonKey)
+
+		else:
+	                self.redirect('/Class')
+
+class GradeViewerHandler(webapp2.RequestHandler):
+	def get(self):
+		template = JINJA_ENVIRONMENT.get_template('GradeViewer.html')
+		thisUser = users.get_current_user()
+		lessonKey = self.request.get("key")
+		if not lessonKey:
+			template_values = {'user':thisUser,'errorCatch':"yes"}
+			self.response.write(template.render(template_values))
+			return
+		template_values = {}
+		self.response.write(template.render(template_values))
+
 #Handles page redirects
 app = webapp2.WSGIApplication([
     ('/Home', HomeHandler),
@@ -1203,5 +1251,7 @@ app = webapp2.WSGIApplication([
     ('/RefreshGrade', GradeRefreshHandler),
     ('/Class', ClassPortalHandler),
     ('/ClassCreator', ClassCreatorHandler),
-    ('/ClassManager', ClassManagerHandler)
+    ('/ClassManager', ClassManagerHandler),
+    ('/GradeViewer', GradeViewerHandler),
+    ('/EnrollClass', EnrollmentHandler)
 ], debug=True)
