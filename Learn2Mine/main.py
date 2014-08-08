@@ -734,6 +734,14 @@ class GalaxyParams(ndb.Model):
     api_key = ndb.StringProperty(indexed=True)
     workflow_id = ndb.StringProperty(indexed=True)
 
+class Learn2MineClass(ndb.Model):
+    """Models an individual User Lesson entry with author, content, and date."""
+
+    instructor = ndb.UserProperty(indexed=True)
+    student = ndb.UserProperty(repeated=True)
+    lessonPlan = ndb.StringProperty(repeated=True)
+    className = ndb.StringProperty()
+
 class User2Lesson(ndb.Model):
     user = ndb.UserProperty(indexed=True)
     lesson = ndb.StringProperty(indexed=True)
@@ -1064,6 +1072,87 @@ class LessonModifyHandler(webapp2.RequestHandler):
         else:
             self.redirect('/LessonModify?public='+str(userLesson.urlKey))
 
+class ClassPortalHandler(webapp2.RequestHandler):
+	@decorator.oauth_required
+
+	def get(self):
+		template = JINJA_ENVIRONMENT.get_template('Class.html')
+	        thisUser = users.get_current_user()
+        	if thisUser:   
+        	    url = users.create_logout_url(self.request.uri)
+        	    url_linktext = 'Logout'
+        	else:
+        	    url = users.create_login_url(self.request.uri)
+        	    url_linktext = 'Login'
+		template_values = {'user':thisUser, 'url_linktext':url_linktext}
+	        self.response.write(template.render(template_values))
+
+	def post(self):
+		self.redirect('/Class')
+
+class ClassCreatorHandler(webapp2.RequestHandler):
+	@decorator.oauth_required
+
+	def get(self):
+		template = JINJA_ENVIRONMENT.get_template('ClassCreator.html')
+	        thisUser = users.get_current_user()
+		DMLessonQuery = Learn2MineLesson.query().fetch(1)
+		DMLessons = []
+		for DMLesson in DMLessonQuery:
+			DMLessons.append(DMLesson.header)
+
+		PublicLessonQuery = UsermadeLesson.query().fetch(1)
+		PublicLessons = []
+		for PublicLesson in PublicLessonQuery:
+			PublicLessons.append(PublicLesson.header)		
+
+        	if thisUser:   
+        	    url = users.create_logout_url(self.request.uri)
+        	    url_linktext = 'Logout'
+		template_values = {'user':thisUser, 'url_linktext':url_linktext, 'DMLessons':DMLessons,'PublicLessons':PublicLessons}
+	        self.response.write(template.render(template_values))
+
+	def post(self):
+		thisUser = users.get_current_user()
+		DMLessons = self.request.get_all("addDMLessons")
+		PublicLessons = self.request.get_all("addPublicLessons")
+		className = self.request.get("className")
+		newClass = Learn2MineClass()
+		newClass.lessonPlan = PublicLessons + DMLessons
+		newClass.instructor = thisUser
+		newClass.className = className
+		newClass.put()
+		self.redirect('/ClassManager?class='+className)
+
+class ClassManagerHandler(webapp2.RequestHandler):
+	@decorator.oauth_required
+
+	def get(self):
+		template = JINJA_ENVIRONMENT.get_template('ClassManager.html')
+	        thisUser = users.get_current_user()
+		existingClassQuery = Learn2MineClass.query().filter(Learn2MineClass.instructor == thisUser).filter(Learn2MineClass.className == self.request.get("class")).fetch(1)
+		if len(existingClassQuery) > 0:
+			thisClass = existingClassQuery[0]
+		else:
+			template_values = {'user':thisUser,'errorCatch':"yes"}
+			self.response.write(template.render(template_values))
+			return
+        	if thisUser:   
+        	    url = users.create_logout_url(self.request.uri)
+        	    url_linktext = 'Logout'
+		template_values = {'user':thisUser, 'url_linktext':url_linktext, 'class':thisClass.className}
+	        self.response.write(template.render(template_values))
+
+	def post(self):
+		thisUser = users.get_current_user()
+		AddDMLessons = self.request.get_all("addDMLessons")
+		AddPublicLessons = self.request.get_all("addPublicLessons")
+		RemoveDMLessons = self.request.get_all("removeDMLessons")
+		RemovePublicLessons = self.request.get_all("removePublicLessons")
+		className = self.request.get("class")
+		thisClass = Learn2MineClass().query().filter(Learn2MineClass.instructor == thisUser).filter(Learn2MineClass.className == className).fetch(1)[0]
+		self.redirect('/ClassManager?class='+className)
+
 #Handles page redirects
 app = webapp2.WSGIApplication([
     ('/Home', HomeHandler),
@@ -1086,6 +1175,9 @@ app = webapp2.WSGIApplication([
     ('/OnsiteGrader', GradingHandler),
     ('/LessonCreator', LessonCreatorHandler),
     ('/LessonPreview', LessonPreviewHandler),
-    ('/RefreshGrade', GradeRefreshHandler)
+    ('/RefreshGrade', GradeRefreshHandler),
+    ('/Class', ClassPortalHandler),
+    ('/ClassCreator', ClassCreatorHandler),
+    ('/ClassManager', ClassManagerHandler)
 ], debug=True)
 

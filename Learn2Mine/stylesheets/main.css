@@ -247,7 +247,6 @@ div#leaderboard{
 	position: absolute;
 	padding-top:7px;
 }
-
 div#homelink{
 	background-color:#313131;
 	left:10px;
@@ -283,6 +282,10 @@ div#rstudiolink{
 div#lessoncreatorlink{
 	background-color:#313131;
 	left:650px;
+}
+div#classviewlink{
+	background-color:#313131;
+	left:750px;
 }
 /*site nav hover images*/
 div#homelink:hover{
