@@ -6,34 +6,8 @@
 </head>
 <link rel="shortcut icon" href="./images/l2m.ico">
 <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
-<title>Learn2Mine Lesson Maker</title>
+<title>Learn2Mine Class Enrollment</title>
 <script type="text/javascript">
-    function validateUpdate() {
-	var checked = 0;
-
-	if(updateLesson.removePython.checked && updateLesson.removeRcode.checked) {
-	    alert("Cannot remove both programming langauges.");
-	    return false;
-	}
-	if(!(typeof updateLesson.removeQuestion.length == "undefined")) {
-	    for (i=0; i < updateLesson.removeQuestion.length; i++) {
-		if (updateLesson.removeQuestion[i].checked) {
-		    checked++;
-		}
-	    }
-	    if (checked == updateLesson.removeQuestion.length) {
-		alert("Cannot remove all questions from lesson.");
-		return false;
-	    }
-	}
-	else {
-	    if(updateLesson.removeQuestion.checked) {
-		alert("Cannot remove all questions from lesson.");
-		return false;
-	    }
-	}
-	return true;
-    }
 </script>
 <body>
 <a href="http://birg.cs.cofc.edu/index.php/Anderson_Lab"><img src="/images/Paul-labs-logo.png" align="right" title="BiRG Labs" style="width: 75px;"></a>
@@ -51,30 +25,25 @@
                 </ul>
                 <div class="loggedin">{{user}}</div>
         </div>
+	{% if errorCatch != "yes" %}
 	<div id="NPStext">
-	<h1> Design Class Lessonplan </h1>
-	<form name="ClassCreator" action="/ClassCreator" method="post">
-	<input type="hidden" value={{ classKey }} name="key">
-	<h3>Step 1) Set a name for your class:</h3><input type="text" name="className"><br>
-	<h3>Step 2) Choose from the lessons below to populate your lessonplan</h3>
-        {% if AddDMLessons|length > 0 %}
-        <h4>Learn2Mine Lessons:</h4><br>
-                {% for DMLesson in AddDMLessons %}
-                <input type="checkbox" name="addDMLesson" value="{{DMLesson}}">{{DMLesson}}<br>
-                {% endfor %}
-	<br>
-        {% endif %}
-        {% if AddPublicLessons|length > 0 %}
-        <h4>Public Lessons:</h4>
-                {% for PublicLesson in AddPublicLessons %}
-                <input type="checkbox" name="addPublicLesson" value="{{PublicLesson}}">{{PublicLesson}}<br>
-                {% endfor %}
-        {% endif %}
-	<br>
-	<input type="submit" value="Create">
+	<form name="ClassEnroll" action="/EnrollClass" method="post">
+	<br><br>
+	<center><h3>Would you like to join the class {{ className }} with instructor {{ classInstructor }}?</h3>
+	<input type="submit" name="join" value="Yes">&nbsp;&nbsp;&nbsp;&nbsp;
+	<input type="submit" name="join" value="No">
 	</form>
 	</div>
-
+	{% else %}
+		{% if enrolled == "yes" %}
+			<br><br>
+			<center><b>You have already enrolled in this class.<br></b>
+			<br><br><br>
+		{% endif %}
+	<br><br>
+	<center><b>Error in accessing page. Either page does not exist or you do not have acess.<br></b>
+	<br><br><br>
+	{% endif %}
 {% if not user %}
 <a href="{{ url|safe }}">{{ url_linktext }}</a>
 <br><br>
