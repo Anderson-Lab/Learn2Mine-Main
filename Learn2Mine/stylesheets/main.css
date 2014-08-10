@@ -212,7 +212,10 @@ div#pageslide{
 
 /*LEADERBOARDS*/
 table{
-	color:#FFFFFF
+        color:#FFFFFF
+}
+table#grades{
+	color:#828282
 }
 table#leaderboard{
 	background-image:url('../images/leaderboard.png');

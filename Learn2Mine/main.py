@@ -490,8 +490,8 @@ class DMLessonHandler(webapp2.RequestHandler):
         useremail = users.get_current_user()
         template = JINJA_ENVIRONMENT.get_template('DMLessonTest.html')
         page = self.request.get("page")
-        q = UsermadeLesson.query()
-        query = q.filter(UsermadeLesson.name == page).fetch(1)
+        q = DMLesson.query()
+        query = q.filter(DMLesson.name == page).fetch(1)
 	if len(query) > 0:
             thisLesson = query[0]
             returnLanguages = []
@@ -503,15 +503,15 @@ class DMLessonHandler(webapp2.RequestHandler):
             template_values = {'user':useremail,'errorCatch':"yes"}
             self.response.write(template.render(template_values))
             return
-        existingUserLessonKey = User2Lesson.query().filter(User2Lesson.user == users.get_current_user()).filter(User2Lesson.lesson == page).fetch(1)
+        existingUserLessonKey = User2Lesson.query().filter(User2Lesson.user == users.get_current_user()).filter(User2Lesson.lessonID == page).fetch(1)
         if not existingUserLessonKey:
             userLesson = User2Lesson()
             userLesson.python = [""] * len(thisLesson.problems)
             userLesson.rcode = [""] * len(thisLesson.problems)
             userLesson.user = users.get_current_user()
-            userLesson.historyId = [""] * len(thisLesson.problems)
-            userLesson.outputId = [""] * len(thisLesson.problems)
-            userLesson.lesson = page 
+            userLesson.historyID = [""] * len(thisLesson.problems)
+            userLesson.outputID = [""] * len(thisLesson.problems)
+            userLesson.lessonID = page
             userLesson.experience = 0
             userLesson.badge = "images/"+page+"Mastery.png"
             userLesson.returnStatements = ["No submission"] * len(thisLesson.problems)
@@ -524,6 +524,48 @@ class DMLessonHandler(webapp2.RequestHandler):
         for problem in thisLesson.problems:
            printProblems.append("<br />".join(problem.split("\n")))
 	template_values = { 'user':users.get_current_user(), 'problems':printProblems,'paragraph':thisLesson.paragraph,'header':thisLesson.header,'languages':returnLanguages, 'page':thisLesson.name, 'result':returnVals, 'exp':experience, 'badge':userLesson.badge }
+        self.response.write(template.render(template_values))
+
+class PublicLessonHandler(webapp2.RequestHandler):
+    @decorator.oauth_required
+    def get(self):
+        useremail = users.get_current_user()
+        template = JINJA_ENVIRONMENT.get_template('PublicLessonTest.html')
+        page = self.request.get("key")
+        q = UsermadeLesson.query()
+        query = q.filter(UsermadeLesson.urlKey == page).fetch(1)
+	if len(query) > 0:
+            thisLesson = query[0]
+            returnLanguages = []
+            if "Python" in thisLesson.languages:
+                returnLanguages.append("python")
+            if "R" in thisLesson.languages:
+                returnLanguages.append("rcode")
+        else:
+            template_values = {'user':useremail,'errorCatch':"yes"}
+            self.response.write(template.render(template_values))
+            return
+        existingUserLessonKey = User2Lesson.query().filter(User2Lesson.user == users.get_current_user()).filter(User2Lesson.lessonID == page).fetch(1)
+        if not existingUserLessonKey:
+            userLesson = User2Lesson()
+            userLesson.python = [""] * len(thisLesson.problems)
+            userLesson.rcode = [""] * len(thisLesson.problems)
+            userLesson.user = users.get_current_user()
+            userLesson.historyID = [""] * len(thisLesson.problems)
+            userLesson.outputID = [""] * len(thisLesson.problems)
+            userLesson.lessonID = page
+            userLesson.experience = 0
+            userLesson.badge = "images/"+page+"Mastery.png"
+            userLesson.returnStatements = ["No submission"] * len(thisLesson.problems)
+            userLesson.put()
+        else:
+            userLesson = existingUserLessonKey[0]
+        returnVals = userLesson.returnStatements[:]
+        experience = userLesson.experience
+        printProblems = []
+        for problem in thisLesson.problems:
+           printProblems.append("<br />".join(problem.split("\n")))
+	template_values = { 'user':users.get_current_user(), 'problems':printProblems,'paragraph':thisLesson.paragraph,'header':thisLesson.header,'languages':returnLanguages, 'urlKey':page, 'result':returnVals, 'exp':experience, 'badge':userLesson.badge }
         self.response.write(template.render(template_values))
 
 class TutorialProfileHandler(webapp2.RequestHandler):
@@ -567,10 +609,19 @@ class GradingHandler(webapp2.RequestHandler):
 	def post(self):
 		studentCode = self.request.get("studentCode")
 		email = str(users.get_current_user())
-		query = UsermadeLesson.query()
-		thisLesson = query.filter(UsermadeLesson.name == self.request.get("page")).fetch(1)[0]
+		if not self.request.get("urlKey"):
+			type = "DM"
+			query = DMLesson.query()
+			thisLesson = query.filter(DMLesson.name == self.request.get("page")).fetch(1)[0]
+			page = self.request.get("page")
+
+		else:
+			type = "Public"
+			query = UsermadeLesson.query()
+			thisLesson = query.filter(UsermadeLesson.urlKey == self.request.get("urlKey")).fetch(1)[0]
+			page = self.request.get("urlKey")
+
 		language = self.request.get("language")
-		page = self.request.get("page")
 		problem = self.request.get("question")
 		if "Python Code" in language:
 			language = "python"
@@ -603,19 +654,19 @@ class GradingHandler(webapp2.RequestHandler):
 
 		other=json.dumps({"email":email,"studentCode":studentCode, "instructorCode":instructCode, "initializationCode":initCode, "finalizationCode":finalCode, "language":language, "badgeName":""})
 		results = workflow_execute_parameters(api_key,url+'workflows/',workflow_id,historyid,"param=gradeCode=other="+other)
-		outputid = results['outputs'][0]
+		outputID = results['outputs'][0]
 		hist_id = results['history']
 
-		userLesson = User2Lesson.query().filter(User2Lesson.user == users.get_current_user()).filter(User2Lesson.lesson == page).fetch(1)[0]
+		userLesson = User2Lesson.query().filter(User2Lesson.user == users.get_current_user()).filter(User2Lesson.lessonID == page).fetch(1)[0]
 
 		if language == "python":
 			userLesson.python[int(problem)-1] = studentCode
 		elif language == "rcode":
 			userLesson.rcode[int(problem)-1] = studentCode
-		userLesson.historyId[int(problem)-1] = hist_id
-		userLesson.outputId[int(problem)-1] = outputid
+		userLesson.historyID[int(problem)-1] = hist_id
+		userLesson.outputID[int(problem)-1] = outputID
 		userLesson.put()
-                url = str(galaxyInstance.url) + "histories/" + hist_id + "/contents/" + outputid + "/display"
+                url = str(galaxyInstance.url) + "histories/" + hist_id + "/contents/" + outputID + "/display"
                 results = display_result(galaxyInstance.api_key,url)
 		if results == "Running":
 			if any(string in userLesson.returnStatements[int(problem)-1] for string in ["Congratulations!","- previous correct"]):
@@ -646,7 +697,11 @@ class GradingHandler(webapp2.RequestHandler):
 			returnLanguages.append("rcode")
 		userLesson.put()
 		time.sleep(0.75)
-		self.redirect("/DMLessonTest?page="+page)
+		if type == "DM":
+			self.redirect("/DMLessonTest?page="+page)
+		else:
+			self.redirect("/PublicLessonTest?key="+page)
+			
 
 #class GradingHandler(webapp2.RequestHandler):
 #	def post(self):
@@ -691,13 +746,21 @@ class GradingHandler(webapp2.RequestHandler):
 class GradeRefreshHandler(webapp2.RequestHandler):
 	@decorator.oauth_required
 	def post(self):
-		page = self.request.get("page")
+                if not self.request.get("urlKey"):
+			type = "DM"
+			page = self.request.get("page")
+	                thisLesson = DMLesson.query().filter(UsermadeLesson.name == page).fetch(1)[0]
+
+		else:
+			type = "Public"
+			page = self.request.get("urlKey")
+	                thisLesson = UsermadeLesson.query().filter(UsermadeLesson.urlKey == page).fetch(1)[0]
+
 		problem = self.request.get("question")
-                userLesson = User2Lesson.query().filter(User2Lesson.user == users.get_current_user()).filter(User2Lesson.lesson == page).fetch(1)[0]		
+                userLesson = User2Lesson.query().filter(User2Lesson.user == users.get_current_user()).filter(User2Lesson.lessonID == page).fetch(1)[0]		
                 galaxyInstance = GalaxyParams.query().fetch(1)[0]
-                thisLesson = UsermadeLesson.query().filter(UsermadeLesson.name == self.request.get("page")).fetch(1)[0]
-                hist_id = userLesson.historyId[int(problem)-1]
-                output_id = userLesson.outputId[int(problem)-1]
+                hist_id = userLesson.historyID[int(problem)-1]
+                output_id = userLesson.outputID[int(problem)-1]
                 url = str(galaxyInstance.url) + "histories/" + hist_id + "/contents/" + output_id + "/display"
                 results = display_result(galaxyInstance.api_key,url)
 		if results == "Running":
@@ -725,7 +788,10 @@ class GradeRefreshHandler(webapp2.RequestHandler):
                 userLesson.returnStatements[int(problem)-1] = returnStatement
 		userLesson.put()
 		time.sleep(0.75)
-                self.redirect("/DMLessonTest?page="+page)
+                if type == "DM":
+                        self.redirect("/DMLessonTest?page="+page)
+                else:
+                        self.redirect("/PublicLessonTest?key="+page)
 
 class GalaxyParams(ndb.Model):
     """Models an individual User Lesson entry with author, content, and date."""
@@ -746,9 +812,9 @@ class Learn2MineClass(ndb.Model):
 
 class User2Lesson(ndb.Model):
     user = ndb.UserProperty(indexed=True)
-    lesson = ndb.StringProperty(indexed=True)
-    historyId = ndb.StringProperty(repeated=True)
-    outputId = ndb.StringProperty(repeated=True)
+    lessonID = ndb.StringProperty(indexed=True)
+    historyID = ndb.StringProperty(repeated=True)
+    outputID = ndb.StringProperty(repeated=True)
     experience = ndb.FloatProperty()
     badge = ndb.StringProperty(indexed=True)
 
@@ -1087,15 +1153,15 @@ class ClassPortalHandler(webapp2.RequestHandler):
 		        self.response.write(template.render(template_values))
 			return
 		instructing = Learn2MineClass.query().filter(Learn2MineClass.instructor == thisUser).fetch(10)
-#		enrolled = Learn2MineClass.query().filter(Learn2MineClass.student == thisUser).fetch(10)
+		enrolledQuery = Learn2MineClass.query().fetch(10)
+		enrolledClasses = []
+		for thisClass in enrolledQuery:
+			if thisUser in thisClass.students:
+				enrolledClasses.append([thisClass.className,thisClass.classKey])
 		instructingClasses = []
 		for lesson in instructing:
 			instructingClasses.append(lesson.className)
-		enrolled = []
-		enrolledClasses = []
-		for inClass in enrolled:
-			enrolledClasses.append(inClass.className)
-		template_values = {'user':thisUser, 'instructingClasses':instructingClasses, 'enrolledClasses':enrolledClasses}
+		template_values = {'user':thisUser, 'instructingClasses':instructingClasses, 'enrolledClasses': enrolledClasses}
 	        self.response.write(template.render(template_values))
 
 	def post(self):
@@ -1110,11 +1176,11 @@ class ClassCreatorHandler(webapp2.RequestHandler):
 		DMLessonQuery = Learn2MineLesson.query().fetch(1)
 		DMLessons = []
 		for DMLesson in DMLessonQuery:
-			DMLessons.append(DMLesson.header)
-		PublicLessonQuery = UsermadeLesson.query().fetch(1)
+			DMLessons.append([DMLesson.header, DMLesson.name])
+		PublicLessonQuery = UsermadeLesson.query().fetch(10)
 		PublicLessons = []
 		for PublicLesson in PublicLessonQuery:
-			PublicLessons.append(PublicLesson.header)		
+			PublicLessons.append([PublicLesson.header, PublicLesson.urlKey])		
         	if thisUser:   
         	    url = users.create_logout_url(self.request.uri)
         	    url_linktext = 'Logout'
@@ -1127,8 +1193,11 @@ class ClassCreatorHandler(webapp2.RequestHandler):
 		PublicLessons = self.request.get_all("addPublicLesson")
 		className = self.request.get("className")
 		newClass = Learn2MineClass()
-		newClass.PublicLessonplan = PublicLessons
-		newClass.DMLessonplan = DMLessons
+		newClass.PublicLessonplan = []
+		newClass.DMLessonplan = []
+		newClass.students = []
+		newClass.PublicLessonplan.extend(PublicLessons)
+		newClass.DMLessonplan.extend(DMLessons)
 		newClass.instructor = thisUser
 		newClass.className = className
 		newClass.classKey = ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(20)])
@@ -1149,16 +1218,21 @@ class ClassManagerHandler(webapp2.RequestHandler):
 			template_values = {'user':thisUser,'errorCatch':"yes"}
 			self.response.write(template.render(template_values))
 			return
-		removeDMLessons = thisClass.DMLessonplan
-		removePublicLessons = thisClass.PublicLessonplan
+		removeDMLessons = []
+		removePublicLessons = []
+		for lesson in thisClass.DMLessonplan:
+			removeDMLessons.append([Learn2MineLesson.query().filter(Learn2MineLesson.name == lesson).fetch(1)[0].header,lesson])
+		for lesson in thisClass.PublicLessonplan:
+			removePublicLessons.append([UsermadeLesson.query().filter(UsermadeLesson.urlKey == lesson).fetch(1)[0].header,lesson])
 		addDMLessons = []
 		addPublicLessons = []
 		for lesson in UsermadeLesson.query().fetch(10):
-			if lesson.header not in removePublicLessons:
-				addPublicLessons.append(lesson.header)
+			if [lesson.header,lesson.urlKey] not in removePublicLessons:
+				addPublicLessons.append([lesson.header,lesson.urlKey])
 		for lesson in Learn2MineLesson.query().fetch(10):
-			if lesson.header not in removeDMLessons:
-				addDMLessons.append(lesson.header)
+			if [lesson.header,lesson.name] not in removeDMLessons:
+				addDMLessons.append([lesson.header,lesson.name])
+		print '\n\nAddDMLessons:',removePublicLessons
 		template_values = {'user':thisUser, 'class':className, 'RemovePublicLessons':removePublicLessons, 'RemoveDMLessons':removeDMLessons, 'AddPublicLessons':addPublicLessons, 
 		'AddDMLessons':addDMLessons, 'classKey':thisClass.classKey }
 	        self.response.write(template.render(template_values))
@@ -1166,50 +1240,55 @@ class ClassManagerHandler(webapp2.RequestHandler):
 	def post(self):
 		thisUser = users.get_current_user()
 		AddDMLessons = self.request.get_all("addDMLessons")
-		AddPublicLessons = self.request.get_all("addPublicLessons")
+		AddPublicLessons = self.request.get_all("addPublicLesson")
+		print "add:",AddPublicLessons
 		RemoveDMLessons = self.request.get_all("removeDMLessons")
-		RemovePublicLessons = self.request.get_all("removePublicLessons")
+		RemovePublicLessons = self.request.get_all("removePublicLesson")
 		className = self.request.get("class")
 		newClassName = self.request.get("newClassName")
 		thisClass = Learn2MineClass().query().filter(Learn2MineClass.instructor == thisUser).filter(Learn2MineClass.className == className).fetch(1)[0]
+		for lesson in AddPublicLessons:
+			thisClass.PublicLessonplan.extend([UsermadeLesson.query().filter(UsermadeLesson.urlKey == lesson).fetch(1)[0].header,lesson])
+		for lesson in AddDMLessons:
+			thisClass.DMLessonplan.extend([Learn2MineLesson.query().filter(Learn2MineLesson.name == lesson).fetch(1)[0].header,lesson])
 		if newClassName:
 			thisClass.className = newClassName
 			className = newClassName
-			thisClass.put()
+		thisClass.put()
 		self.redirect('/ClassManager?class='+className)
 
 class EnrollmentHandler(webapp2.RequestHandler):
         @decorator.oauth_required
 	def get(self):
-		lessonKey = self.request.get("key")
+		classKey = self.request.get("key")
 		thisUser = users.get_current_user()
-		if not lessonKey:
+		if not classKey:
                         template_values = {'user':thisUser,'errorCatch':"yes"}
                         self.response.write(template.render(template_values))
                         return
 		template = JINJA_ENVIRONMENT.get_template('EnrollClass.html')
-		classQuery = Learn2MineClass.query().filter(Learn2MineClass.classKey==lessonKey).fetch(1)
+		classQuery = Learn2MineClass.query().filter(Learn2MineClass.classKey==classKey).fetch(1)
 		if len(classQuery) == 0:
                         template_values = {'user':thisUser,'errorCatch':"yes"}
                         self.response.write(template.render(template_values))
                         return
 		thisLesson = classQuery[0]
-		if thisUser in thisLesson.students:
-                        template_values = {'user':thisUser,'errorCatch':"yes", 'enrolled':yes }
+		if thisUser.email in thisLesson.students:
+                        template_values = {'user':thisUser,'errorCatch':"yes", 'enrolled':"yes" }
                         self.response.write(template.render(template_values))
                         return
-		template_values = {'user':thisUser, 'className':thisLesson.className,'classInstructor':thisLesson.instructor, 'classKey':lessonKey }
+		template_values = {'user':thisUser, 'className':thisLesson.className,'classInstructor':thisLesson.instructor, 'classKey':classKey }
 		self.response.write(template.render(template_values))
 	def post(self):
-		lessonKey = self.request.get("key")
+		classKey = self.request.get("key")
 		thisUser = users.get_current_user()
 		enrollmentStatus = self.request.get("join")
 		if enrollmentStatus == "Yes":
-			thisClass = Learn2MineClass.query().filter(Learn2MineClass.classKey == lessonKey).fetch(1)[0]
+			thisClass = Learn2MineClass.query().filter(Learn2MineClass.classKey == classKey).fetch(1)[0]
 			thisClass.students.append(thisUser)
 			thisClass.put()
 			time.sleep(0.5)
-	                self.redirect('/GradeViewer?key='+lessonKey)
+	                self.redirect('/GradeViewer?key='+classKey)
 
 		else:
 	                self.redirect('/Class')
@@ -1218,12 +1297,37 @@ class GradeViewerHandler(webapp2.RequestHandler):
 	def get(self):
 		template = JINJA_ENVIRONMENT.get_template('GradeViewer.html')
 		thisUser = users.get_current_user()
-		lessonKey = self.request.get("key")
-		if not lessonKey:
+		classKey = self.request.get("key")
+		if not classKey:
 			template_values = {'user':thisUser,'errorCatch':"yes"}
 			self.response.write(template.render(template_values))
 			return
-		template_values = {}
+		thisClassQuery = Learn2MineClass.query().filter(Learn2MineClass.classKey == classKey).fetch(1)
+		if len(thisClassQuery) == 0:
+			template_values = {'user':thisUser,'errorCatch':"yes"}
+			self.response.write(template.render(template_values))
+			return
+		thisClass = thisClassQuery[0]
+		lessonplanResults = []
+		for DMLesson in thisClass.DMLessonplan:
+			lessonGrades = User2Lesson.query().filter(User2Lesson.user == thisUser).filter(User2Lesson.lessonID == DMLesson.name).fetch(1)
+			if len(lessonGrades) == 0:
+				userGrades = (["No submission"] * len(Learn2MineLesson.query().filter(Learn2MineLesson.name == DMLesson).fetch(1)[0].problems))
+			else:
+				userGrades = lessonGrades[0].returnStatements
+                        lessonplanResults.append([Learn2MineLesson.query().filter(Learn2MineLesson.name == DMLesson).fetch(1)[0].header,DMLesson,userGrades,"DM"])
+		for PublicLesson in thisClass.PublicLessonplan:
+			lessonGrades = User2Lesson.query().filter(User2Lesson.user == thisUser).filter(User2Lesson.lessonID == PublicLesson).fetch(1)
+			if len(lessonGrades) == 0:
+				userGrades = (["No submission"] * len(UsermadeLesson.query().filter(UsermadeLesson.urlKey == PublicLesson).fetch(1)[0].problems))
+			else:
+				userGrades = lessonGrades[0].returnStatements
+                        lessonplanResults.append([UsermadeLesson.query().filter(UsermadeLesson.urlKey == PublicLesson).fetch(1)[0].header,PublicLesson,userGrades,"public"])
+		maxProblemCount = 0
+		for lesson in lessonplanResults:
+			if len(lesson[2]) > maxProblemCount:
+				maxProblemCount = len(lesson[2])
+		template_values = {'user':thisUser, 'class':thisClass.className, 'instructor':thisClass.instructor, 'lessonplanResults':lessonplanResults, 'maxProblemCount':maxProblemCount }
 		self.response.write(template.render(template_values))
 
 #Handles page redirects
@@ -1244,6 +1348,7 @@ app = webapp2.WSGIApplication([
     ('/TutorialProfile', TutorialProfileHandler),
     ('/DMLesson', DMLessonHandler),
     ('/DMLessonTest', DMLessonHandler),
+    ('/PublicLessonTest', PublicLessonHandler),
     ('/LessonModify', LessonModifyHandler),
     ('/OnsiteGrader', GradingHandler),
     ('/LessonCreator', LessonCreatorHandler),

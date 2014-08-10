@@ -60,14 +60,14 @@
         {% if AddDMLessons|length > 0 %}
         <h4>Learn2Mine Lessons:</h4><br>
                 {% for DMLesson in AddDMLessons %}
-                <input type="checkbox" name="addDMLesson" value="{{DMLesson}}">{{DMLesson}}<br>
+                <input type="checkbox" name="addDMLesson" value="{{DMLesson[1]}}">{{DMLesson[0]}}<br>
                 {% endfor %}
 	<br>
         {% endif %}
         {% if AddPublicLessons|length > 0 %}
         <h4>Public Lessons:</h4>
                 {% for PublicLesson in AddPublicLessons %}
-                <input type="checkbox" name="addPublicLesson" value="{{PublicLesson}}">{{PublicLesson}}<br>
+                <input type="checkbox" name="addPublicLesson" value="{{PublicLesson[1]}}">{{PublicLesson[0]}}<br>
                 {% endfor %}
         {% endif %}
 	<br>

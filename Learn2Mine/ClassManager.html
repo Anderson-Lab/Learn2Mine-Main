@@ -63,14 +63,14 @@
 	{% if AddDMLessons|length > 0 %}
 	Learn2Mine Lessons:<br>
 		{% for DMLesson in AddDMLessons %}
-		<input type="checkbox" name="addDMLesson" value="{{DMLesson}}">{{DMLesson}}<br>
+		<input type="checkbox" name="addDMLesson" value="{{DMLesson[1]}}">{{DMLesson[0]}}<br>
 		{% endfor %}
 		<br>
 	{% endif %}
 	{% if AddPublicLessons|length > 0 %}
 	Public Lessons:<br>
 		{% for PublicLesson in AddPublicLessons %}
-		<input type="checkbox" name="addPublicLesson" value="{{PublicLesson}}">{{PublicLesson}}<br>
+		<input type="checkbox" name="addPublicLesson" value="{{PublicLesson[1]}}">{{PublicLesson[0]}}<br>
 		{% endfor %}
 	{% endif %}
 	{% if AddPublicLessons|length == 0 and AddDMLessons|length == 0%}
@@ -81,14 +81,14 @@
 	{% if RemoveDMLessons|length > 0 %}
 	Learn2Mine Lessons:<br>
 		{% for DMLesson in RemoveDMLessons %}
-		<input type="checkbox" name="removeDMLesson" value="{{DMLesson}}">{{DMLesson}}<br>
+		<input type="checkbox" name="removeDMLesson" value="{{DMLesson[1]}}">{{DMLesson[0]}}<br>
 		{% endfor %}
 		<br>
 	{% endif %}
 	{% if RemovePublicLessons|length > 0 %}
 	Public Lessons:<br>
 		{% for PublicLesson in RemovePublicLessons %}
-		<input type="checkbox" name="removePublicLesson" value="{{PublicLesson}}">{{PublicLesson}}<br>
+		<input type="checkbox" name="removePublicLesson" value="{{PublicLesson[1]}}">{{PublicLesson[0]}}<br>
 		{% endfor %}
 	{% endif %}
 	{% if RemovePublicLessons|length == 0 and RemoveDMLessons|length == 0%}
