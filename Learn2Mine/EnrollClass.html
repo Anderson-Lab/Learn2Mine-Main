@@ -28,6 +28,7 @@
 	{% if errorCatch != "yes" %}
 	<div id="NPStext">
 	<form name="ClassEnroll" action="/EnrollClass" method="post">
+	<input type="hidden" value="{{classKey}}" name="key">
 	<br><br>
 	<center><h3>Would you like to join the class {{ className }} with instructor {{ classInstructor }}?</h3>
 	<input type="submit" name="join" value="Yes">&nbsp;&nbsp;&nbsp;&nbsp;
@@ -39,10 +40,11 @@
 			<br><br>
 			<center><b>You have already enrolled in this class.<br></b>
 			<br><br><br>
+		{% else %}
+		<br><br>
+		<center><b>Error in accessing page. Either page does not exist or you do not have acess.<br></b>
+		<br><br><br>
 		{% endif %}
-	<br><br>
-	<center><b>Error in accessing page. Either page does not exist or you do not have acess.<br></b>
-	<br><br><br>
 	{% endif %}
 {% if not user %}
 <a href="{{ url|safe }}">{{ url_linktext }}</a>

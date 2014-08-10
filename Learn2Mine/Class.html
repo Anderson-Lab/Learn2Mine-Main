@@ -93,16 +93,16 @@ function validateDelete() {
         <div id="NPStext">
 	<h1>Learn2Mine Class Portal</h1>
 	<div><b>Create and manage your own class or view your current class status</b></div><br>
-	<h2> Start a class </h2>
+	<h2> Start a Class </h2>
 	Click <a href="/ClassCreator">here</a> to start your own class and enroll students
-	{% if currentClasses|length > 0: %}
-	<h2> Your currently enrolled classes: </h2>
-		{% for class in currentClasses %}
-		    <a href="/ClassViewer?class={{ class }}">{{ class }}</a><br>
+	{% if enrolledClasses|length > 0 %}
+	<h2> Currently Enrolled Classes: </h2>
+		{% for class in enrolledClasses %}
+		    <a href="/GradeViewer?key={{ class[1] }}">{{ class[0] }}</a><br>
 		{% endfor %}
 	{% endif %}
 	{% if instructingClasses|length > 0: %}
-	<h2> Classes which you instruct</h2>
+	<h2> Classes Which You Instruct</h2>
 		{% for teaching in instructingClasses %}
 		    <a href="/ClassManager?class={{ teaching }}">{{ teaching }}</a><br>
 		{% endfor %}
