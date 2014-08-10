@@ -702,47 +702,6 @@ class GradingHandler(webapp2.RequestHandler):
 		else:
 			self.redirect("/PublicLessonTest?key="+page)
 			
-
-#class GradingHandler(webapp2.RequestHandler):
-#	def post(self):
-#		code = self.request.get("code")
-#		email = self.request.get("email")
-#		hist_id = self.request.get("hist_id")
-#		workflow_id = self.request.get("workflow_id")
-#		user_query = db.Query(User)
-#		user_query.filter('EMAIL =', email)        
-#		user = user_query.get()
-#		# Now we make a galaxy api call
-#		# This call will grade the student's work
-#		# We should get an id back from the galaxy api call
-#		api_key = "16f0632a174c3615588f17f402b5e7c2"
-#		url = "http://localhost:8081/api/workflows/"
-#
-#		hist_id = self.request.get("history")
-#		workflow_id = self.request.get("workflow_id")
-#		hist_id="0b05a232e89ad8e8"
-#		print "\n\n",code
-#		other=json.dumps({"email":email,"studentCode":code})
-#               print "\n\nOther:",other
-#		results = workflow_execute_parameters(api_key,url,workflow_id,"hist_id="+hist_id,"param=gradeCode=other="+other)
-#		results = workflow_execute_parameters(api_key,url,workflow_id,"param=gradeCode=other="+other)
-#
-#               print "\n\nResults",results
-#		outputid = results['outputs'][0]
-#		self.response.write(outputid)
-#
-#	def get(self):
-#		outputid = self.request.get("outputid")
-#		hist_id = self.request.get("hist_id")
-#		hist_id="a7e42332dab8f5db"
-#		outputid="a21c530ff78f8d17"
-#                print "\n\n",outputid
-#                print "\n\n",hist_id
-#		url = "http://localhost:8081/api/histories/"+hist_id+"/contents/"+outputid+"/display"
-#		results = display_result("16f0632a174c3615588f17f402b5e7c2",url)
-#		self.response.write(json.dumps(results))
-#		print 
-
 class GradeRefreshHandler(webapp2.RequestHandler):
 	@decorator.oauth_required
 	def post(self):
@@ -771,7 +730,6 @@ class GradeRefreshHandler(webapp2.RequestHandler):
                         else:
                                 returnStatement = "Job running"
                 else:
-			print "Results:",results['return'],"\n\n"
                         if results['return'] == "correct":
                                 returnStatement = "Congratulations! You've solved this problem."
                         else:
@@ -1315,14 +1273,16 @@ class GradeViewerHandler(webapp2.RequestHandler):
 				userGrades = (["No submission"] * len(Learn2MineLesson.query().filter(Learn2MineLesson.name == DMLesson).fetch(1)[0].problems))
 			else:
 				userGrades = lessonGrades[0].returnStatements
-                        lessonplanResults.append([Learn2MineLesson.query().filter(Learn2MineLesson.name == DMLesson).fetch(1)[0].header,DMLesson,userGrades,"DM"])
+			score = int((len([i for i, result in enumerate(userGrades) if 'solved this problem' in result])/len(userGrades))*100)
+                        lessonplanResults.append([Learn2MineLesson.query().filter(Learn2MineLesson.name == DMLesson).fetch(1)[0].header,DMLesson,userGrades,"DM",score])
 		for PublicLesson in thisClass.PublicLessonplan:
 			lessonGrades = User2Lesson.query().filter(User2Lesson.user == thisUser).filter(User2Lesson.lessonID == PublicLesson).fetch(1)
 			if len(lessonGrades) == 0:
 				userGrades = (["No submission"] * len(UsermadeLesson.query().filter(UsermadeLesson.urlKey == PublicLesson).fetch(1)[0].problems))
 			else:
 				userGrades = lessonGrades[0].returnStatements
-                        lessonplanResults.append([UsermadeLesson.query().filter(UsermadeLesson.urlKey == PublicLesson).fetch(1)[0].header,PublicLesson,userGrades,"public"])
+			score = int((len([i for i, result in enumerate(userGrades) if 'solved this problem' in result])/len(userGrades))*100)
+                        lessonplanResults.append([UsermadeLesson.query().filter(UsermadeLesson.urlKey == PublicLesson).fetch(1)[0].header,PublicLesson,userGrades,"public",score])
 		maxProblemCount = 0
 		for lesson in lessonplanResults:
 			if len(lesson[2]) > maxProblemCount:
