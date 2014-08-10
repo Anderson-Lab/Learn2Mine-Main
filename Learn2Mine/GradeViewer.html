@@ -4,35 +4,6 @@
 <head>
 <link rel="shortcut icon" href="./images/l2m.ico">
 <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
-<script type="text/javascript">
-    function validateUpdate() {
-	var checked = 0;
-
-	if(updateLesson.removePython.checked && updateLesson.removeRcode.checked) {
-	    alert("Cannot remove both programming langauges.");
-	    return false;
-	}
-	if(!(typeof updateLesson.removeQuestion.length == "undefined")) {
-	    for (i=0; i < updateLesson.removeQuestion.length; i++) {
-		if (updateLesson.removeQuestion[i].checked) {
-		    checked++;
-		}
-	    }
-	    if (checked == updateLesson.removeQuestion.length) {
-		alert("Cannot remove all questions from lesson.");
-		return false;
-	    }
-	}
-	else {
-	    if(updateLesson.removeQuestion.checked) {
-		alert("Cannot remove all questions from lesson.");
-		return false;
-	    }
-	}
-	return true;
-    }
-</script>
-<!--<meta http-equiv="refresh" content="30">-->
 <title>Learn2Mine Class Modifier</title>
 </head>
 <body>
@@ -54,7 +25,33 @@
 {% if errorCatch != "yes" %}
 	<div id="NPStext">
 	<h1> {{ class }} Grade Viewer </h1>
+<table id="grades" style="width:300px">
+<tr>
+	<td>Lesson Name</td>
+        {% for i in range(1, maxProblemCount+1) %}
+        <td>Question {{loop.index}}</td>
+        {% endfor %}
+</tr>
+<tr>
+{% for lesson in lessonplanResults %}
+	{% if lesson[3] == "DM" %}
+		<td><a href="/DMLessonTest?page={{lesson[1]}}">{{lesson[0]}}</a></td>
+	{% else %}
+		<td><a href="/PublicLessonTest?key={{lesson[1]}}">{{lesson[0]}}</a></td>
+	{% endif %}
+	{% for result in lesson[2] %}
+		{% if "solved this problem." not in result %}
+			<td><span style="color:#FF0000;font-size:140%;">&#x2716;</span></td>
+		{% else %}
+			<td><span style="color:#00FF00;font-size:140%;">&#x2714;</span></td>
+		{% endif %}
+	{% endfor %}
+</tr>
+{% endfor %}
+</table>
+
 	</div>
+
 {% else %}
     <br><br>
     <center><b>Error in accessing page. Either page does not exist or you do not have acess.<br></b>
