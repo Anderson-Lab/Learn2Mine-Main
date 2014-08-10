@@ -215,7 +215,18 @@ table{
         color:#FFFFFF
 }
 table#grades{
+	border: 1px solid black;
 	color:#828282
+	white-space: nowrap;
+}
+table#grades tr {
+    color: #000000;
+    border: 1px solid black;
+    text-align: center;
+}
+table#grades td {
+    border: 1px solid black;
+    text-align: center;
 }
 table#leaderboard{
 	background-image:url('../images/leaderboard.png');

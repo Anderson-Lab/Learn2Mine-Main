@@ -25,12 +25,13 @@
 {% if errorCatch != "yes" %}
 	<div id="NPStext">
 	<h1> {{ class }} Grade Viewer </h1>
-<table id="grades" style="width:300px">
+<table id="grades">
 <tr>
 	<td>Lesson Name</td>
         {% for i in range(1, maxProblemCount+1) %}
         <td>Question {{loop.index}}</td>
         {% endfor %}
+	<td>Score</td>
 </tr>
 <tr>
 {% for lesson in lessonplanResults %}
@@ -46,6 +47,12 @@
 			<td><span style="color:#00FF00;font-size:140%;">&#x2714;</span></td>
 		{% endif %}
 	{% endfor %}
+	{% for i in range(0,maxProblemCount-lesson[2]|length) %}
+		<td></td>
+	{% endfor %}
+	<td>{{ lesson[4] }}</td>
+	
+
 </tr>
 {% endfor %}
 </table>
