@@ -23,7 +23,59 @@
                 <div class="loggedin">{{user}}</div>
         </div>
 {% if errorCatch != "yes" %}
-	{% if not public and not DM %}
+	{% if DM %}
+		<div id="NPStext">
+		<h1> {{ class }}'s {{lesson}} Grade Viewer </h1>
+		<h3> Each students results on each problem for {{ lesson }} lesson</h3>
+		<table id="grades">
+			<tr>
+			        <td>Student</td>
+			        {% for i in range(0, grades[0][0]|length) %}
+			        <td>Question {{loop.index}}</td>
+			        {% endfor %}
+			        <td>Score</td>
+			</tr>
+			{% for student in students %}
+			<tr>
+				<td>{{student}}</td>
+				{% for grade in grades[loop.index0][0] %}
+			                {% if "solved this problem." not in grade %}
+	        	                <td><span style="color:#FF0000;font-size:140%;">&#x2716;</span></td>
+        	       			{% else %}
+                		        <td><span style="color:#00FF00;font-size:140%;">&#x2714;</span></td>
+		        	        {% endif %}
+				{% endfor %}
+				<td>{{ grades[loop.index0][1] }}</td>
+			</tr>
+			{% endfor %}
+		</div>
+	{% elif public %}
+		<div id="NPStext">
+		<h1> {{ class }}'s {{lesson}} Grade Viewer </h1>
+		<h3> Each students results on each problem for {{ lesson }} lesson</h3>
+		<table id="grades">
+			<tr>
+			        <td>Student</td>
+			        {% for i in range(0, grades[0][0]|length) %}
+			        <td>Question {{loop.index}}</td>
+			        {% endfor %}
+			        <td>Score</td>
+			</tr>
+			{% for student in students %}
+			<tr>
+				<td>{{student}}</td>
+				{% for grade in grades[loop.index0][0] %}
+			                {% if "solved this problem." not in grade %}
+	        	                <td><span style="color:#FF0000;font-size:140%;">&#x2716;</span></td>
+        	       			{% else %}
+                		        <td><span style="color:#00FF00;font-size:140%;">&#x2714;</span></td>
+		        	        {% endif %}
+				{% endfor %}
+				<td>{{ grades[loop.index0][1] }}</td>
+			</tr>
+			{% endfor %}
+		</div>
+	{% else %}
 		<div id="NPStext">
 		<h1> {{ class }} Grade Viewer </h1>
 		<h3> Click on the lesson name to view how all students are doing on that lesson </h3>
@@ -36,69 +88,19 @@
 			        {% for lesson in DMLessons %}
 				<td><a href="/ClassGradeViwer?class={{class}}&name={{lesson[1]}}">{{lesson[0]}}</a></td>
 			        {% endfor %}
-				<td>Average</td>
+				<td>Lessonplan Average</td>
 			</tr>
 			{% for student in students %}
 			<tr>
-				<td>{{student}}</td>
-				{% for class in grades %}
-				<td>{{class}}</td>
+				<td>{{ student }}</td>
+				{% for userScore in grades[loop.index0][0] %}
+				<td>{{userScore}}</td>
 				{% endfor %}
-				<td>{{grades|sum//grades|length}}</td>
+				<td>{{grades[loop.index0][0]|sum//grades[loop.index0][0]|length}}
 			</tr>
 			{% endfor %}
+
 		</table>
-		</div>
-	{% elif DM %}
-		<div id="NPStext">
-		<h1> {{ class }}'s {{lesson}} Grade Viewer </h1>
-		<table id="grades">
-			<tr>
-			        <td>Student</td>
-			        {% for i in range(0, grades[0][0]|length) %}
-			        <td>Question {{loop.index}}</td>
-			        {% endfor %}
-			        <td>Score</td>
-			</tr>
-			<tr>
-			{% for student in students %}
-				<td>{{student}}</td>
-				{% for grade in grades[loop.index0][0] %}
-			                {% if "solved this problem." not in grade %}
-	        	                <td><span style="color:#FF0000;font-size:140%;">&#x2716;</span></td>
-        	       			{% else %}
-                		        <td><span style="color:#00FF00;font-size:140%;">&#x2714;</span></td>
-		        	        {% endif %}
-				{% endfor %}
-				<td>{{ grades[loop.index0][1] }}</td>
-			{% endfor %}
-			
-			</tr>
-		</div>
-	{% elif public %}
-		<div id="NPStext">
-		<h1> {{ class }}'s {{lesson}} Grade Viewer </h1>
-		<table id="grades">
-			<tr>
-			        <td>Student</td>
-			        {% for i in range(0, grades[0][0]|length) %}
-			        <td>Question {{loop.index}}</td>
-			        {% endfor %}
-			        <td>Score</td>
-			</tr>
-			<tr>
-			{% for student in students %}
-				<td>{{student}}</td>
-				{% for grade in grades[loop.index0][0] %}
-			                {% if "solved this problem." not in grade %}
-	        	                <td><span style="color:#FF0000;font-size:140%;">&#x2716;</span></td>
-        	       			{% else %}
-                		        <td><span style="color:#00FF00;font-size:140%;">&#x2714;</span></td>
-		        	        {% endif %}
-				{% endfor %}
-				<td>{{ grades[loop.index0][1] }}</td>
-			{% endfor %}			
-			</tr>
 		</div>
 	{% endif %}
 
