@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+{% autoescape true %}
+<html>
+<head>
+<link rel="shortcut icon" href="./images/l2m.ico">
+<link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+<title>Learn2Mine Class Modifier</title>
+</head>
+<body>
+<a href="http://birg.cs.cofc.edu/index.php/Anderson_Lab"><img src="/images/Paul-labs-logo.png" align="right" title="BiRG Labs" style="width: 75px;"></a>
+        <a id="home" href="Home"><div id="banner"><img id=bannerImg src='images/learn2mine.png' title="LOOK AT BANNER, MICHAEL!"/></div></a>
+        <div id="lava">
+                <ul>
+                        <li><a id="home" href="Home"><div class="sitenav" id="homelink">Home</div></a></li>
+                        <li><a id="profile" href="Profile"><div class="sitenav" id="profilelink">Profile</div></a></li>
+                        <li><a id="leaderboard" href="Leaderboard"><div class="sitenav" id="leaderlink">Leaderboard</div></a></li>
+                        <li><a id="about" href="About"><div class="sitenav" id="aboutlink">About</div></a></li>
+                        <li><a id="help" href="Help"><div class="sitenav" id="helplink">Help</div></a></li>
+                        <li><a id="rstudio" target="_blank" href="http://portal.cs.cofc.edu/learn2mine-rstudio"><div class="sitenav" id="rstudiolink">Rstudio</div></a></li>
+                        <li><a id="LessonCreator" href="LessonCreator"><div class="sitenav" id="lessoncreatorlink">Create</div></a></li>
+                        <li><a id="Class" href="Class"><div class="sitenav" id="classviewlink">Class</div></a></li>
+                </ul>
+                <div class="loggedin">{{user}}</div>
+        </div>
+{% if errorCatch != "yes" %}
+	{% if not public and not DM %}
+		<div id="NPStext">
+		<h1> {{ class }} Grade Viewer </h1>
+		<h3> Click on the lesson name to view how all students are doing on that lesson </h3>
+		<table id="grades">
+			<tr>
+				<td>Student</td>
+				{% for lesson in publicLessons %}
+				<td><a href="/ClassGradeViewer?class={{class}}&key={{lesson[1]}}">{{lesson[0]}}</a></td>
+			        {% endfor %}
+			        {% for lesson in DMLessons %}
+				<td><a href="/ClassGradeViwer?class={{class}}&name={{lesson[1]}}">{{lesson[0]}}</a></td>
+			        {% endfor %}
+				<td>Average</td>
+			</tr>
+			{% for student in students %}
+			<tr>
+				<td>{{student}}</td>
+				{% for class in grades %}
+				<td>{{class}}</td>
+				{% endfor %}
+				<td>{{grades|sum//grades|length}}</td>
+			</tr>
+			{% endfor %}
+		</table>
+		</div>
+	{% elif DM %}
+		<div id="NPStext">
+		<h1> {{ class }}'s {{lesson}} Grade Viewer </h1>
+		<table id="grades">
+			<tr>
+			        <td>Student</td>
+			        {% for i in range(0, grades[0][0]|length) %}
+			        <td>Question {{loop.index}}</td>
+			        {% endfor %}
+			        <td>Score</td>
+			</tr>
+			<tr>
+			{% for student in students %}
+				<td>{{student}}</td>
+				{% for grade in grades[loop.index0][0] %}
+			                {% if "solved this problem." not in grade %}
+	        	                <td><span style="color:#FF0000;font-size:140%;">&#x2716;</span></td>
+        	       			{% else %}
+                		        <td><span style="color:#00FF00;font-size:140%;">&#x2714;</span></td>
+		        	        {% endif %}
+				{% endfor %}
+				<td>{{ grades[loop.index0][1] }}</td>
+			{% endfor %}
+			
+			</tr>
+		</div>
+	{% elif public %}
+		<div id="NPStext">
+		<h1> {{ class }}'s {{lesson}} Grade Viewer </h1>
+		<table id="grades">
+			<tr>
+			        <td>Student</td>
+			        {% for i in range(0, grades[0][0]|length) %}
+			        <td>Question {{loop.index}}</td>
+			        {% endfor %}
+			        <td>Score</td>
+			</tr>
+			<tr>
+			{% for student in students %}
+				<td>{{student}}</td>
+				{% for grade in grades[loop.index0][0] %}
+			                {% if "solved this problem." not in grade %}
+	        	                <td><span style="color:#FF0000;font-size:140%;">&#x2716;</span></td>
+        	       			{% else %}
+                		        <td><span style="color:#00FF00;font-size:140%;">&#x2714;</span></td>
+		        	        {% endif %}
+				{% endfor %}
+				<td>{{ grades[loop.index0][1] }}</td>
+			{% endfor %}			
+			</tr>
+		</div>
+	{% endif %}
+
+{% else %}
+    <br><br>
+    <center><b>Error in accessing page. Either page does not exist or you do not have acess.<br></b>
+    <br><br><br>
+{% endif %}
+{% if not user %}
+<a href="{{ url|safe }}">{{ url_linktext }}</a>
+<br><br>
+</body>
+{% endif %}
+</html>
+{% endautoescape %}
