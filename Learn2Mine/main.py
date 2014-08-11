@@ -1290,6 +1290,93 @@ class GradeViewerHandler(webapp2.RequestHandler):
 		template_values = {'user':thisUser, 'class':thisClass.className, 'instructor':thisClass.instructor, 'lessonplanResults':lessonplanResults, 'maxProblemCount':maxProblemCount }
 		self.response.write(template.render(template_values))
 
+class ClassGradeViewerHandler(webapp2.RequestHandler):
+	def get(self):
+		template = JINJA_ENVIRONMENT.get_template('ClassGradeViewer.html')
+		thisUser = users.get_current_user()
+		findClass = self.request.get("class")
+		if not findClass:
+			template_values = {'user':thisUser,'errorCatch':"yes"}
+			self.response.write(template.render(template_values))
+			return
+		thisClassQuery = Learn2MineClass.query().filter(Learn2MineClass.className == findClass).filter(Learn2MineClass.instructor == thisUser).fetch(1)
+		if len(thisClassQuery) == 0:
+			template_values = {'user':thisUser,'errorCatch':"yes"}
+			self.response.write(template.render(template_values))
+			return
+		thisClass = thisClassQuery[0]
+		publicLessons = []
+		DMLessons = []
+		studentGrades = []
+		if self.request.get("page"):
+			name = self.request.get("page")
+			for student in thisClass.students:
+				lessonGrades = User2Lesson.query().filter(User2Lesson.user == student).filter(User2Lesson.lessonID == name).fetch(1)
+				if len(lessonGrades) == 0:
+					userGrades = (["No submission"] * len(Learn2MineLesson.query().filter(Learn2MineLesson.name == name).fetch(1)[0].problems))
+				else:
+					userGrades = lessonGrades[0].returnStatements
+				score = int((len([i for i, result in enumerate(userGrades) if 'solved this problem' in result])/len(userGrades))*100)
+				studentGrades.append([userGrades,score])
+			lesson = Learn2MineLesson.query().filter(Learn2MineLesson.name == name).fetch(1)[0].header
+			template_values = {'class':findClass, 'grades':studentGrades, 'user':thisUser,'students':thisClass.students,'lesson':lesson, 'DM':"yes"}
+
+
+		elif self.request.get("key"):
+			key = self.request.get("key")
+			for student in thisClass.students:
+				lessonGrades = User2Lesson.query().filter(User2Lesson.user == student).filter(User2Lesson.lessonID == key).fetch(1)
+				if len(lessonGrades) == 0:
+					userGrades = (["No submission"] * len(UsermadeLesson.query().filter(UsermadeLesson.urlKey == key).fetch(1)[0].problems))
+				else:
+					userGrades = lessonGrades[0].returnStatements
+				score = int((len([i for i, result in enumerate(userGrades) if 'solved this problem' in result])/len(userGrades))*100)
+				studentGrades.append([userGrades,score])
+			print "\n\nStudent Grades",studentGrades[0][0]
+			lesson = UsermadeLesson.query().filter(UsermadeLesson.urlKey == key).fetch(1)[0].header
+			template_values = {'class':findClass, 'grades':studentGrades, 'user':thisUser,'students':thisClass.students,'lesson':lesson, 'public':"yes"}
+		else:
+			for student in thisClass.students:
+				if student == thisClass.students[0]:
+					for lesson in thisClass.PublicLessonplan:
+						publicLessons.append([UsermadeLesson.query().filter(UsermadeLesson.urlKey==lesson).fetch(1)[0].header,lesson])
+						lessonGrades = User2Lesson.query().filter(User2Lesson.user == student).filter(User2Lesson.lessonID==lesson).fetch(1)
+						if len(lessonGrades) == 0:
+							userGrades = (["No submission"] * len(UsermadeLesson.query().filter(UsermadeLesson.urlKey == lesson).fetch(1)[0].problems))
+						else:
+							userGrades = lessonGrades[0].returnStatements
+						score = int((len([i for i, result in enumerate(userGrades) if 'solved this problem' in result])/len(userGrades))*100)
+						studentGrades.append(score)
+					for lesson in thisClass.DMLessonplan:
+						DMLessons.append([Learn2MineLesson.query().filter(Learn2MineLesson.name==lesson).fetch(1)[0].header,lesson])
+						lessonGrades = User2Lesson.query().filter(User2Lesson.user == student).filter(User2Lesson.lessonID == lesson).fetch(1)
+						if len(lessonGrades) == 0:
+							userGrades = (["No submission"] * len(Learn2MineLesson.query().filter(Learn2MineLesson.name == lesson).fetch(1)[0].problems))
+						else:
+							userGrades = lessonGrades[0].returnStatements
+						score = int((len([i for i, result in enumerate(userGrades) if 'solved this problem' in result])/len(userGrades))*100)
+						studentGrades.append(score)
+				else:
+					for lesson in thisClass.PublicLessonplan:
+						lessonGrades = User2Lesson.query().filter(User2Lesson.user == student).filter(User2Lesson.lessonID == lesson).fetch(1)
+						if len(lessonGrades) == 0:
+							userGrades = (["No submission"] * len(Learn2MineLesson.query().filter(Learn2MineLesson.name == lesson).fetch(1)[0].problems))
+						else:
+							userGrades = lessonGrades[0].returnStatements
+						score = int((len([i for i, result in enumerate(userGrades) if 'solved this problem' in result])/len(userGrades))*100)
+						studentGrades.append(score)
+
+					for lesson in thisClass.DMLessonplan:
+						lessonGrades = User2Lesson.query().filter(User2Lesson.user == student).filter(User2Lesson.lessonID == lesson).fetch(1)
+						if len(lessonGrades) == 0:
+							userGrades = (["No submission"] * len(Learn2MineLesson.query().filter(Learn2MineLesson.name == lesson).fetch(1)[0].problems))
+						else:
+							userGrades = lessonGrades[0].returnStatements
+						score = int((len([i for i, result in enumerate(userGrades) if 'solved this problem' in result])/len(userGrades))*100)
+						studentGrades.append(score)
+			template_values = {'class':findClass, 'grades':studentGrades, 'user':thisUser,'students':thisClass.students, 'publicLessons':publicLessons,'DMLessons':DMLessons}
+		self.response.write(template.render(template_values))
+
 #Handles page redirects
 app = webapp2.WSGIApplication([
     ('/Home', HomeHandler),
@@ -1318,5 +1405,6 @@ app = webapp2.WSGIApplication([
     ('/ClassCreator', ClassCreatorHandler),
     ('/ClassManager', ClassManagerHandler),
     ('/GradeViewer', GradeViewerHandler),
+    ('/ClassGradeViewer', ClassGradeViewerHandler),
     ('/EnrollClass', EnrollmentHandler)
 ], debug=True)

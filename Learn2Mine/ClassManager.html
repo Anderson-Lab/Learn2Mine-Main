@@ -55,7 +55,7 @@
 {% if errorCatch != "yes" %}
 	<h1> {{ class }} Class Manager </h1>
 	<b>Share this URL with students for them to join your class:</b><br>http://localhost:8080/EnrollClass?key={{classKey}}<br><br>
-	<b>View your students' progress <a href="/ClassManager?grades={{classKey}}">here</a>
+	<b>View your students' progress <a href="/ClassGradeViewer?class={{class}}">here</a>
 	<form name="ClassCreator" action="/ClassManager" method="post">
 	<input type="hidden" name="class" value="{{class}}">
 	<h3>Change the class name:</h3><input type="text" name="newClassName"><br>
