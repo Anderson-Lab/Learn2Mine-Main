@@ -1336,7 +1336,9 @@ class ClassGradeViewerHandler(webapp2.RequestHandler):
 			lesson = UsermadeLesson.query().filter(UsermadeLesson.urlKey == key).fetch(1)[0].header
 			template_values = {'class':findClass, 'grades':studentGrades, 'user':thisUser,'students':thisClass.students,'lesson':lesson, 'public':"yes"}
 		else:
+			lessonScores = []
 			for student in thisClass.students:
+				thisLessonScore = []
 				if student == thisClass.students[0]:
 					for lesson in thisClass.PublicLessonplan:
 						publicLessons.append([UsermadeLesson.query().filter(UsermadeLesson.urlKey==lesson).fetch(1)[0].header,lesson])
@@ -1346,7 +1348,8 @@ class ClassGradeViewerHandler(webapp2.RequestHandler):
 						else:
 							userGrades = lessonGrades[0].returnStatements
 						score = int((len([i for i, result in enumerate(userGrades) if 'solved this problem' in result])/len(userGrades))*100)
-						studentGrades.append(score)
+						thisLessonScore.append(score)
+
 					for lesson in thisClass.DMLessonplan:
 						DMLessons.append([Learn2MineLesson.query().filter(Learn2MineLesson.name==lesson).fetch(1)[0].header,lesson])
 						lessonGrades = User2Lesson.query().filter(User2Lesson.user == student).filter(User2Lesson.lessonID == lesson).fetch(1)
@@ -1355,16 +1358,16 @@ class ClassGradeViewerHandler(webapp2.RequestHandler):
 						else:
 							userGrades = lessonGrades[0].returnStatements
 						score = int((len([i for i, result in enumerate(userGrades) if 'solved this problem' in result])/len(userGrades))*100)
-						studentGrades.append(score)
+						thisLessonScore.append(score)
 				else:
 					for lesson in thisClass.PublicLessonplan:
 						lessonGrades = User2Lesson.query().filter(User2Lesson.user == student).filter(User2Lesson.lessonID == lesson).fetch(1)
 						if len(lessonGrades) == 0:
-							userGrades = (["No submission"] * len(Learn2MineLesson.query().filter(Learn2MineLesson.name == lesson).fetch(1)[0].problems))
+							userGrades = (["No submission"] * len(UsermadeLesson.query().filter(UsermadeLesson.urlKey == lesson).fetch(1)[0].problems))
 						else:
 							userGrades = lessonGrades[0].returnStatements
 						score = int((len([i for i, result in enumerate(userGrades) if 'solved this problem' in result])/len(userGrades))*100)
-						studentGrades.append(score)
+						thisLessonScore.append(score)
 
 					for lesson in thisClass.DMLessonplan:
 						lessonGrades = User2Lesson.query().filter(User2Lesson.user == student).filter(User2Lesson.lessonID == lesson).fetch(1)
@@ -1373,8 +1376,11 @@ class ClassGradeViewerHandler(webapp2.RequestHandler):
 						else:
 							userGrades = lessonGrades[0].returnStatements
 						score = int((len([i for i, result in enumerate(userGrades) if 'solved this problem' in result])/len(userGrades))*100)
-						studentGrades.append(score)
-			template_values = {'class':findClass, 'grades':studentGrades, 'user':thisUser,'students':thisClass.students, 'publicLessons':publicLessons,'DMLessons':DMLessons}
+						thisLessonScore.append(score)
+				lessonScores.append([thisLessonScore,int(sum(thisLessonScore)/len(thisLessonScore))])
+			print "\n\nLesson scores:",lessonScores
+
+			template_values = {'class':findClass, 'grades':lessonScores, 'user':thisUser,'students':thisClass.students, 'publicLessons':publicLessons,'DMLessons':DMLessons}
 		self.response.write(template.render(template_values))
 
 #Handles page redirects
