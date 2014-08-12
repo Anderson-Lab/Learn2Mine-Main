@@ -96,13 +96,13 @@ function validateDelete() {
 	<h2> Start a Class </h2>
 	Click <a href="/ClassCreator">here</a> to start your own class and enroll students
 	{% if enrolledClasses|length > 0 %}
-	<h2> Currently Enrolled Classes: </h2>
+	<h2> Classes You're In </h2>
 		{% for class in enrolledClasses %}
 		    <a href="/GradeViewer?key={{ class[1] }}">{{ class[0] }}</a><br>
 		{% endfor %}
 	{% endif %}
 	{% if instructingClasses|length > 0: %}
-	<h2> Classes Which You Instruct</h2>
+	<h2> Classes You Teach </h2>
 		{% for teaching in instructingClasses %}
 		    <a href="/ClassManager?class={{ teaching }}">{{ teaching }}</a><br>
 		{% endfor %}
