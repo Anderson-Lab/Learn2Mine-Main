@@ -1029,6 +1029,9 @@ class LessonModifyHandler(webapp2.RequestHandler):
                     del userLesson.rcodeInit[index]
                     del userLesson.rcodeInstruct[index]
                     del userLesson.rcodeFinal[index]
+		for lesson in User2Lesson.query().filter(User2Lesson.lessonID == urlKey).fetch(100):
+			del lesson.returnStatements[index]
+			lesson.put()
 
             questionAdd = False
 
@@ -1040,12 +1043,18 @@ class LessonModifyHandler(webapp2.RequestHandler):
 
             if questionAdd:
                 userLesson.problems = userLesson.problems[:] + ([""] * addQuestions)
-                userLesson.rcodeFinal = userLesson.rcodeFinal[:] + ([""] * addQuestions)
-                userLesson.rcodeInstruct = userLesson.rcodeInstruct[:] + ([""] * addQuestions)
-                userLesson.rcodeInit = userLesson.rcodeInit[:] + ([""] * addQuestions)
-                userLesson.pythonFinal = userLesson.pythonFinal[:] + ([""] * addQuestions)
-                userLesson.pythonInstruct = userLesson.pythonInstruct[:] + ([""] * addQuestions)
-                userLesson.pythonInit = userLesson.pythonInit[:] + ([""] * addQuestions)
+		if "R" in userLesson.languages:
+                    userLesson.rcodeFinal = userLesson.rcodeFinal[:] + ([""] * addQuestions)
+                    userLesson.rcodeInstruct = userLesson.rcodeInstruct[:] + ([""] * addQuestions)
+                    userLesson.rcodeInit = userLesson.rcodeInit[:] + ([""] * addQuestions)
+		if "Python" in userLesson.languages:
+                    userLesson.pythonFinal = userLesson.pythonFinal[:] + ([""] * addQuestions)
+                    userLesson.pythonInstruct = userLesson.pythonInstruct[:] + ([""] * addQuestions)
+                    userLesson.pythonInit = userLesson.pythonInit[:] + ([""] * addQuestions)
+		for lesson in User2Lesson.query().filter(User2Lesson.lessonID == urlKey).fetch(100):
+			lesson.returnStatements = lesson.returnStatements[:] + (["No submission"] * addQuestions)
+			lesson.put()
+
             userLesson.put()
 
         # If not modifying lesson
@@ -1178,6 +1187,9 @@ class ClassManagerHandler(webapp2.RequestHandler):
 			return
 		removeDMLessons = []
 		removePublicLessons = []
+		print "\n\nDM Lessons:",thisClass.DMLessonplan
+		print "\n\nPublic Lessons:",thisClass.PublicLessonplan
+		time.sleep(1)
 		for lesson in thisClass.DMLessonplan:
 			removeDMLessons.append([Learn2MineLesson.query().filter(Learn2MineLesson.name == lesson).fetch(1)[0].header,lesson])
 		for lesson in thisClass.PublicLessonplan:
@@ -1190,7 +1202,6 @@ class ClassManagerHandler(webapp2.RequestHandler):
 		for lesson in Learn2MineLesson.query().fetch(10):
 			if [lesson.header,lesson.name] not in removeDMLessons:
 				addDMLessons.append([lesson.header,lesson.name])
-		print '\n\nAddDMLessons:',removePublicLessons
 		template_values = {'user':thisUser, 'class':className, 'RemovePublicLessons':removePublicLessons, 'RemoveDMLessons':removeDMLessons, 'AddPublicLessons':addPublicLessons, 
 		'AddDMLessons':addDMLessons, 'classKey':thisClass.classKey }
 	        self.response.write(template.render(template_values))
@@ -1199,16 +1210,19 @@ class ClassManagerHandler(webapp2.RequestHandler):
 		thisUser = users.get_current_user()
 		AddDMLessons = self.request.get_all("addDMLessons")
 		AddPublicLessons = self.request.get_all("addPublicLesson")
-		print "add:",AddPublicLessons
 		RemoveDMLessons = self.request.get_all("removeDMLessons")
 		RemovePublicLessons = self.request.get_all("removePublicLesson")
 		className = self.request.get("class")
 		newClassName = self.request.get("newClassName")
 		thisClass = Learn2MineClass().query().filter(Learn2MineClass.instructor == thisUser).filter(Learn2MineClass.className == className).fetch(1)[0]
 		for lesson in AddPublicLessons:
-			thisClass.PublicLessonplan.extend([UsermadeLesson.query().filter(UsermadeLesson.urlKey == lesson).fetch(1)[0].header,lesson])
+			thisClass.PublicLessonplan.append(lesson)
 		for lesson in AddDMLessons:
-			thisClass.DMLessonplan.extend([Learn2MineLesson.query().filter(Learn2MineLesson.name == lesson).fetch(1)[0].header,lesson])
+			thisClass.DMLessonplan.append(lesson)
+		for lesson in RemovePublicLessons:
+			thisClass.PublicLessonplan.remove(lesson)
+		for lesson in RemoveDMLessons:
+			thisClass.DMLessonplan.remove(lesson)
 		if newClassName:
 			thisClass.className = newClassName
 			className = newClassName
@@ -1332,7 +1346,6 @@ class ClassGradeViewerHandler(webapp2.RequestHandler):
 					userGrades = lessonGrades[0].returnStatements
 				score = int((len([i for i, result in enumerate(userGrades) if 'solved this problem' in result])/len(userGrades))*100)
 				studentGrades.append([userGrades,score])
-			print "\n\nStudent Grades",studentGrades[0][0]
 			lesson = UsermadeLesson.query().filter(UsermadeLesson.urlKey == key).fetch(1)[0].header
 			template_values = {'class':findClass, 'grades':studentGrades, 'user':thisUser,'students':thisClass.students,'lesson':lesson, 'public':"yes"}
 		else:
@@ -1378,9 +1391,14 @@ class ClassGradeViewerHandler(webapp2.RequestHandler):
 						score = int((len([i for i, result in enumerate(userGrades) if 'solved this problem' in result])/len(userGrades))*100)
 						thisLessonScore.append(score)
 				lessonScores.append([thisLessonScore,int(sum(thisLessonScore)/len(thisLessonScore))])
-			print "\n\nLesson scores:",lessonScores
-
-			template_values = {'class':findClass, 'grades':lessonScores, 'user':thisUser,'students':thisClass.students, 'publicLessons':publicLessons,'DMLessons':DMLessons}
+			gradeSums = [0] * len(lessonScores[0])
+			for studentGrades in lessonScores:
+				index = 0
+				for grade in studentGrades[0]: 
+					gradeSums[index] += grade
+					index += 1
+			gradeAverages = [int(x/len(lessonScores)) for x in gradeSums]				
+			template_values = {'class':findClass, 'grades':lessonScores, 'user':thisUser,'students':thisClass.students, 'publicLessons':publicLessons,'DMLessons':DMLessons,'averages':gradeAverages}
 		self.response.write(template.render(template_values))
 
 #Handles page redirects

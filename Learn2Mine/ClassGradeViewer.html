@@ -99,6 +99,12 @@
 				<td>{{grades[loop.index0][0]|sum//grades[loop.index0][0]|length}}
 			</tr>
 			{% endfor %}
+			<tr>
+				<td>Average</td>
+				{% for grade in averages %}
+				<td>{{grade}}</td>
+				{% endfor %}
+			</tr>
 
 		</table>
 		</div>
