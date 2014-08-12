@@ -145,14 +145,16 @@
                 <textarea id="lessonMakerTextarea" name="paragraph" rows="6" cols="80">{{ paragraph }}</textarea></div><br><br><br><br>
 
 {% if languages|length != 1 %}
-
+		<div id="NPStext">
+		<center>
 		{% for i in range(0,(questionCount|int)) %}
 
-		      	<div id="lessonMakerProblem">Problem Statement: Question {{ i+1 }}<br>
-			<textarea id="lessonMakerTextarea" name="problem" rows="6" cols="80">{{ problems[loop.index0] }}</textarea></div><br><br>
-		<div id="lessonMakerWrap">
-		    <div id="lessonMakerLeft">
+		      	<center><b>Problem Statement: Question {{ i+1 }}</b><br>
+			<textarea id="lessonMakerTextarea" name="problem" rows="6" cols="80">{{ problems[loop.index0] }}</textarea></center></div>
 
+		<div id="lessonMakerWrap">
+		    <br>
+		    <div id="lessonMakerLeft">
 			R Init Code: Question {{ i+1 }}
 		      	<div><textarea id="lessonMakerTextarea" name="R-init" rows="6" cols="80">{{ R_init_code[loop.index0] }}</textarea></div>
 
@@ -175,25 +177,28 @@
 
                         <br><br>
 		    </div>
-		</div>
                 {% endfor %}
+		</center>
+
 
 {% else %}
+	<div id="NPStext">
 		{% for i in range(0,(questionCount|int)) %}
-		      	Problem Statement: Question {{ i+1 }}<br>
-			<textarea id="lessonMakerTextarea" name="problem" rows="6" cols="80">{{ problems[loop.index0] }}</textarea></div><br><br>
+		      	<b>Problem Statement: Question {{ i+1 }}</b><br>
+			<textarea id="lessonMakerTextarea" name="problem" rows="6" cols="80">{{ problems[loop.index0] }}</textarea><br><br>
 
-			{{ languages[0] }} Init Code: Question {{ i+1 }}
-		      	<div><textarea id="lessonMakerTextarea" name="{{ languages[0] }}-init" rows="6" cols="80">{{ init_code[loop.index0] }}</textarea></div>
+			{{ languages[0] }} Init Code: Question {{ i+1 }}<br>
+		      	<textarea id="lessonMakerTextarea" name="{{ languages[0] }}-init" rows="6" cols="80">{{ init_code[loop.index0] }}</textarea><br><br>
 
-			{{ languages[0] }} Instructor Code: Question {{ i+1 }}
-			<div><textarea id="lessonMakerTextarea" name="{{ languages[0] }}-instruct" rows="6" cols="80">{{ instruct_code[loop.index0] }}</textarea></div>
+			{{ languages[0] }} Instructor Code: Question {{ i+1 }}<br>
+			<textarea id="lessonMakerTextarea" name="{{ languages[0] }}-instruct" rows="6" cols="80">{{ instruct_code[loop.index0] }}</textarea><br><br>
 
-			{{ languages[0] }} Final Code: Question {{ i+1 }}
-			<div><textarea id="lessonMakerTextarea" name="{{ languages[0] }}-final" rows="6" cols="80">{{ final_code[loop.index0] }}</textarea></div>
+			{{ languages[0] }} Final Code: Question {{ i+1 }}<br>
+			<textarea id="lessonMakerTextarea" name="{{ languages[0] }}-final" rows="6" cols="80">{{ final_code[loop.index0] }}</textarea><br><br>
 
 			<br><br>
 		{% endfor %}
+	</div>
 {% endif %}
 		<input type="hidden" name="python" value={{ python }} />
 		<input type="hidden" name="rcode" value={{ rcode }} />
