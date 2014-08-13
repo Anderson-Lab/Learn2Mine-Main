@@ -1173,7 +1173,7 @@ class ClassCreatorHandler(webapp2.RequestHandler):
 class ClassManagerHandler(webapp2.RequestHandler):
         @decorator.oauth_required
 	def get(self):
-		time.sleep(0.2)
+		time.sleep(0.4)
 		template = JINJA_ENVIRONMENT.get_template('ClassManager.html')
 	        thisUser = users.get_current_user()
 		className = self.request.get("class")
@@ -1205,6 +1205,12 @@ class ClassManagerHandler(webapp2.RequestHandler):
 
 	def post(self):
 		thisUser = users.get_current_user()
+		if self.request.get("deleteClass"):
+			className = self.request.get("class")
+			thisClass = Learn2MineClass().query().filter(Learn2MineClass.instructor == thisUser).filter(Learn2MineClass.className == className).fetch(1)[0]
+			thisClass.key.delete()
+			self.redirect('/Class')
+			return
 		AddDMLessons = self.request.get_all("addDMLessons")
 		AddPublicLessons = self.request.get_all("addPublicLesson")
 		RemoveDMLessons = self.request.get_all("removeDMLessons")

@@ -5,6 +5,27 @@
 <link rel="shortcut icon" href="./images/l2m.ico">
 <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
 <title>Learn2Mine Class Modifier</title>
+
+<script type="text/javascript" src="http://jqueryjs.googlecode.com/files/jquery-1.3.1.min.js"></script>
+<script type="text/javascript" src="http://www.kunalbabre.com/projects/table2CSV.js"></script> 
+<script type="text/javascript">
+$(document).ready(function () {
+    $('table').each(function () {
+        var $table = $(this);
+
+        var $button = $("<button type='button'>");
+        $button.text("Export to spreadsheet");
+        $button.insertAfter($table);
+
+        $button.click(function () {
+            var csv = $table.table2CSV({
+                delivery: 'value'
+            });
+            window.location.href = 'data:text/csv;charset=UTF-8,' + encodeURIComponent(csv);
+        });
+    });
+})
+</script>
 </head>
 <body>
 <a href="http://birg.cs.cofc.edu/index.php/Anderson_Lab"><img src="/images/Paul-labs-logo.png" align="right" title="BiRG Labs" style="width: 75px;"></a>
@@ -96,7 +117,7 @@
 				{% for userScore in grades[loop.index0][0] %}
 				<td>{{userScore}}</td>
 				{% endfor %}
-				<td>{{grades[loop.index0][0]|sum//grades[loop.index0][0]|length}}
+				<td>{{grades[loop.index0][0]|sum//grades[loop.index0][0]|length}}</td>
 			</tr>
 			{% endfor %}
 			<tr>
@@ -107,6 +128,7 @@
 			</tr>
 
 		</table>
+		<br><br>
 		</div>
 	{% endif %}
 
