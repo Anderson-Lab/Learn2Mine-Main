@@ -112,7 +112,13 @@
 
 {% else %}
     <br><br>
-    <center><b>Error in accessing page. Either page does not exist or you do not have acess.<br></b>
+    <center><b>
+	{% if outputMsg %}
+		{{outputMsg}}
+	{% else %}
+		Error in accessing page. Either page does not exist or you do not have acess.
+	{% endif %}
+	</b><br>
     <br><br><br>
 {% endif %}
 {% if not user %}
