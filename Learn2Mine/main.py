@@ -838,14 +838,14 @@ class LessonCreatorHandler(webapp2.RequestHandler):
         self.redirect('/LessonCreator')
 
     def get(self):
-
+        template = JINJA_ENVIRONMENT.get_template('LessonCreator.html')
         thisUser = users.get_current_user()
-        if thisUser:
-            url = users.create_logout_url(self.request.uri)
-            url_linktext = 'Logout'
-        else:
+        if not thisUser:
             url = users.create_login_url(self.request.uri)
             url_linktext = 'Login'
+            template_values = { 'url': url, 'url_linktext': url_linktext }
+            self.response.write(template.render(template_values))
+            return
 
         time.sleep(0.2)
         query = UsermadeLesson.query()
@@ -853,11 +853,10 @@ class LessonCreatorHandler(webapp2.RequestHandler):
         lessonArray = []
         for lesson in userLessons:
             lessonArray.append(lesson.name)
-
-        template_values = { 'url': url, 'url_linktext': url_linktext, 'user': thisUser, 'existingLessons': lessonArray }
-
-        template = JINJA_ENVIRONMENT.get_template('LessonCreator.html')
+        template_values = { 'user': thisUser, 'existingLessons': lessonArray }
         self.response.write(template.render(template_values))
+
+
 
 class LessonPreviewHandler(webapp2.RequestHandler):
     @decorator.oauth_required
@@ -1267,6 +1266,13 @@ class GradeViewerHandler(webapp2.RequestHandler):
 	def get(self):
 		template = JINJA_ENVIRONMENT.get_template('GradeViewer.html')
 		thisUser = users.get_current_user()
+		if not thisUser:
+			url = users.create_login_url(self.request.uri)
+			url_linktext = 'Login'
+			template_values = { 'url': url, 'url_linktext': url_linktext }
+			self.response.write(template.render(template_values))
+			return
+
 		classKey = self.request.get("key")
 		if not classKey:
 			template_values = {'user':thisUser,'errorCatch':"yes"}
@@ -1299,13 +1305,28 @@ class GradeViewerHandler(webapp2.RequestHandler):
 		for lesson in lessonplanResults:
 			if len(lesson[2]) > maxProblemCount:
 				maxProblemCount = len(lesson[2])
-		template_values = {'user':thisUser, 'class':thisClass.className, 'instructor':thisClass.instructor, 'lessonplanResults':lessonplanResults, 'maxProblemCount':maxProblemCount }
+		template_values = {'user':thisUser, 'class':thisClass.className, 'instructor':thisClass.instructor, 'lessonplanResults':lessonplanResults, 'maxProblemCount':maxProblemCount,'key':classKey }
 		self.response.write(template.render(template_values))
+	def post(self):
+		thisUser = users.get_current_user()
+		key = self.request.get("key")
+		findClass = Learn2MineClass.query().filter(Learn2MineClass.classKey == key).fetch(1)[0]
+		findClass.students.remove(thisUser)
+		findClass.put()
+		time.sleep(0.3)
+		self.redirect('/Class')
 
 class ClassGradeViewerHandler(webapp2.RequestHandler):
 	def get(self):
 		template = JINJA_ENVIRONMENT.get_template('ClassGradeViewer.html')
 		thisUser = users.get_current_user()
+		if not thisUser:
+			url = users.create_login_url(self.request.uri)
+			url_linktext = 'Login'
+			template_values = { 'url': url, 'url_linktext': url_linktext }
+			self.response.write(template.render(template_values))
+			return
+
 		findClass = self.request.get("class")
 		if not findClass:
 			template_values = {'user':thisUser,'errorCatch':"yes"}
