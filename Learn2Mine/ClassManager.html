@@ -97,6 +97,11 @@
 	<br>
 	<br>
 	<input type="submit" value="Update">
+	</form><br><br>
+        <form name="ClassCreator" action="/ClassManager" method="post" onsubmit="return confirm('Do you really want to delete the class?');">
+	<input type="hidden" name="deleteClass" value="delete">
+	<input type="hidden" name="class" value="{{class}}">
+	<input type="submit" value="Delete this Class">
 	</form>
 	</div>
 {% else %}
