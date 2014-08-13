@@ -5,6 +5,8 @@
 <link rel="shortcut icon" href="./images/l2m.ico">
 <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
 <title>Learn2Mine Class Modifier</title>
+<script type="text/javascript">
+</script>
 </head>
 <body>
 <a href="http://birg.cs.cofc.edu/index.php/Anderson_Lab"><img src="/images/Paul-labs-logo.png" align="right" title="BiRG Labs" style="width: 75px;"></a>
@@ -51,13 +53,15 @@
 		<td></td>
 	{% endfor %}
 	<td>{{ lesson[4] }}</td>
-	
-
 </tr>
 {% endfor %}
 </table>
-
-	</div>
+<br><br>
+<form id="leaveClass" name="leaveClass" action="/GradeViewer" method="post" onsubmit="return confirm('Do you really want to leave the class?');">
+<input type="hidden" value="{{key}}" name="key">
+<input type="submit" value="Leave this Class">
+</form>
+</div>
 
 {% else %}
     <br><br>
