@@ -1187,8 +1187,6 @@ class ClassManagerHandler(webapp2.RequestHandler):
 			return
 		removeDMLessons = []
 		removePublicLessons = []
-		print "\n\nDM Lessons:",thisClass.DMLessonplan
-		print "\n\nPublic Lessons:",thisClass.PublicLessonplan
 		time.sleep(1)
 		for lesson in thisClass.DMLessonplan:
 			removeDMLessons.append([Learn2MineLesson.query().filter(Learn2MineLesson.name == lesson).fetch(1)[0].header,lesson])
@@ -1196,7 +1194,7 @@ class ClassManagerHandler(webapp2.RequestHandler):
 			removePublicLessons.append([UsermadeLesson.query().filter(UsermadeLesson.urlKey == lesson).fetch(1)[0].header,lesson])
 		addDMLessons = []
 		addPublicLessons = []
-		for lesson in UsermadeLesson.query().fetch(10):
+		for lesson in UsermadeLesson.query().filter(UsermadeLesson.publicExecute == "True").fetch(10):
 			if [lesson.header,lesson.urlKey] not in removePublicLessons:
 				addPublicLessons.append([lesson.header,lesson.urlKey])
 		for lesson in Learn2MineLesson.query().fetch(10):
@@ -1391,6 +1389,11 @@ class ClassGradeViewerHandler(webapp2.RequestHandler):
 						score = int((len([i for i, result in enumerate(userGrades) if 'solved this problem' in result])/len(userGrades))*100)
 						thisLessonScore.append(score)
 				lessonScores.append([thisLessonScore,int(sum(thisLessonScore)/len(thisLessonScore))])
+			if len(thisClass.students) == 0:
+				outputMsg = "You do not have any students enrolled in your class yet"
+				template_values = {'errorCatch':"yes",'user':thisUser,'outputMsg':outputMsg}
+				self.response.write(template.render(template_values))
+				return
 			gradeSums = [0] * len(lessonScores[0])
 			for studentGrades in lessonScores:
 				index = 0

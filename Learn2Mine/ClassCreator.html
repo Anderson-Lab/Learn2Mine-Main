@@ -8,32 +8,14 @@
 <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
 <title>Learn2Mine Lesson Maker</title>
 <script type="text/javascript">
-    function validateUpdate() {
-	var checked = 0;
+function validateInsert() {
+    var name = document.forms["ClassCreator"]["className"].value;
 
-	if(updateLesson.removePython.checked && updateLesson.removeRcode.checked) {
-	    alert("Cannot remove both programming langauges.");
-	    return false;
-	}
-	if(!(typeof updateLesson.removeQuestion.length == "undefined")) {
-	    for (i=0; i < updateLesson.removeQuestion.length; i++) {
-		if (updateLesson.removeQuestion[i].checked) {
-		    checked++;
-		}
-	    }
-	    if (checked == updateLesson.removeQuestion.length) {
-		alert("Cannot remove all questions from lesson.");
-		return false;
-	    }
-	}
-	else {
-	    if(updateLesson.removeQuestion.checked) {
-		alert("Cannot remove all questions from lesson.");
-		return false;
-	    }
-	}
-	return true;
+    if (name == "" || name==null) {
+        alert("The lesson name field must be input");
+        return false;
     }
+}
 </script>
 <body>
 <a href="http://birg.cs.cofc.edu/index.php/Anderson_Lab"><img src="/images/Paul-labs-logo.png" align="right" title="BiRG Labs" style="width: 75px;"></a>
@@ -53,7 +35,7 @@
         </div>
 	<div id="NPStext">
 	<h1> Design Class Lessonplan </h1>
-	<form name="ClassCreator" action="/ClassCreator" method="post">
+	<form name="ClassCreator" action="/ClassCreator" method="post" onsubmit="return validateInsert();">
 	<input type="hidden" value={{ classKey }} name="key">
 	<h3>Step 1) Set a name for your class:</h3><input type="text" name="className"><br>
 	<h3>Step 2) Choose from the lessons below to populate your lessonplan</h3>
