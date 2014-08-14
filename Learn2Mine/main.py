@@ -490,9 +490,7 @@ class DMLessonHandler(webapp2.RequestHandler):
         useremail = users.get_current_user()
         template = JINJA_ENVIRONMENT.get_template('DMLessonTest.html')
         page = self.request.get("page")
-        q = DMLesson.query()
-        query = q.filter(DMLesson.name == page).fetch(1)
-	if len(query) > 0:
+        if len(DMLesson.query().filter(DMLesson.name == page).fetch(1)) > 0:
             thisLesson = query[0]
             returnLanguages = []
             if "Python" in thisLesson.languages:
@@ -532,8 +530,7 @@ class PublicLessonHandler(webapp2.RequestHandler):
         useremail = users.get_current_user()
         template = JINJA_ENVIRONMENT.get_template('PublicLessonTest.html')
         page = self.request.get("key")
-        q = UsermadeLesson.query()
-        query = q.filter(UsermadeLesson.urlKey == page).fetch(1)
+        query = UsermadeLesson.query().filter(UsermadeLesson.urlKey == page).fetch(1)
 	if len(query) > 0:
             thisLesson = query[0]
             returnLanguages = []
@@ -611,14 +608,12 @@ class GradingHandler(webapp2.RequestHandler):
 		email = str(users.get_current_user())
 		if not self.request.get("urlKey"):
 			type = "DM"
-			query = DMLesson.query()
-			thisLesson = query.filter(DMLesson.name == self.request.get("page")).fetch(1)[0]
+			thisLesson = DMLesson.query().filter(DMLesson.name == self.request.get("page")).fetch(1)[0]
 			page = self.request.get("page")
 
 		else:
 			type = "Public"
-			query = UsermadeLesson.query()
-			thisLesson = query.filter(UsermadeLesson.urlKey == self.request.get("urlKey")).fetch(1)[0]
+			thisLesson = UsermadeLesson.query().filter(UsermadeLesson.urlKey == self.request.get("urlKey")).fetch(1)[0]
 			page = self.request.get("urlKey")
 
 		language = self.request.get("language")
@@ -829,11 +824,9 @@ class LessonCreatorHandler(webapp2.RequestHandler):
     def post(self):
         lessonName = self.request.get("lesson2delete")
         thisUser = users.get_current_user()
-        time.sleep(0.2)
-        query = UsermadeLesson.query()
-        userLessons = query.filter(UsermadeLesson.author == thisUser)
-        thisLesson = userLessons.filter(UsermadeLesson.name == lessonName).fetch(1)[0]
+        thisLesson = UsermadeLesson.query().filter(UsermadeLesson.author == thisUser).filter(UsermadeLesson.name == lessonName).fetch(1)[0]
         thisLesson.key.delete()
+	time.sleep(0.2)
         self.redirect('/LessonCreator')
 
     def get(self):
@@ -841,8 +834,7 @@ class LessonCreatorHandler(webapp2.RequestHandler):
         thisUser = users.get_current_user()
 
         time.sleep(0.2)
-        query = UsermadeLesson.query()
-        userLessons = query.filter(UsermadeLesson.author == thisUser).fetch(10)
+        userLessons = UsermadeLesson.query().filter(UsermadeLesson.author == thisUser).fetch(10)
         lessonArray = []
         for lesson in userLessons:
             lessonArray.append(lesson.name)
@@ -859,9 +851,7 @@ class LessonPreviewHandler(webapp2.RequestHandler):
         thisUser = users.get_current_user()
         lessonName = self.request.get("page")
         if lessonName != "":
-            query = UsermadeLesson.query()
-            userLessons = query.filter(UsermadeLesson.author == thisUser)
-            userLessonQuery = userLessons.filter(UsermadeLesson.name == lessonName).fetch(1)
+            userLessonQuery = UsermadeLesson.query().filter(UsermadeLesson.author == thisUser).filter(UsermadeLesson.name == lessonName).fetch(1)
             if len(userLessonQuery) > 0:
                 userLesson = userLessonQuery[0]
             else:
@@ -871,8 +861,7 @@ class LessonPreviewHandler(webapp2.RequestHandler):
 
         elif self.request.get("public") != "":
             public = self.request.get("public")
-            query = UsermadeLesson.query()
-            userLessonQuery = query.filter(UsermadeLesson.urlKey == public).fetch(1)
+            userLessonQuery = UsermadeLesson.query().filter(UsermadeLesson.urlKey == public).fetch(1)
             if len(userLessonQuery) > 0:
                 foundLesson = userLessonQuery[0]
             else:
@@ -909,25 +898,17 @@ class LessonModifyHandler(webapp2.RequestHandler):
         thisUser = users.get_current_user()
         if self.request.get("page") != "":
             lessonName = self.request.get("page")
-            counter = 0
-            while counter < 100:
-                query = UsermadeLesson.query()
-                userLessons = query.filter(UsermadeLesson.author == thisUser)
-                lessonplanQuery = userLessons.filter(UsermadeLesson.name == lessonName).fetch(1)
-                if len(lessonplanQuery) > 0:
-                    break
-                counter += 1
-            try:
-                userLesson = lessonplanQuery[0]
-            except IndexError:
+            lessonplanQuery = UsermadeLesson.query().filter(UsermadeLesson.author == thisUser).filter(UsermadeLesson.name == lessonName).fetch(1)
+            if len(lessonplanQuery) > 0:
+                thisClass = lessonplanQuery[0]
+            else:
                 template_values = {'user':thisUser,'errorCatch':"yes"}
                 self.response.write(template.render(template_values))
                 return
 
         elif self.request.get("public") != "":
             public = self.request.get("public")
-            query = UsermadeLesson.query()
-            queryLesson = query.filter(UsermadeLesson.urlKey == public).fetch(1)
+            queryLesson = UsermadeLesson.query().filter(UsermadeLesson.urlKey == public).fetch(1)
             if len(queryLesson) > 0:
                 if queryLesson[0].publicEdit == "True":
                     userLesson = queryLesson[0]
@@ -942,14 +923,7 @@ class LessonModifyHandler(webapp2.RequestHandler):
                 self.response.write(template.render(template_values))
                 return
 
-        if len(userLesson.languages) == 1:
-            if userLesson.languages[0] == "Python":
-                template_values = { 'init_code': userLesson.pythonInit[:], 'final_code': userLesson.pythonFinal[:], 'instruct_code': userLesson.pythonInstruct[:] }
-            else:
-                template_values = { 'init_code': userLesson.rcodeInit[:], 'final_code': userLesson.rcodeFinal[:], 'instruct_code': userLesson.rcodeInstruct[:] }
-        else:
-            template_values = { 'Python_init_code': userLesson.pythonInit[:], 'Python_final_code': userLesson.pythonFinal[:], 'Python_instruct_code': userLesson.pythonInstruct[:], 'R_init_code': userLesson.rcodeInit[:], 'R_final_code': userLesson.rcodeFinal[:], 'R_instruct_code': userLesson.rcodeInstruct[:] }
-        template_values.update({ 'lesson':userLesson, 'user':thisUser })
+        template_values = { 'lesson':userLesson, 'user':thisUser }
         self.response.write(template.render(template_values))
 
     def post(self):
@@ -957,18 +931,15 @@ class LessonModifyHandler(webapp2.RequestHandler):
         urlKey = self.request.get("urlKey")
         thisUser = users.get_current_user()
 
-        query = UsermadeLesson.query()
         if self.request.get("creator") == "create":
-            query = UsermadeLesson.query()
-            userLessons = query.filter(UsermadeLesson.author == thisUser)
-            existingLesson = userLessons.filter(UsermadeLesson.name == lessonName).fetch(1)
+            existingLesson = UsermadeLesson.query().filter(UsermadeLesson.author == thisUser).filter(UsermadeLesson.name == lessonName).fetch(1)
 
         else:
-            thisLesson = query.filter(UsermadeLesson.urlKey == urlKey).fetch(1)[0]
+            thisLesson = UsermadeLesson.query().filter(UsermadeLesson.urlKey == urlKey).fetch(1)[0]
             if thisLesson.publicEdit == "True":
-                existingLesson = query.filter(UsermadeLesson.urlKey == urlKey).fetch(1)
+                existingLesson = UsermadeLesson.query().filter(UsermadeLesson.urlKey == urlKey).fetch(1)
             elif thisLesson.publicEdit == "False" and thisLesson.author == thisUser:
-                existingLesson = query.filter(UsermadeLesson.urlKey == urlKey).fetch(1)
+                existingLesson = UsermadeLesson.query().filter(UsermadeLesson.urlKey == urlKey).fetch(1)
             else:
                 self.redirect('/LessonModify?page=Unavailable')
 
