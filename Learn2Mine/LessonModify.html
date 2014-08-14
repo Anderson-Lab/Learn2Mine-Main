@@ -56,37 +56,35 @@
 	<h1>Submit code for Learn2Mine Lesson</h1>
 
                 <form name="updateLesson" action="/LessonModify" id="updateLesson" method="post" onsubmit="return validateUpdate();">
-
-		{% if user == author %}
-			Submit lesson plan then <a href="http://localhost:8080/LessonPreview?page={{ lessonName }}" 
+		{% if user == lesson.author %}
+			Submit lesson plan then <a href="http://localhost:8080/LessonPreview?page={{ lesson.name }}" 
 			target="_blank">click here</a> to preview your lesson plan as it would appear in Learn2Mine.
 			Refresh the page as updates are submitted to view changes.<br>
 
 			<br>
+			Public Viewing URL: http://localhost:8080/LessonPreview?public={{ lesson.urlKey }} <br>
+			Public Edit URL: http://localhost:8080/LessonModify?public={{ lesson.urlKey }} <br>
+			Public Lessonplan URL: http://localhost:8080/PublicLesson?public={{ lesson.urlKey }} <br><br>
 
-			Public Viewing URL: http://localhost:8080/LessonPreview?public={{ urlKey }} <br>
-			Public Edit URL: http://localhost:8080/LessonModify?public={{ urlKey }} <br>
-			Public Lessonplan URL: http://localhost:8080/PublicLesson?public={{ urlKey }} <br><br>
 
-
-			{% if publicViewing == "True" %}
+			{% if lesson.publicView == "True" %}
 				<input type="checkbox" name="publicView" value="no">Make lesson unavailable for public viewing
 			{% else %}
 				<input type="checkbox" name="publicView" value="yes">Make lesson available for public viewing
 			{% endif %}<br>
-			{% if publicModify == "True" %}
+			{% if lesson.publicEdit == "True" %}
 				<input type="checkbox" name="publicEdit" value="no">Make lesson unavailable for public edits
 			{% else %}
 				<input type="checkbox" name="publicEdit" value="yes">Make lesson available for public edits
 			{% endif %}<br>
-			{% if publicExecute == "True" %}
+			{% if lesson.publicExecute == "True" %}
 				<input type="checkbox" name="publicExecute" value="no">Make lesson unavailable for public lessonplans
 			{% else %}
 				<input type="checkbox" name="publicExecute" value="yes">Make lesson available for public lessonplans
 			{% endif %}<br><br>
 
 		{% else %}
-			Submit lesson plan then <a href="http://localhost:8080/LessonPreview?public={{ urlKey }}" 
+			Submit lesson plan then <a href="http://localhost:8080/LessonPreview?public={{ lesson.urlKey }}" 
 			target="_blank">click here</a> to preview your lesson plan as it would appear in Learn2Mine.
 			Refresh the page as updates are submitted to view changes.<br>
 
@@ -94,8 +92,8 @@
 
 		{% endif %}
 		Change Language Options<br>
-		{% if languages|length == 1 %}
-			{% if languages[0] == "Python" %}
+		{% if lesson.languages|length == 1 %}
+			{% if lesson.languages[0] == "Python" %}
 				<input type="checkbox" name="addRcode" value="yes">Add option to submit answers using R
 			{% else %}
 				<input type="checkbox" name="addPython" value="yes">Add option to submit answers using Python
@@ -106,25 +104,25 @@
 		{% endif %}
 		<br><br>
 		Remove Questions from Lesson<br>
-                {% for i in range(0,(questionCount|int)) %}
+                {% for i in range(0,(lesson.problems|length)) %}
 	                <input type="checkbox" name="removeQuestion" value="{{ i }}">Remove Question {{ i+1 }}<br>
 		{% endfor %}
 		<br>
 		Add Questions to Lesson<br>
 		<select id="addQuestions" name="addQuestions" form="updateLesson">
 		<option value="0"></option>
-		{% for i in range(1,(11-questionCount|int)) %}
+		{% for i in range(1,(11-lesson.problems|length)) %}
 			<option value="{{i}}">{{i}}</option>
 		{% endfor %}
 		</select> 
 
-                <input type="hidden" name="lessonName" value={{ lessonName }} />
-                <input type="hidden" name="questionCount" value={{ questionCount }} />
+                <input type="hidden" name="lessonName" value={{ lesson.name }} />
+                <input type="hidden" name="questionCount" value={{ lesson.problems|length }} />
 		<input type="hidden" name="python" value={{ python }} />
 		<input type="hidden" name="rcode" value={{ rcode }} />
-		<input type="hidden" name="languages" value={{ languages }} />
+		<input type="hidden" name="languages" value={{ lesson.languages }} />
 		<input type="hidden" name="modify" value="True" />
-		<input type="hidden" name="urlKey" value={{ urlKey }} />
+		<input type="hidden" name="urlKey" value={{ lesson.urlKey }} />
                 <div id="lessonMakerSubmit"><input type="submit" value="Update Lesson Parameters"></div>
 		</form>
 		<br><br>
@@ -140,17 +138,17 @@
 
 	<form action="/LessonModify" method="post" name="lessonModify">
 
-		Full Lesson Name: <input type="text" name=fullLesson value='{{ fullLesson }}'><br><br>
+		Full Lesson Name: <input type="text" name=fullLesson value='{{ lesson.header }}'><br><br>
 		Paragraph<br>
-                <textarea id="lessonMakerTextarea" name="paragraph" rows="6" cols="80">{{ paragraph }}</textarea></div><br><br><br><br>
+                <textarea id="lessonMakerTextarea" name="paragraph" rows="6" cols="80">{{ lesson.paragraph }}</textarea></div><br><br><br><br>
 
-{% if languages|length != 1 %}
+{% if lesson.languages|length != 1 %}
 		<div id="NPStext">
 		<center>
-		{% for i in range(0,(questionCount|int)) %}
+		{% for i in range(0,(lesson.problems|length)) %}
 
 		      	<center><b>Problem Statement: Question {{ i+1 }}</b><br>
-			<textarea id="lessonMakerTextarea" name="problem" rows="6" cols="80">{{ problems[loop.index0] }}</textarea></center></div>
+			<textarea id="lessonMakerTextarea" name="problem" rows="6" cols="80">{{ lesson.problems[loop.index0] }}</textarea></center></div>
 
 		<div id="lessonMakerWrap">
 		    <br>
@@ -183,18 +181,18 @@
 
 {% else %}
 	<div id="NPStext">
-		{% for i in range(0,(questionCount|int)) %}
+		{% for i in range(0,(lesson.problems|length)) %}
 		      	<b>Problem Statement: Question {{ i+1 }}</b><br>
-			<textarea id="lessonMakerTextarea" name="problem" rows="6" cols="80">{{ problems[loop.index0] }}</textarea><br><br>
+			<textarea id="lessonMakerTextarea" name="problem" rows="6" cols="80">{{ lesson.problems[loop.index0] }}</textarea><br><br>
 
-			{{ languages[0] }} Init Code: Question {{ i+1 }}<br>
-		      	<textarea id="lessonMakerTextarea" name="{{ languages[0] }}-init" rows="6" cols="80">{{ init_code[loop.index0] }}</textarea><br><br>
+			{{ lesson.languages[0] }} Init Code: Question {{ i+1 }}<br>
+		      	<textarea id="lessonMakerTextarea" name="{{ lesson.languages[0] }}-init" rows="6" cols="80">{{ init_code[loop.index0] }}</textarea><br><br>
 
-			{{ languages[0] }} Instructor Code: Question {{ i+1 }}<br>
-			<textarea id="lessonMakerTextarea" name="{{ languages[0] }}-instruct" rows="6" cols="80">{{ instruct_code[loop.index0] }}</textarea><br><br>
+			{{ lesson.languages[0] }} Instructor Code: Question {{ i+1 }}<br>
+			<textarea id="lessonMakerTextarea" name="{{ lesson.languages[0] }}-instruct" rows="6" cols="80">{{ instruct_code[loop.index0] }}</textarea><br><br>
 
-			{{ languages[0] }} Final Code: Question {{ i+1 }}<br>
-			<textarea id="lessonMakerTextarea" name="{{ languages[0] }}-final" rows="6" cols="80">{{ final_code[loop.index0] }}</textarea><br><br>
+			{{ lesson.languages[0] }} Final Code: Question {{ i+1 }}<br>
+			<textarea id="lessonMakerTextarea" name="{{ lesson.languages[0] }}-final" rows="6" cols="80">{{ final_code[loop.index0] }}</textarea><br><br>
 
 			<br><br>
 		{% endfor %}
@@ -202,11 +200,11 @@
 {% endif %}
 		<input type="hidden" name="python" value={{ python }} />
 		<input type="hidden" name="rcode" value={{ rcode }} />
-		<input type="hidden" name="languages" value={{ languages }} />
-		<input type="hidden" name="questionCount" value={{ questionCount }} />
-		<input type="hidden" name="lessonName" value={{ lessonName }} />
+		<input type="hidden" name="languages" value={{ lesson.languages }} />
+		<input type="hidden" name="questionCount" value={{ lesson.problems|length }} />
+		<input type="hidden" name="lessonName" value={{ lesson.name }} />
 		<input type="hidden" name="modify" value="False" />
-		<input type="hidden" name="urlKey" value={{ urlKey }} />
+		<input type="hidden" name="urlKey" value={{ lesson.urlKey }} />
 		<div id="lessonMakerSubmit"><input type="submit" value="Update Lesson Plan"></div>
 	</form><br>
 	</div>
