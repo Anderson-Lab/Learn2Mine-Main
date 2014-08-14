@@ -703,7 +703,6 @@ class GradingHandler(webapp2.RequestHandler):
 			self.redirect("/PublicLessonTest?key="+page)
 			
 class GradeRefreshHandler(webapp2.RequestHandler):
-	@decorator.oauth_required
 	def post(self):
                 if not self.request.get("urlKey"):
 			type = "DM"
@@ -840,12 +839,6 @@ class LessonCreatorHandler(webapp2.RequestHandler):
     def get(self):
         template = JINJA_ENVIRONMENT.get_template('LessonCreator.html')
         thisUser = users.get_current_user()
-        if not thisUser:
-            url = users.create_login_url(self.request.uri)
-            url_linktext = 'Login'
-            template_values = { 'url': url, 'url_linktext': url_linktext }
-            self.response.write(template.render(template_values))
-            return
 
         time.sleep(0.2)
         query = UsermadeLesson.query()
@@ -956,9 +949,7 @@ class LessonModifyHandler(webapp2.RequestHandler):
                 template_values = { 'init_code': userLesson.rcodeInit[:], 'final_code': userLesson.rcodeFinal[:], 'instruct_code': userLesson.rcodeInstruct[:] }
         else:
             template_values = { 'Python_init_code': userLesson.pythonInit[:], 'Python_final_code': userLesson.pythonFinal[:], 'Python_instruct_code': userLesson.pythonInstruct[:], 'R_init_code': userLesson.rcodeInit[:], 'R_final_code': userLesson.rcodeFinal[:], 'R_instruct_code': userLesson.rcodeInstruct[:] }
-        template_values.update({ 'problems': userLesson.problems, 'lessonName': userLesson.name, 'questionCount': len(userLesson.problems), 'fullLesson': userLesson.header, 'paragraph': userLesson.paragraph, 'user': thisUser, 'languages': userLesson.languages, 
-'urlKey': userLesson.urlKey, 'publicModify': userLesson.publicEdit, 'publicViewing': userLesson.publicView, 'publicExecute': userLesson.publicExecute, 'author': userLesson.author })
-
+        template_values.update({ 'lesson':userLesson, 'user':thisUser })
         self.response.write(template.render(template_values))
 
     def post(self):
@@ -1021,13 +1012,9 @@ class LessonModifyHandler(webapp2.RequestHandler):
             for index in sorted(deleteIndices, reverse=True):
                 del userLesson.problems[index]
                 if len(userLesson.pythonFinal) > 0:
-                    del userLesson.pythonInit[index]
-                    del userLesson.pythonInstruct[index]
-                    del userLesson.pythonFinal[index]
+                    del userLesson.pythonInit[index],userLesson.pythonInstruct[index],userLesson.pythonFinal[index]
                 if len(userLesson.rcodeFinal) > 0:
-                    del userLesson.rcodeInit[index]
-                    del userLesson.rcodeInstruct[index]
-                    del userLesson.rcodeFinal[index]
+                    del userLesson.rcodeInit[index],userLesson.rcodeInstruct[index],userLesson.rcodeFinal[index]
 		for lesson in User2Lesson.query().filter(User2Lesson.lessonID == urlKey).fetch(100):
 			del lesson.returnStatements[index]
 			lesson.put()
@@ -1066,20 +1053,11 @@ class LessonModifyHandler(webapp2.RequestHandler):
                 newLesson = True
                 userLesson = UsermadeLesson(id=''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(20)]))
                 userLesson.urlKey = ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(20)])
-                userLesson.publicEdit = "False"
-                userLesson.publicView = "False"
-                userLesson.publicExecute = "False"
+                userLesson.publicEdit,userLesson.publicView,userLesson.publicExecute = ("False",)*3
                 userLesson.name = lessonName
                 userLesson.author = thisUser
-                userLesson.problems= [""] * int(questionCount)
-                userLesson.pythonInstruct= [""] * int(questionCount)
-                userLesson.pythonInit= [""] * int(questionCount)
-                userLesson.pythonFinal= [""] * int(questionCount)
-                userLesson.rcodefinal= [""] * int(questionCount)
-                userLesson.rcodeInstruct= [""] * int(questionCount)
-                userLesson.rcodeInit = [""] * int(questionCount)
-                userLesson.paragraph = ""
-                userLesson.header = ""
+                userLesson.problems,userLesson.pythonInstruct,userLesson.pythonInit,userLesson.pythonFinal,userLesson.rcodeInit,userLesson.rcodeFinal,userLesson.rcodeInstruct = ([""] * int(questionCount),)*7
+                userLesson.paragraph,userLesson.header = ("",)*2
                 tempLanguages = []
                 if self.request.get("python") == "yes":
                     tempLanguages.append("Python")
@@ -1088,7 +1066,6 @@ class LessonModifyHandler(webapp2.RequestHandler):
             userLesson.languages = tempLanguages[:]
             if len(questionCount) == 1:
                 if not newLesson:
-                    print "Problem Statements:",self.request.get_all("problem")
                     userLesson.problems = self.request.get_all("problem")
                     userLesson.pythonInstruct = self.request.get_all("Python-instruct")
                     userLesson.pythonInit = self.request.get_all("Python-init")
@@ -1112,12 +1089,6 @@ class ClassPortalHandler(webapp2.RequestHandler):
 	def get(self):
 		template = JINJA_ENVIRONMENT.get_template('Class.html')
 	        thisUser = users.get_current_user()
-        	if not thisUser:
-			url = users.create_login_url(self.request.uri)
-			url_linktext = 'Login'
-			template_values = {'user':thisUser, 'url_linktext':url_linktext}
-		        self.response.write(template.render(template_values))
-			return
 		instructing = Learn2MineClass.query().filter(Learn2MineClass.instructor == thisUser).fetch(10)
 		enrolledQuery = Learn2MineClass.query().fetch(10)
 		enrolledClasses = []
@@ -1143,9 +1114,8 @@ class ClassCreatorHandler(webapp2.RequestHandler):
 		DMLessons = []
 		for DMLesson in DMLessonQuery:
 			DMLessons.append([DMLesson.header, DMLesson.name])
-		PublicLessonQuery = UsermadeLesson.query().fetch(10)
 		PublicLessons = []
-		for PublicLesson in PublicLessonQuery:
+		for PublicLesson in UsermadeLesson.query().filter(UsermadeLesson.publicExecute == "True").fetch(10):
 			PublicLessons.append([PublicLesson.header, PublicLesson.urlKey])		
         	if thisUser:   
         	    url = users.create_logout_url(self.request.uri)
@@ -1269,15 +1239,11 @@ class EnrollmentHandler(webapp2.RequestHandler):
 	                self.redirect('/Class')
 
 class GradeViewerHandler(webapp2.RequestHandler):
+	@decorator.oauth_required
+
 	def get(self):
 		template = JINJA_ENVIRONMENT.get_template('GradeViewer.html')
 		thisUser = users.get_current_user()
-		if not thisUser:
-			url = users.create_login_url(self.request.uri)
-			url_linktext = 'Login'
-			template_values = { 'url': url, 'url_linktext': url_linktext }
-			self.response.write(template.render(template_values))
-			return
 
 		classKey = self.request.get("key")
 		if not classKey:
@@ -1323,15 +1289,11 @@ class GradeViewerHandler(webapp2.RequestHandler):
 		self.redirect('/Class')
 
 class ClassGradeViewerHandler(webapp2.RequestHandler):
+	@decorator.oauth_required
+
 	def get(self):
 		template = JINJA_ENVIRONMENT.get_template('ClassGradeViewer.html')
 		thisUser = users.get_current_user()
-		if not thisUser:
-			url = users.create_login_url(self.request.uri)
-			url_linktext = 'Login'
-			template_values = { 'url': url, 'url_linktext': url_linktext }
-			self.response.write(template.render(template_values))
-			return
 
 		findClass = self.request.get("class")
 		if not findClass:
