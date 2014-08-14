@@ -4,35 +4,6 @@
 <head>
 <link rel="shortcut icon" href="./images/l2m.ico">
 <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
-<script type="text/javascript">
-    function validateUpdate() {
-	var checked = 0;
-
-	if(updateLesson.removePython.checked && updateLesson.removeRcode.checked) {
-	    alert("Cannot remove both programming langauges.");
-	    return false;
-	}
-	if(!(typeof updateLesson.removeQuestion.length == "undefined")) {
-	    for (i=0; i < updateLesson.removeQuestion.length; i++) {
-		if (updateLesson.removeQuestion[i].checked) {
-		    checked++;
-		}
-	    }
-	    if (checked == updateLesson.removeQuestion.length) {
-		alert("Cannot remove all questions from lesson.");
-		return false;
-	    }
-	}
-	else {
-	    if(updateLesson.removeQuestion.checked) {
-		alert("Cannot remove all questions from lesson.");
-		return false;
-	    }
-	}
-	return true;
-    }
-</script>
-<!--<meta http-equiv="refresh" content="30">-->
 <title>Learn2Mine Class Modifier</title>
 </head>
 <body>
