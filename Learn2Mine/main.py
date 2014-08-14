@@ -636,6 +636,7 @@ class GradingHandler(webapp2.RequestHandler):
 			galaxy.url = "http://127.0.0.1:8081/api/"
 			galaxy.workflow_id = "8237ee2988567c1c"
 			galaxy.put()
+			time.sleep(0.2)
 
 		# Now we make a galaxy api call
 		# This call will grade the student's work
@@ -675,7 +676,7 @@ class GradingHandler(webapp2.RequestHandler):
 				returnStatement = "Congratulations! You've solved this problem."
 			else:
 				if "previous correct" in userLesson.returnStatements[int(problem)-1]:
-					returnStatement = "Your submission is incorrect, but you won't be penalized as<br>you previously solved this problem."
+					returnStatement = "Your submission is incorrect, but you won't be penalized as<br>you have previously solved this problem."
 				else:
 					returnAdd = "<br />".join(results['difference_stdout'].split("\n"))
 					returnStatement = "The code you entered is incorrect.<br>The following shows what output correctly matched and what<br>output was different (shown using + and -) : <br>" + returnAdd
@@ -728,7 +729,7 @@ class GradeRefreshHandler(webapp2.RequestHandler):
                                 returnStatement = "Congratulations! You've solved this problem."
                         else:
                                 if "previous correct" in userLesson.returnStatements[int(problem)-1]:
-                                        returnStatement = "Your submission is incorrect, but you won't be penalized as<br>you previously solved this problem."
+                                        returnStatement = "Your submission is incorrect, but you won't be penalized as<br>you have previously solved this problem."
                                 else:
                                         returnAdd = "<br />".join(results['difference_stdout'].split("\n"))
 					returnStatement = "The code you entered is incorrect.<br>The following shows what output correctly matched and what<br>output was different (shown using + and -) : <br>" + returnAdd
@@ -900,7 +901,7 @@ class LessonModifyHandler(webapp2.RequestHandler):
             lessonName = self.request.get("page")
             lessonplanQuery = UsermadeLesson.query().filter(UsermadeLesson.author == thisUser).filter(UsermadeLesson.name == lessonName).fetch(1)
             if len(lessonplanQuery) > 0:
-                thisClass = lessonplanQuery[0]
+                userLesson = lessonplanQuery[0]
             else:
                 template_values = {'user':thisUser,'errorCatch':"yes"}
                 self.response.write(template.render(template_values))
