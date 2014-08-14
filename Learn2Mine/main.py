@@ -1101,9 +1101,7 @@ class ClassCreatorHandler(webapp2.RequestHandler):
 		PublicLessons = self.request.get_all("addPublicLesson")
 		className = self.request.get("className")
 		newClass = Learn2MineClass()
-		newClass.PublicLessonplan = []
-		newClass.DMLessonplan = []
-		newClass.students = []
+		newClass.PublicLessonplan,newClass.DMLessonplan,newClass.students = ([],)*3
 		newClass.PublicLessonplan.extend(PublicLessons)
 		newClass.DMLessonplan.extend(DMLessons)
 		newClass.instructor = thisUser
@@ -1249,7 +1247,7 @@ class GradeViewerHandler(webapp2.RequestHandler):
 		for lesson in lessonplanResults:
 			if len(lesson[2]) > maxProblemCount:
 				maxProblemCount = len(lesson[2])
-		template_values = {'user':thisUser, 'class':thisClass.className, 'instructor':thisClass.instructor, 'lessonplanResults':lessonplanResults, 'maxProblemCount':maxProblemCount,'key':classKey }
+		template_values = {'user':thisUser, 'class':thisClass.className, 'lessonplanResults':lessonplanResults, 'maxProblemCount':maxProblemCount,'key':classKey }
 		self.response.write(template.render(template_values))
 	def post(self):
 		thisUser = users.get_current_user()
