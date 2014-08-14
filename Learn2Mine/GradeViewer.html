@@ -68,10 +68,5 @@
     <center><b>Error in accessing page. Either page does not exist or you do not have acess.<br></b>
     <br><br><br>
 {% endif %}
-{% if not user %}
-<a href="{{ url|safe }}">{{ url_linktext }}</a>
-<br><br>
-</body>
-{% endif %}
 </html>
 {% endautoescape %}
