@@ -518,7 +518,7 @@ img#skBadge{
     float:left;
 }
 #lessonMakerRight {
-    padding-left: 50px;
+    padding-right: 0px;
     width: 50%;
     float:right;
 }
