@@ -484,85 +484,62 @@ class TutorialLessonHandler(webapp2.RequestHandler):
 		template_values.update({'user':useremail})
 		self.response.write(template.render(template_values))
 
-class DMLessonHandler(webapp2.RequestHandler):
+class LessonHandler(webapp2.RequestHandler):
     @decorator.oauth_required
     def get(self):
-        useremail = users.get_current_user()
-        template = JINJA_ENVIRONMENT.get_template('DMLessonTest.html')
-        page = self.request.get("page")
-        if len(DMLesson.query().filter(DMLesson.name == page).fetch(1)) > 0:
-            thisLesson = query[0]
-            returnLanguages = []
-            if "Python" in thisLesson.languages:
-                returnLanguages.append("python")
-            if "R" in thisLesson.languages:
-                returnLanguages.append("rcode")
+        thisUser = users.get_current_user()
+        template = JINJA_ENVIRONMENT.get_template('LessonTest.html')
+	if self.request.get("key") != "":
+            page = self.request.get("key")
+            queryResult = UsermadeLesson.query().filter(UsermadeLesson.urlKey == page).fetch(1)
+            public = True
+	elif self.request.get("page") != "":
+            page = self.request.get("page")
+            queryResult = DMLesson.query().filter(DMLesson.name == page).fetch(1)
+            public = False
         else:
-            template_values = {'user':useremail,'errorCatch':"yes"}
+            template_values = {'user':thisUser,'errorCatch':"yes"}
             self.response.write(template.render(template_values))
             return
-        existingUserLessonKey = User2Lesson.query().filter(User2Lesson.user == users.get_current_user()).filter(User2Lesson.lessonID == page).fetch(1)
-        if not existingUserLessonKey:
-            userLesson = User2Lesson()
-            userLesson.python = [""] * len(thisLesson.problems)
-            userLesson.rcode = [""] * len(thisLesson.problems)
-            userLesson.user = users.get_current_user()
-            userLesson.historyID = [""] * len(thisLesson.problems)
-            userLesson.outputID = [""] * len(thisLesson.problems)
-            userLesson.lessonID = page
-            userLesson.experience = 0
-            userLesson.badge = "images/"+page+"Mastery.png"
-            userLesson.returnStatements = ["No submission"] * len(thisLesson.problems)
-            userLesson.put()
-        else:
-            userLesson = existingUserLessonKey[0]
-        returnVals = userLesson.returnStatements[:]
-        experience = userLesson.experience
-        printProblems = []
-        for problem in thisLesson.problems:
-           printProblems.append("<br />".join(problem.split("\n")))
-	template_values = { 'user':users.get_current_user(), 'problems':printProblems,'paragraph':thisLesson.paragraph,'header':thisLesson.header,'languages':returnLanguages, 'page':thisLesson.name, 'result':returnVals, 'exp':experience, 'badge':userLesson.badge }
-        self.response.write(template.render(template_values))
 
-class PublicLessonHandler(webapp2.RequestHandler):
-    @decorator.oauth_required
-    def get(self):
-        useremail = users.get_current_user()
-        template = JINJA_ENVIRONMENT.get_template('PublicLessonTest.html')
-        page = self.request.get("key")
-        query = UsermadeLesson.query().filter(UsermadeLesson.urlKey == page).fetch(1)
-	if len(query) > 0:
-            thisLesson = query[0]
-            returnLanguages = []
-            if "Python" in thisLesson.languages:
-                returnLanguages.append("python")
-            if "R" in thisLesson.languages:
-                returnLanguages.append("rcode")
+
+        if len(queryResult) > 0:
+            thisLesson = queryResult[0]
         else:
-            template_values = {'user':useremail,'errorCatch':"yes"}
+            template_values = {'user':thisUser,'errorCatch':"yes"}
             self.response.write(template.render(template_values))
             return
+
+        returnLanguages = []
+        if "Python" in thisLesson.languages:
+            returnLanguages.append("python")
+        if "R" in thisLesson.languages:
+            returnLanguages.append("rcode")
+
         existingUserLessonKey = User2Lesson.query().filter(User2Lesson.user == users.get_current_user()).filter(User2Lesson.lessonID == page).fetch(1)
         if not existingUserLessonKey:
-            userLesson = User2Lesson()
-            userLesson.python = [""] * len(thisLesson.problems)
-            userLesson.rcode = [""] * len(thisLesson.problems)
-            userLesson.user = users.get_current_user()
-            userLesson.historyID = [""] * len(thisLesson.problems)
-            userLesson.outputID = [""] * len(thisLesson.problems)
-            userLesson.lessonID = page
-            userLesson.experience = 0
-            userLesson.badge = "images/"+page+"Mastery.png"
-            userLesson.returnStatements = ["No submission"] * len(thisLesson.problems)
-            userLesson.put()
+            userLessonKey = User2Lesson()
+            userLessonKey.python, userLessonKey.rcode, userLessonKey.historyID, userLessonKey.outputID = ([""] * len(thisLesson.problems),)*4
+            userLessonKey.user = users.get_current_user()
+            userLessonKey.lessonID = page
+            userLessonKey.experience = 0
+            userLessonKey.badge = "images/"+page+"Mastery.png"
+            userLessonKey.returnStatements = ["No submission"] * len(thisLesson.problems)
+            userLessonKey.put()
         else:
-            userLesson = existingUserLessonKey[0]
-        returnVals = userLesson.returnStatements[:]
-        experience = userLesson.experience
+            userLessonKey = existingUserLessonKey[0]
+
+        returnVals = userLessonKey.returnStatements[:]
+        experience = userLessonKey.experience
         printProblems = []
         for problem in thisLesson.problems:
            printProblems.append("<br />".join(problem.split("\n")))
-	template_values = { 'user':users.get_current_user(), 'problems':printProblems,'paragraph':thisLesson.paragraph,'header':thisLesson.header,'languages':returnLanguages, 'urlKey':page, 'result':returnVals, 'exp':experience, 'badge':userLesson.badge }
+
+	template_values = {'user':thisUser, 'problems':printProblems,'lesson':thisLesson,'languages':returnLanguages,'urlKey':page,'result':returnVals,'exp':experience, 'badge':userLessonKey.badge, 'public':public}
+        if public:
+            template_values.update({'urlKey':page})
+        else:
+            template_values.update({'page':page})
         self.response.write(template.render(template_values))
 
 class TutorialProfileHandler(webapp2.RequestHandler):
@@ -924,7 +901,12 @@ class LessonModifyHandler(webapp2.RequestHandler):
                 self.response.write(template.render(template_values))
                 return
 
-        template_values = { 'lesson':userLesson, 'user':thisUser }
+        else:
+            template_values = {'user':thisUser,'errorCatch':"yes"}
+            self.response.write(template.render(template_values))
+            return
+
+        template_values = {'lesson':userLesson, 'user':thisUser}
         self.response.write(template.render(template_values))
 
     def post(self):
@@ -937,12 +919,12 @@ class LessonModifyHandler(webapp2.RequestHandler):
 
         else:
             thisLesson = UsermadeLesson.query().filter(UsermadeLesson.urlKey == urlKey).fetch(1)[0]
-            if thisLesson.publicEdit == "True":
-                existingLesson = UsermadeLesson.query().filter(UsermadeLesson.urlKey == urlKey).fetch(1)
-            elif thisLesson.publicEdit == "False" and thisLesson.author == thisUser:
+            if thisLesson.publicEdit == "True" or (thisLesson.publicEdit == "False" and thisLesson.author == thisUser):
                 existingLesson = UsermadeLesson.query().filter(UsermadeLesson.urlKey == urlKey).fetch(1)
             else:
-                self.redirect('/LessonModify?page=Unavailable')
+                template_values = {'user':thisUser,'errorCatch':"yes"}
+                self.response.write(template.render(template_values))
+                return
 
         questionCount = self.request.get("questionCount")
 
@@ -970,14 +952,10 @@ class LessonModifyHandler(webapp2.RequestHandler):
                 userLesson.languages.append("Python")
             if self.request.get("removeRcode") == "yes" and "R" in userLesson.languages:
                 userLesson.languages.remove("R")
-                userLesson.rcodeFinal = [""] * len(userLesson.problems)
-                userLesson.rcodeInstruct = [""] * len(userLesson.problems)     
-                userLesson.rcodeInit = [""] * len(userLesson.problems)  
+                userLesson.rcodeFinal, userLesson.rcodeInstruct,userLesson.rcodeInit = ([""] * len(userLesson.problems),)*3
             if self.request.get("removePython") == "yes" and "Python" in userLesson.languages:
                 userLesson.languages.remove("Python")
-                userLesson.pythonFinal = [""] * len(userLesson.problems)
-                userLesson.pythonInstruct = [""] * len(userLesson.problems)
-                userLesson.pythonInit = [""] * len(userLesson.problems)
+                userLesson.pythonFinal,userLesson.pythonInstruct,userLesson.pythonInit = ([""] * len(userLesson.problems),)*3
 
             deleteIndices = self.request.get_all("removeQuestion")
             deleteIndices = map(int, deleteIndices)
@@ -1249,6 +1227,7 @@ class GradeViewerHandler(webapp2.RequestHandler):
 				maxProblemCount = len(lesson[2])
 		template_values = {'user':thisUser, 'class':thisClass.className, 'lessonplanResults':lessonplanResults, 'maxProblemCount':maxProblemCount,'key':classKey }
 		self.response.write(template.render(template_values))
+
 	def post(self):
 		thisUser = users.get_current_user()
 		key = self.request.get("key")
@@ -1264,7 +1243,6 @@ class ClassGradeViewerHandler(webapp2.RequestHandler):
 	def get(self):
 		template = JINJA_ENVIRONMENT.get_template('ClassGradeViewer.html')
 		thisUser = users.get_current_user()
-
 		findClass = self.request.get("class")
 		if not findClass:
 			template_values = {'user':thisUser,'errorCatch':"yes"}
@@ -1276,9 +1254,7 @@ class ClassGradeViewerHandler(webapp2.RequestHandler):
 			self.response.write(template.render(template_values))
 			return
 		thisClass = thisClassQuery[0]
-		publicLessons = []
-		DMLessons = []
-		studentGrades = []
+		publicLessons,DMLessons,studentGrades = ([],) * 3
 		if self.request.get("page"):
 			name = self.request.get("page")
 			for student in thisClass.students:
@@ -1291,7 +1267,6 @@ class ClassGradeViewerHandler(webapp2.RequestHandler):
 				studentGrades.append([userGrades,score])
 			lesson = Learn2MineLesson.query().filter(Learn2MineLesson.name == name).fetch(1)[0].header
 			template_values = {'class':findClass, 'grades':studentGrades, 'user':thisUser,'students':thisClass.students,'lesson':lesson, 'DM':"yes"}
-
 
 		elif self.request.get("key"):
 			key = self.request.get("key")
@@ -1379,9 +1354,9 @@ app = webapp2.WSGIApplication([
     ('/Search', SearchHandler),
     ('/Tutorial', TutorialHandler),
     ('/TutorialProfile', TutorialProfileHandler),
-    ('/DMLesson', DMLessonHandler),
-    ('/DMLessonTest', DMLessonHandler),
-    ('/PublicLessonTest', PublicLessonHandler),
+    ('/DMLesson', LessonHandler),
+    ('/DMLessonTest', LessonHandler),
+    ('/PublicLessonTest', LessonHandler),
     ('/LessonModify', LessonModifyHandler),
     ('/OnsiteGrader', GradingHandler),
     ('/LessonCreator', LessonCreatorHandler),
