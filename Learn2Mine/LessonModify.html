@@ -57,14 +57,14 @@
 
                 <form name="updateLesson" action="/LessonModify" id="updateLesson" method="post" onsubmit="return validateUpdate();">
 		{% if user == lesson.author %}
-			Submit lesson plan then <a href="http://localhost:8080/LessonPreview?page={{ lesson.name }}" 
+			Submit lesson plan then <a href="http://learn2mine.appspot.com/LessonPreview?page={{ lesson.name }}" 
 			target="_blank">click here</a> to preview your lesson plan as it would appear in Learn2Mine.
 			Refresh the page as updates are submitted to view changes.<br>
 
 			<br>
-			Public Viewing URL: http://localhost:8080/LessonPreview?public={{ lesson.urlKey }} <br>
-			Public Edit URL: http://localhost:8080/LessonModify?public={{ lesson.urlKey }} <br>
-			Public Lessonplan URL: http://localhost:8080/PublicLesson?public={{ lesson.urlKey }} <br><br>
+			Public Viewing URL: http://learn2mine.appspot.com/LessonPreview?public={{ lesson.urlKey }} <br>
+			Public Edit URL: http://learn2mine.appspot.com/LessonModify?public={{ lesson.urlKey }} <br>
+			Public Lessonplan URL: http://learn2mine.appspot.com/PublicLesson?public={{ lesson.urlKey }} <br><br>
 
 
 			{% if lesson.publicView == "True" %}
@@ -84,7 +84,7 @@
 			{% endif %}<br><br>
 
 		{% else %}
-			Submit lesson plan then <a href="http://localhost:8080/LessonPreview?public={{ lesson.urlKey }}" 
+			Submit lesson plan then <a href="http://learn2mine.appspot.com/LessonPreview?public={{ lesson.urlKey }}" 
 			target="_blank">click here</a> to preview your lesson plan as it would appear in Learn2Mine.
 			Refresh the page as updates are submitted to view changes.<br>
 
