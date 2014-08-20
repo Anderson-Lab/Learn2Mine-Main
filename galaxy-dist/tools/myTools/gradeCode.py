@@ -50,7 +50,7 @@ create_file(initCode,insCode,finalCode,language,"instructor.file")
 results = {}
 if language == "python27":
 	interp = "python"
-elif language == "R":
+elif language == "R" or language == "rcode":
 	interp = "Rscript"
 else:
 	interp = "python"
