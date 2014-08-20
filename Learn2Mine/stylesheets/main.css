@@ -279,11 +279,11 @@ div#searchlink{
 }
 div#aboutlink{
 	background-color:#313131;
-	left:350px;
+	left:250px;
 }
 div#helplink{
 	background-color:#313131;
-	left:450px;
+	left:350px;
 }
 div#galaxylink{
 	background-color:#313131;
@@ -291,15 +291,15 @@ div#galaxylink{
 }
 div#rstudiolink{
 	background-color:#313131;
-	left:550px;
+	left:450px;
 }
 div#lessoncreatorlink{
 	background-color:#313131;
-	left:650px;
+	left:550px;
 }
 div#classviewlink{
 	background-color:#313131;
-	left:750px;
+	left:650px;
 }
 /*site nav hover images*/
 div#homelink:hover{
@@ -523,7 +523,9 @@ img#skBadge{
     float:right;
 }
 #lessonMakerTextarea {
-    resize: none;
+    resize: both;
+    rows: 60;
+    cols: 150;
 }
 #lessonMakerProblem {
     text-align: center;
@@ -610,3 +612,9 @@ img#openBadgesImg{
 	top:1px;
 }
 /* This button was generated using CSSButtonGenerator.com */
+
+.lessonMakerTextarea{
+rows:60;
+cols:150;
+resize:both;
+}

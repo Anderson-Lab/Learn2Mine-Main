@@ -52,9 +52,9 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 
-#universe_wsgi.ini
-
+learn2mine_wsgi.ini
 database/
 tmp
 compiled_templates
 *.pid
+learn2mine_run.sh
