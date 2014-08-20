@@ -609,9 +609,9 @@ class GradingHandler(webapp2.RequestHandler):
 		newQuery = GalaxyParams.query()
 		if not newQuery.fetch(1):
 			galaxy = GalaxyParams()
-			galaxy.api_key = "2562b8f5fe6886e3490254cd1965d261"
-			galaxy.url = "http://127.0.0.1:8081/api/"
-			galaxy.workflow_id = "8237ee2988567c1c"
+			galaxy.api_key = "5b70f416e0a2685d6b63b7c12559b212"
+			galaxy.url = "http://localhost:8081/api/"
+			galaxy.workflow_id = "fb85969571388350"
 			galaxy.put()
 			time.sleep(0.2)
 
@@ -627,6 +627,7 @@ class GradingHandler(webapp2.RequestHandler):
 
 		other=json.dumps({"email":email,"studentCode":studentCode, "instructorCode":instructCode, "initializationCode":initCode, "finalizationCode":finalCode, "language":language, "badgeName":""})
 		results = workflow_execute_parameters(api_key,url+'workflows/',workflow_id,historyid,"param=gradeCode=other="+other)
+
 		outputID = results['outputs'][0]
 		hist_id = results['history']
 
@@ -671,9 +672,9 @@ class GradingHandler(webapp2.RequestHandler):
 		userLesson.put()
 		time.sleep(0.75)
 		if type == "DM":
-			self.redirect("/DMLessonTest?page="+page)
+			self.redirect("/DMLesson?page="+page)
 		else:
-			self.redirect("/PublicLessonTest?key="+page)
+			self.redirect("/PublicLesson?key="+page)
 			
 class GradeRefreshHandler(webapp2.RequestHandler):
 	def post(self):
@@ -719,9 +720,9 @@ class GradeRefreshHandler(webapp2.RequestHandler):
 		userLesson.put()
 		time.sleep(0.75)
                 if type == "DM":
-                        self.redirect("/DMLessonTest?page="+page)
+                        self.redirect("/DMLesson?page="+page)
                 else:
-                        self.redirect("/PublicLessonTest?key="+page)
+                        self.redirect("/PublicLesson?key="+page)
 
 class GalaxyParams(ndb.Model):
     """Models an individual User Lesson entry with author, content, and date."""
@@ -837,9 +838,9 @@ class LessonPreviewHandler(webapp2.RequestHandler):
                 self.response.write(template.render(template_values))
                 return
 
-        elif self.request.get("public") != "":
-            public = self.request.get("public")
-            userLessonQuery = UsermadeLesson.query().filter(UsermadeLesson.urlKey == public).fetch(1)
+        elif self.request.get("key") != "":
+            key = self.request.get("key")
+            userLessonQuery = UsermadeLesson.query().filter(UsermadeLesson.urlKey == key).fetch(1)
             if len(userLessonQuery) > 0:
                 foundLesson = userLessonQuery[0]
             else:
@@ -1027,11 +1028,12 @@ class LessonModifyHandler(webapp2.RequestHandler):
                     userLesson.paragraph = self.request.get("paragraph")
                     userLesson.put()
         userLesson.put()
+        time.sleep(0.2)
 
         if thisUser == userLesson.author:
             self.redirect('/LessonModify?page='+str(lessonName))
         else:
-            self.redirect('/LessonModify?public='+str(userLesson.urlKey))
+            self.redirect('/LessonModify?key='+str(userLesson.urlKey))
 
 class ClassPortalHandler(webapp2.RequestHandler):
 	@decorator.oauth_required
@@ -1254,7 +1256,9 @@ class ClassGradeViewerHandler(webapp2.RequestHandler):
 			self.response.write(template.render(template_values))
 			return
 		thisClass = thisClassQuery[0]
-		publicLessons,DMLessons,studentGrades = ([],) * 3
+		publicLessons = []
+		DMLessons = []
+		studentGrades = []
 		if self.request.get("page"):
 			name = self.request.get("page")
 			for student in thisClass.students:
@@ -1282,11 +1286,14 @@ class ClassGradeViewerHandler(webapp2.RequestHandler):
 			template_values = {'class':findClass, 'grades':studentGrades, 'user':thisUser,'students':thisClass.students,'lesson':lesson, 'public':"yes"}
 		else:
 			lessonScores = []
+			publicCount = 0
+			DMCount = 0
 			for student in thisClass.students:
 				thisLessonScore = []
 				if student == thisClass.students[0]:
 					for lesson in thisClass.PublicLessonplan:
 						publicLessons.append([UsermadeLesson.query().filter(UsermadeLesson.urlKey==lesson).fetch(1)[0].header,lesson])
+						publicCount += 1
 						lessonGrades = User2Lesson.query().filter(User2Lesson.user == student).filter(User2Lesson.lessonID==lesson).fetch(1)
 						if len(lessonGrades) == 0:
 							userGrades = (["No submission"] * len(UsermadeLesson.query().filter(UsermadeLesson.urlKey == lesson).fetch(1)[0].problems))
@@ -1297,6 +1304,7 @@ class ClassGradeViewerHandler(webapp2.RequestHandler):
 
 					for lesson in thisClass.DMLessonplan:
 						DMLessons.append([Learn2MineLesson.query().filter(Learn2MineLesson.name==lesson).fetch(1)[0].header,lesson])
+						DMCount += 1
 						lessonGrades = User2Lesson.query().filter(User2Lesson.user == student).filter(User2Lesson.lessonID == lesson).fetch(1)
 						if len(lessonGrades) == 0:
 							userGrades = (["No submission"] * len(Learn2MineLesson.query().filter(Learn2MineLesson.name == lesson).fetch(1)[0].problems))
@@ -1355,8 +1363,7 @@ app = webapp2.WSGIApplication([
     ('/Tutorial', TutorialHandler),
     ('/TutorialProfile', TutorialProfileHandler),
     ('/DMLesson', LessonHandler),
-    ('/DMLessonTest', LessonHandler),
-    ('/PublicLessonTest', LessonHandler),
+    ('/PublicLesson', LessonHandler),
     ('/LessonModify', LessonModifyHandler),
     ('/OnsiteGrader', GradingHandler),
     ('/LessonCreator', LessonCreatorHandler),

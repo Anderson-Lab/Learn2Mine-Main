@@ -65,7 +65,7 @@ value: {{ exp }}
 							<div class="outputid{{ loop.index }}">
 							Job is running, click below to refresh results
 							</div><br>
-							<input type="submit" value="Refresh results"><br><br>
+							<input type="submit" class="regularButton" value="Refresh results"><br><br>
 							</form>
 						{% else %}
 							<form name="grade{{ loop.index }}" method="post" id="gradeform" action="/OnsiteGrader">
@@ -79,10 +79,12 @@ value: {{ exp }}
 							<textarea name="studentCode" class="answer{{ loop.index }}" cols="50" rows="5" placeholder="Enter code or answer here"></textarea>
 							<br>
                                         	        {% if "rcode" in languages %}
-				                	<input type="submit" name="language" value="Grade R Code">
+							<br>
+				                	<input type="submit" class="regularButton" name="language" value="Grade R Code">
 	                                                {% endif  %}
         	                                        {% if "python" in languages %}
-					                <input type="submit" name="language" value="Grade Python Code">
+							<br>
+					                <input type="submit" class="regularButton" name="language" value="Grade Python Code">
                         	                        {% endif %}
 							<p>
 							<div class="outputid{{ loop.index }}">
