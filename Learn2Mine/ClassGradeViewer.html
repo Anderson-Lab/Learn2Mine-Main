@@ -103,11 +103,11 @@ $(document).ready(function () {
 		<table id="grades">
 			<tr>
 				<td>Student</td>
-				{% for lesson in publicLessons %}
-				<td><a href="/ClassGradeViewer?class={{class}}&key={{lesson[1]}}">{{lesson[0]}}</a></td>
+				{% for PublicLesson in publicLessons %}
+				<td><a href="/ClassGradeViewer?class={{class}}&key={{PublicLesson[1]}}">{{PublicLesson[0]}}</a></td>
 			        {% endfor %}
-			        {% for lesson in DMLessons %}
-				<td><a href="/ClassGradeViwer?class={{class}}&name={{lesson[1]}}">{{lesson[0]}}</a></td>
+			        {% for DMLesson in DMLessons %}
+				<td><a href="/ClassGradeViewer?class={{class}}&name={{DMLesson[1]}}">{{DMLesson[0]}}</a></td>
 			        {% endfor %}
 				<td>Lessonplan Average</td>
 			</tr>

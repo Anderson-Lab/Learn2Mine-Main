@@ -40,7 +40,7 @@
 	{% if lesson[3] == "DM" %}
 		<td><a href="/DMLessonTest?page={{lesson[1]}}">{{lesson[0]}}</a></td>
 	{% else %}
-		<td><a href="/PublicLessonTest?key={{lesson[1]}}">{{lesson[0]}}</a></td>
+		<td><a href="/PublicLesson?key={{lesson[1]}}">{{lesson[0]}}</a></td>
 	{% endif %}
 	{% for result in lesson[2] %}
 		{% if "solved this problem." not in result %}
