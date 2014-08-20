@@ -20,6 +20,7 @@ from common import *
 import json
 import time
 import ndb_json
+import copy
 
 # Learn2Mine-Specific Imports
 import getBadges
@@ -94,6 +95,9 @@ decorator = oauth2decorator_from_clientsecrets(
     ],
     message='MISSING_CLIENT_SECRETS_MESSAGE')
     
+def initN(N,toDup):
+	return (copy.deepcopy(toDup) for i in range(N))
+
 class OAuthHandler(webapp2.RequestHandler):
     @decorator.oauth_required
     def get(self):
@@ -657,7 +661,7 @@ class GradingHandler(webapp2.RequestHandler):
 					returnStatement = "Your submission is incorrect, but you won't be penalized as<br>you have previously solved this problem."
 				else:
 					returnAdd = "<br />".join(results['difference_stdout'].split("\n"))
-					returnStatement = "The code you entered is incorrect.<br>The following shows what output correctly matched and what<br>output was different (shown using + and -) : <br>" + returnAdd
+					returnStatement = "The code you entered is incorrect.<br>The following shows your results (-) versus the correct results (+). <br>" + returnAdd
 			userLesson.returnStatements[int(problem)-1] = returnStatement
 			returnVals = userLesson.returnStatements[:]
 			experience = len(fnmatch.filter(returnVals,'*solved this problem.'))/len(thisLesson.problems)
@@ -710,7 +714,7 @@ class GradeRefreshHandler(webapp2.RequestHandler):
                                         returnStatement = "Your submission is incorrect, but you won't be penalized as<br>you have previously solved this problem."
                                 else:
                                         returnAdd = "<br />".join(results['difference_stdout'].split("\n"))
-					returnStatement = "The code you entered is incorrect.<br>The following shows what output correctly matched and what<br>output was different (shown using + and -) : <br>" + returnAdd
+					returnStatement = "The code you entered is incorrect.<br>The following shows your results (-) versus the correct results (+). <br>" + returnAdd
                         userLesson.returnStatements[int(problem)-1] = returnStatement
                         returnVals = userLesson.returnStatements[:]
                         experience = len(fnmatch.filter(returnVals,'*solved this problem.'))/len(thisLesson.problems)
@@ -776,7 +780,7 @@ class UsermadeLesson(ndb.Model):
     rcodeFinal = ndb.TextProperty(repeated=True)
 
     header = ndb.TextProperty(indexed=False)
-    paragraph = ndb.TextProperty(indexed=True)
+    paragraph = ndb.TextProperty(indexed=False)
 
 class Learn2MineLesson(ndb.Model):
     """Models an individual L2M Lesson entry with author, content, and date."""
@@ -953,10 +957,10 @@ class LessonModifyHandler(webapp2.RequestHandler):
                 userLesson.languages.append("Python")
             if self.request.get("removeRcode") == "yes" and "R" in userLesson.languages:
                 userLesson.languages.remove("R")
-                userLesson.rcodeFinal, userLesson.rcodeInstruct,userLesson.rcodeInit = ([""] * len(userLesson.problems),)*3
+                userLesson.rcodeFinal, userLesson.rcodeInstruct,userLesson.rcodeInit = initN(3,initN(len(userLesson.problems),[""]))
             if self.request.get("removePython") == "yes" and "Python" in userLesson.languages:
                 userLesson.languages.remove("Python")
-                userLesson.pythonFinal,userLesson.pythonInstruct,userLesson.pythonInit = ([""] * len(userLesson.problems),)*3
+                userLesson.pythonFinal,userLesson.pythonInstruct,userLesson.pythonInit = initN(3,initN(len(userLesson.problems),[""]))
 
             deleteIndices = self.request.get_all("removeQuestion")
             deleteIndices = map(int, deleteIndices)
@@ -979,15 +983,15 @@ class LessonModifyHandler(webapp2.RequestHandler):
                 pass
 
             if questionAdd:
-                userLesson.problems = userLesson.problems[:] + ([""] * addQuestions)
+                userLesson.problems = userLesson.problems[:] + initN(addQuestions,[""])
 		if "R" in userLesson.languages:
-                    userLesson.rcodeFinal = userLesson.rcodeFinal[:] + ([""] * addQuestions)
-                    userLesson.rcodeInstruct = userLesson.rcodeInstruct[:] + ([""] * addQuestions)
-                    userLesson.rcodeInit = userLesson.rcodeInit[:] + ([""] * addQuestions)
+                    userLesson.rcodeFinal = userLesson.rcodeFinal[:] + initN(addQuestions,[""])
+                    userLesson.rcodeInstruct = userLesson.rcodeInstruct[:] + initN(addQuestions,[""])
+                    userLesson.rcodeInit = userLesson.rcodeInit[:] + initN(addQuestions,[""])
 		if "Python" in userLesson.languages:
-                    userLesson.pythonFinal = userLesson.pythonFinal[:] + ([""] * addQuestions)
-                    userLesson.pythonInstruct = userLesson.pythonInstruct[:] + ([""] * addQuestions)
-                    userLesson.pythonInit = userLesson.pythonInit[:] + ([""] * addQuestions)
+                    userLesson.pythonFinal = userLesson.pythonFinal[:] + initN(addQuestions,[""])
+                    userLesson.pythonInstruct = userLesson.pythonInstruct[:]+ initN(addQuestions,[""])
+                    userLesson.pythonInit = userLesson.pythonInit[:] + initN(addQuestions,[""])
 		for lesson in User2Lesson.query().filter(User2Lesson.lessonID == urlKey).fetch(100):
 			lesson.returnStatements = lesson.returnStatements[:] + (["No submission"] * addQuestions)
 			lesson.put()
@@ -1007,7 +1011,8 @@ class LessonModifyHandler(webapp2.RequestHandler):
                 userLesson.publicEdit,userLesson.publicView,userLesson.publicExecute = ("False",)*3
                 userLesson.name = lessonName
                 userLesson.author = thisUser
-                userLesson.problems,userLesson.pythonInstruct,userLesson.pythonInit,userLesson.pythonFinal,userLesson.rcodeInit,userLesson.rcodeFinal,userLesson.rcodeInstruct = ([""] * int(questionCount),)*7
+                #userLesson.problems,userLesson.pythonInstruct,userLesson.pythonInit,userLesson.pythonFinal,userLesson.rcodeInit,userLesson.rcodeFinal,userLesson.rcodeInstruct = ([""] * int(questionCount),)*7
+                userLesson.problems,userLesson.pythonInstruct,userLesson.pythonInit,userLesson.pythonFinal,userLesson.rcodeInit,userLesson.rcodeFinal,userLesson.rcodeInstruct = initN(7,initN(int(questionCount),[""]))
                 userLesson.paragraph,userLesson.header = ("",)*2
                 tempLanguages = []
                 if self.request.get("python") == "yes":
@@ -1022,8 +1027,8 @@ class LessonModifyHandler(webapp2.RequestHandler):
                     userLesson.pythonInit = self.request.get_all("Python-init")
                     userLesson.pythonFinal = self.request.get_all("Python-final")
                     userLesson.rcodeFinal = self.request.get_all("R-final")
-                    userLesson.rcodeInstruct = self.request.get_all("R-instruct")
                     userLesson.rcodeInit = self.request.get_all("R-init")
+                    userLesson.rcodeInstruct = self.request.get_all("R-instruct")
                     userLesson.header = self.request.get("fullLesson")
                     userLesson.paragraph = self.request.get("paragraph")
                     userLesson.put()
@@ -1110,7 +1115,8 @@ class ClassManagerHandler(webapp2.RequestHandler):
 		for lesson in thisClass.DMLessonplan:
 			removeDMLessons.append([Learn2MineLesson.query().filter(Learn2MineLesson.name == lesson).fetch(1)[0].header,lesson])
 		for lesson in thisClass.PublicLessonplan:
-			removePublicLessons.append([UsermadeLesson.query().filter(UsermadeLesson.urlKey == lesson).fetch(1)[0].header,lesson])
+			fetch_results = UsermadeLesson.query().filter(UsermadeLesson.urlKey == lesson).fetch(1)
+			removePublicLessons.append([fetch_results[0].header,lesson])
 		addDMLessons = []
 		addPublicLessons = []
 		for lesson in UsermadeLesson.query().filter(UsermadeLesson.publicExecute == "True").fetch(10):
