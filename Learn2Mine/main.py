@@ -95,9 +95,6 @@ decorator = oauth2decorator_from_clientsecrets(
     ],
     message='MISSING_CLIENT_SECRETS_MESSAGE')
     
-def initN(N,toDup):
-	return (copy.deepcopy(toDup) for i in range(N))
-
 class OAuthHandler(webapp2.RequestHandler):
     @decorator.oauth_required
     def get(self):
@@ -492,7 +489,7 @@ class LessonHandler(webapp2.RequestHandler):
     @decorator.oauth_required
     def get(self):
         thisUser = users.get_current_user()
-        template = JINJA_ENVIRONMENT.get_template('LessonTest.html')
+        template = JINJA_ENVIRONMENT.get_template('Lesson.html')
 	if self.request.get("key") != "":
             page = self.request.get("key")
             queryResult = UsermadeLesson.query().filter(UsermadeLesson.urlKey == page).fetch(1)
@@ -523,7 +520,13 @@ class LessonHandler(webapp2.RequestHandler):
         existingUserLessonKey = User2Lesson.query().filter(User2Lesson.user == users.get_current_user()).filter(User2Lesson.lessonID == page).fetch(1)
         if not existingUserLessonKey:
             userLessonKey = User2Lesson()
-            userLessonKey.python, userLessonKey.rcode, userLessonKey.historyID, userLessonKey.outputID = ([""] * len(thisLesson.problems),)*4
+            userLessonKey.python = [""] * len(thisLesson.problems)
+            userLessonKey.rcode = [""] * len(thisLesson.problems)
+            userLessonKey.historyID = [""] * len(thisLesson.problems)
+            userLessonKey.outputID = [""] * len(thisLesson.problems)
+            userLessonKey.outputID = [""] * len(thisLesson.problems)
+            userLessonKey.mostRecent = [""] * len(thisLesson.problems)
+            userLessonKey.history = [""] * len(thisLesson.problems)
             userLessonKey.user = users.get_current_user()
             userLessonKey.lessonID = page
             userLessonKey.experience = 0
@@ -539,7 +542,7 @@ class LessonHandler(webapp2.RequestHandler):
         for problem in thisLesson.problems:
            printProblems.append("<br />".join(problem.split("\n")))
 
-	template_values = {'user':thisUser, 'problems':printProblems,'lesson':thisLesson,'languages':returnLanguages,'urlKey':page,'result':returnVals,'exp':experience, 'badge':userLessonKey.badge, 'public':public}
+	template_values = {'user':thisUser, 'problems':printProblems,'lesson':thisLesson,'languages':returnLanguages,'urlKey':page,'result':returnVals,'exp':experience, 'badge':userLessonKey.badge, 'public':public,'mostRecent':userLessonKey.mostRecent}
         if public:
             template_values.update({'urlKey':page})
         else:
@@ -641,15 +644,18 @@ class GradingHandler(webapp2.RequestHandler):
 			userLesson.python[int(problem)-1] = studentCode
 		elif language == "rcode":
 			userLesson.rcode[int(problem)-1] = studentCode
+
+		userLesson.history[int(problem)-1] = studentCode
+		userLesson.mostRecent[int(problem)-1] = studentCode
 		userLesson.historyID[int(problem)-1] = hist_id
 		userLesson.outputID[int(problem)-1] = outputID
 		userLesson.put()
                 url = str(galaxyInstance.url) + "histories/" + hist_id + "/contents/" + outputID + "/display"
                 results = display_result(galaxyInstance.api_key,url)
 		if results == "Running":
-			if any(string in userLesson.returnStatements[int(problem)-1] for string in ["Congratulations!","- previous correct"]):
+			if any(string in userLesson.returnStatements[int(problem)-1] for string in ["Congratulations!","- previous correct", "you have previously solved this problem"]):
 				returnStatement = "Job running - previous correct"
-			elif any(string in userLesson.returnStatements[int(problem)-1] for string in ["code you entered is incorrect","- previous incorrect","submission is ioncorrect"]):
+			elif any(string in userLesson.returnStatements[int(problem)-1] for string in ["code you entered is incorrect","- previous incorrect","submission is incorrect"]):
 				returnStatement = "Job running - previous incorrect"
 			else:
 				returnStatement = "Job running"
@@ -674,11 +680,11 @@ class GradingHandler(webapp2.RequestHandler):
 		if "R" in thisLesson.languages:
 			returnLanguages.append("rcode")
 		userLesson.put()
-		time.sleep(0.75)
+		time.sleep(0.5)
 		if type == "DM":
-			self.redirect("/DMLesson?page="+page)
+			self.redirect("/DMLesson?page="+page+"#q"+problem)
 		else:
-			self.redirect("/PublicLesson?key="+page)
+			self.redirect("/PublicLesson?key="+page+"#q"+problem)
 			
 class GradeRefreshHandler(webapp2.RequestHandler):
 	def post(self):
@@ -724,9 +730,9 @@ class GradeRefreshHandler(webapp2.RequestHandler):
 		userLesson.put()
 		time.sleep(0.75)
                 if type == "DM":
-                        self.redirect("/DMLesson?page="+page)
+                        self.redirect("/DMLesson?page="+page+"#q"+problem)
                 else:
-                        self.redirect("/PublicLesson?key="+page)
+                        self.redirect("/PublicLesson?key="+page+"#q"+problem)
 
 class GalaxyParams(ndb.Model):
     """Models an individual User Lesson entry with author, content, and date."""
@@ -752,7 +758,8 @@ class User2Lesson(ndb.Model):
     outputID = ndb.StringProperty(repeated=True)
     experience = ndb.FloatProperty()
     badge = ndb.StringProperty(indexed=True)
-
+    mostRecent = ndb.TextProperty(repeated=True)
+    history = ndb.TextProperty(repeated=True)
     python = ndb.TextProperty(repeated=True)
     rcode = ndb.TextProperty(repeated=True)
     returnStatements = ndb.TextProperty(repeated=True)
@@ -823,8 +830,6 @@ class LessonCreatorHandler(webapp2.RequestHandler):
             lessonArray.append(lesson.name)
         template_values = { 'user': thisUser, 'existingLessons': lessonArray }
         self.response.write(template.render(template_values))
-
-
 
 class LessonPreviewHandler(webapp2.RequestHandler):
     @decorator.oauth_required
@@ -957,10 +962,14 @@ class LessonModifyHandler(webapp2.RequestHandler):
                 userLesson.languages.append("Python")
             if self.request.get("removeRcode") == "yes" and "R" in userLesson.languages:
                 userLesson.languages.remove("R")
-                userLesson.rcodeFinal, userLesson.rcodeInstruct,userLesson.rcodeInit = initN(3,initN(len(userLesson.problems),[""]))
+                userLesson.rcodeFinal = [""] * len(userLesson.problems)
+                userLesson.rcodeInstruct = [""] * int(questionCount)
+                userLesson.rcodeInit = [""] * int(questionCount)
             if self.request.get("removePython") == "yes" and "Python" in userLesson.languages:
                 userLesson.languages.remove("Python")
-                userLesson.pythonFinal,userLesson.pythonInstruct,userLesson.pythonInit = initN(3,initN(len(userLesson.problems),[""]))
+                userLesson.pythonFinal = [""] * int(questionCount)
+                userLesson.pythonInstruct = [""] * int(questionCount)
+                userLesson.pythonInit = [""] * int(questionCount)
 
             deleteIndices = self.request.get_all("removeQuestion")
             deleteIndices = map(int, deleteIndices)
@@ -983,15 +992,15 @@ class LessonModifyHandler(webapp2.RequestHandler):
                 pass
 
             if questionAdd:
-                userLesson.problems = userLesson.problems[:] + initN(addQuestions,[""])
+                userLesson.problems = userLesson.problems[:] + [""]*addQuestions
 		if "R" in userLesson.languages:
-                    userLesson.rcodeFinal = userLesson.rcodeFinal[:] + initN(addQuestions,[""])
-                    userLesson.rcodeInstruct = userLesson.rcodeInstruct[:] + initN(addQuestions,[""])
-                    userLesson.rcodeInit = userLesson.rcodeInit[:] + initN(addQuestions,[""])
+                    userLesson.rcodeFinal = userLesson.rcodeFinal[:] + [""]*addQuestions
+                    userLesson.rcodeInstruct = userLesson.rcodeInstruct[:] + [""]*addQuestions
+                    userLesson.rcodeInit = userLesson.rcodeInit[:] + [""]*addQuestions
 		if "Python" in userLesson.languages:
-                    userLesson.pythonFinal = userLesson.pythonFinal[:] + initN(addQuestions,[""])
-                    userLesson.pythonInstruct = userLesson.pythonInstruct[:]+ initN(addQuestions,[""])
-                    userLesson.pythonInit = userLesson.pythonInit[:] + initN(addQuestions,[""])
+                    userLesson.pythonFinal = userLesson.pythonFinal[:] + [""]*addQuestions
+                    userLesson.pythonInstruct = userLesson.pythonInstruct[:]+ [""]*addQuestions
+                    userLesson.pythonInit = userLesson.pythonInit[:] + [""]*addQuestions
 		for lesson in User2Lesson.query().filter(User2Lesson.lessonID == urlKey).fetch(100):
 			lesson.returnStatements = lesson.returnStatements[:] + (["No submission"] * addQuestions)
 			lesson.put()
@@ -1008,12 +1017,20 @@ class LessonModifyHandler(webapp2.RequestHandler):
                 newLesson = True
                 userLesson = UsermadeLesson(id=''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(20)]))
                 userLesson.urlKey = ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(20)])
-                userLesson.publicEdit,userLesson.publicView,userLesson.publicExecute = ("False",)*3
+                userLesson.publicEdit = "False"
+                userLesson.publicView = "False"
+                userLesson.publicExecute = "False"
                 userLesson.name = lessonName
                 userLesson.author = thisUser
-                #userLesson.problems,userLesson.pythonInstruct,userLesson.pythonInit,userLesson.pythonFinal,userLesson.rcodeInit,userLesson.rcodeFinal,userLesson.rcodeInstruct = ([""] * int(questionCount),)*7
-                userLesson.problems,userLesson.pythonInstruct,userLesson.pythonInit,userLesson.pythonFinal,userLesson.rcodeInit,userLesson.rcodeFinal,userLesson.rcodeInstruct = initN(7,initN(int(questionCount),[""]))
-                userLesson.paragraph,userLesson.header = ("",)*2
+                userLesson.problems = [""] * int(questionCount)
+                userLesson.pythonInstruct = [""] * int(questionCount)
+                userLesson.pythonInit = [""] * int(questionCount)
+                userLesson.pythonFinal = [""] * int(questionCount)
+                userLesson.rcodeInit = [""] * int(questionCount)
+                userLesson.rcodeFinal = [""] * int(questionCount)
+                userLesson.rcodeInstruct = [""] * int(questionCount)
+                userLesson.paragraph = "" 
+                userLesson.header = ""
                 tempLanguages = []
                 if self.request.get("python") == "yes":
                     tempLanguages.append("Python")

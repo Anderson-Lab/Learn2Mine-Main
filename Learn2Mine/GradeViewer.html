@@ -37,7 +37,7 @@
 <tr>
 {% for lesson in lessonplanResults %}
 	{% if lesson[3] == "DM" %}
-		<td><a href="/DMLessonTest?page={{lesson[1]}}">{{lesson[0]}}</a></td>
+		<td><a href="/DMLesson?page={{lesson[1]}}">{{lesson[0]}}</a></td>
 	{% else %}
 		<td><a href="/PublicLesson?key={{lesson[1]}}">{{lesson[0]}}</a></td>
 	{% endif %}
