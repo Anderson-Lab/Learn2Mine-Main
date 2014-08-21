@@ -1201,13 +1201,12 @@ class EnrollmentHandler(webapp2.RequestHandler):
 		classKey = self.request.get("key")
 		thisUser = users.get_current_user()
 		enrollmentStatus = self.request.get("join")
-		if enrollmentStatus == "Yes":
-			thisClass = Learn2MineClass.query().filter(Learn2MineClass.classKey == classKey).fetch(1)[0]
-			thisClass.students.append(thisUser)
+		classStudents = Learn2MineClass.query().filter(Learn2MineClass.classKey == classKey).fetch(1)[0].students
+		if enrollmentStatus == "Yes" and thisUser not in classStudents:
+			classStudents.append(thisUser)
 			thisClass.put()
 			time.sleep(0.5)
 	                self.redirect('/GradeViewer?key='+classKey)
-
 		else:
 	                self.redirect('/Class')
 
