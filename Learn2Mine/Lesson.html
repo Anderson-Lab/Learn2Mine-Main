@@ -58,13 +58,14 @@ value: {{ exp }}
 							<form name="refreshResult" method="post" id="refreshResult" action="/RefreshGrade">
 							<input type="hidden" name="question" value="{{loop.index}}"/>
 							<input type="hidden" name="urlKey" value="{{ urlKey }}"/>
+							<A NAME="q{{loop.index}}"></A>
 							<li>{{ problem }}</li>
-							<textarea name="studentCode" class="answer{{ loop.index }}" cols="50" rows="5"></textarea>
-							<br>
-							<div class="outputid{{ loop.index }}">
-							Job is running, click below to refresh results
-							</div><br>
+							<textarea name="studentCode" class="answer{{ loop.index }}" cols="50" rows="5">{% if mostRecent[loop.index0] != "" %}{{ mostRecent[loop.index0] }}{%endif%}</textarea>
+							<br><br>
 							<input type="submit" class="regularButton" value="Refresh results"><br><br>
+							<div class="outputid{{ loop.index }}">
+							Job is running, click above to refresh results
+							</div><br><br>
 							</form>
 						{% else %}
 							<form name="grade{{ loop.index }}" method="post" id="gradeform" action="/OnsiteGrader">
@@ -74,8 +75,9 @@ value: {{ exp }}
 							{% else %}
 								<input type="hidden" name="page" value="{{ page }}"/>
 							{% endif %}
+							<A NAME="q{{loop.index}}"></A>
 							<li>{{ problem }}</li>
-							<textarea name="studentCode" class="answer{{ loop.index }}" cols="50" rows="5" placeholder="Enter code or answer here"></textarea>
+							<textarea name="studentCode" class="answer{{ loop.index }}" cols="50" rows="5" placeholder="Enter code or answer here">{% if mostRecent[loop.index0] != "" %}{{ mostRecent[loop.index0] }}{%endif%}</textarea>
 							<br>
                                         	        {% if "rcode" in languages %}
 							<br>
