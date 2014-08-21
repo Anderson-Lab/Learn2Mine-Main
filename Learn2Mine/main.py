@@ -499,7 +499,7 @@ class LessonHandler(webapp2.RequestHandler):
             queryResult = DMLesson.query().filter(DMLesson.name == page).fetch(1)
             public = False
         else:
-            template_values = {'user':thisUser,'errorCatch':"yes"}
+            template_values = {'user':thisUser.email(),'errorCatch':"yes"}
             self.response.write(template.render(template_values))
             return
 
@@ -507,7 +507,7 @@ class LessonHandler(webapp2.RequestHandler):
         if len(queryResult) > 0:
             thisLesson = queryResult[0]
         else:
-            template_values = {'user':thisUser,'errorCatch':"yes"}
+            template_values = {'user':thisUser.email(),'errorCatch':"yes"}
             self.response.write(template.render(template_values))
             return
 
@@ -542,7 +542,7 @@ class LessonHandler(webapp2.RequestHandler):
         for problem in thisLesson.problems:
            printProblems.append("<br />".join(problem.split("\n")))
 
-	template_values = {'user':thisUser, 'problems':printProblems,'lesson':thisLesson,'languages':returnLanguages,'urlKey':page,'result':returnVals,'exp':experience, 'badge':userLessonKey.badge, 'public':public,'mostRecent':userLessonKey.mostRecent}
+	template_values = {'user':thisUser.email(), 'problems':printProblems,'lesson':thisLesson,'languages':returnLanguages,'urlKey':page,'result':returnVals,'exp':experience, 'badge':userLessonKey.badge, 'public':public,'mostRecent':userLessonKey.mostRecent}
         if public:
             template_values.update({'urlKey':page})
         else:
@@ -828,7 +828,7 @@ class LessonCreatorHandler(webapp2.RequestHandler):
         lessonArray = []
         for lesson in userLessons:
             lessonArray.append(lesson.name)
-        template_values = { 'user': thisUser, 'existingLessons': lessonArray }
+        template_values = { 'user': thisUser.email(), 'existingLessons': lessonArray }
         self.response.write(template.render(template_values))
 
 class LessonPreviewHandler(webapp2.RequestHandler):
@@ -843,7 +843,7 @@ class LessonPreviewHandler(webapp2.RequestHandler):
             if len(userLessonQuery) > 0:
                 userLesson = userLessonQuery[0]
             else:
-                template_values = {'user':thisUser,'errorCatch':"yes"}
+                template_values = {'user':thisUser.email(),'errorCatch':"yes"}
                 self.response.write(template.render(template_values))
                 return
 
@@ -853,7 +853,7 @@ class LessonPreviewHandler(webapp2.RequestHandler):
             if len(userLessonQuery) > 0:
                 foundLesson = userLessonQuery[0]
             else:
-                template_values = {'user':thisUser,'errorCatch':"yes"}
+                template_values = {'user':thisUser.email(),'errorCatch':"yes"}
                 self.response.write(template.render(template_values))
                 return
             if foundLesson.publicView == "True":
@@ -862,7 +862,7 @@ class LessonPreviewHandler(webapp2.RequestHandler):
                 if foundLesson.author == thisUser:
                     userLesson = foundLesson
                 else:
-                    template_values = {'user':thisUser,'errorCatch':"yes"}
+                    template_values = {'user':thisUser.email(),'errorCatch':"yes"}
                     self.response.write(template.render(template_values))
                     return
 
@@ -871,11 +871,11 @@ class LessonPreviewHandler(webapp2.RequestHandler):
             for problem in userLesson.problems:
                 printProblems.append("<br />".join(problem.split("\n")))
             template_values = {
-                'user':thisUser, 'problems':printProblems, 'languages': userLesson.languages, 'paragraph':userLesson.paragraph, 'header':userLesson.header
+                'user':thisUser.email(), 'problems':printProblems, 'languages': userLesson.languages, 'paragraph':userLesson.paragraph, 'header':userLesson.header
             }
 
         else:
-            template_values = {'user':thisUser,'errorCatch':"yes"}
+            template_values = {'user':thisUser.email(),'errorCatch':"yes"}
         self.response.write(template.render(template_values))
 
 class LessonModifyHandler(webapp2.RequestHandler):
@@ -890,7 +890,7 @@ class LessonModifyHandler(webapp2.RequestHandler):
             if len(lessonplanQuery) > 0:
                 userLesson = lessonplanQuery[0]
             else:
-                template_values = {'user':thisUser,'errorCatch':"yes"}
+                template_values = {'user':thisUser.email(),'errorCatch':"yes"}
                 self.response.write(template.render(template_values))
                 return
 
@@ -903,16 +903,16 @@ class LessonModifyHandler(webapp2.RequestHandler):
                 elif queryLesson[0].author == thisUser:
                     userLesson = queryLesson[0]
                 else:
-                    template_values = {'user':thisUser,'errorCatch':"yes"}
+                    template_values = {'user':thisUser.email(),'errorCatch':"yes"}
                     self.response.write(template.render(template_values))
                     return
             else:
-                template_values = {'user':thisUser,'errorCatch':"yes"}
+                template_values = {'user':thisUser.email(),'errorCatch':"yes"}
                 self.response.write(template.render(template_values))
                 return
 
         else:
-            template_values = {'user':thisUser,'errorCatch':"yes"}
+            template_values = {'user':thisUser.email(),'errorCatch':"yes"}
             self.response.write(template.render(template_values))
             return
 
@@ -932,7 +932,7 @@ class LessonModifyHandler(webapp2.RequestHandler):
             if thisLesson.publicEdit == "True" or (thisLesson.publicEdit == "False" and thisLesson.author == thisUser):
                 existingLesson = UsermadeLesson.query().filter(UsermadeLesson.urlKey == urlKey).fetch(1)
             else:
-                template_values = {'user':thisUser,'errorCatch':"yes"}
+                template_values = {'user':thisUser.email(),'errorCatch':"yes"}
                 self.response.write(template.render(template_values))
                 return
 
@@ -1072,7 +1072,7 @@ class ClassPortalHandler(webapp2.RequestHandler):
 		instructingClasses = []
 		for lesson in instructing:
 			instructingClasses.append(lesson.className)
-		template_values = {'user':thisUser, 'instructingClasses':instructingClasses, 'enrolledClasses': enrolledClasses}
+		template_values = {'user':thisUser.email(), 'instructingClasses':instructingClasses, 'enrolledClasses': enrolledClasses}
 	        self.response.write(template.render(template_values))
 
 	def post(self):
@@ -1094,7 +1094,7 @@ class ClassCreatorHandler(webapp2.RequestHandler):
         	if thisUser:   
         	    url = users.create_logout_url(self.request.uri)
         	    url_linktext = 'Logout'
-		template_values = {'user':thisUser, 'url_linktext':url_linktext, 'AddDMLessons':DMLessons,'AddPublicLessons':PublicLessons}
+		template_values = {'user':thisUser.email(), 'url_linktext':url_linktext, 'AddDMLessons':DMLessons,'AddPublicLessons':PublicLessons}
 	        self.response.write(template.render(template_values))
 
 	def post(self):
@@ -1123,7 +1123,7 @@ class ClassManagerHandler(webapp2.RequestHandler):
 		if len(existingClassQuery) > 0:
 			thisClass = existingClassQuery[0]
 		else:
-			template_values = {'user':thisUser,'errorCatch':"yes"}
+			template_values = {'user':thisUser.email(),'errorCatch':"yes"}
 			self.response.write(template.render(template_values))
 			return
 		removeDMLessons = []
@@ -1142,7 +1142,7 @@ class ClassManagerHandler(webapp2.RequestHandler):
 		for lesson in Learn2MineLesson.query().fetch(10):
 			if [lesson.header,lesson.name] not in removeDMLessons:
 				addDMLessons.append([lesson.header,lesson.name])
-		template_values = {'user':thisUser, 'class':className, 'RemovePublicLessons':removePublicLessons, 'RemoveDMLessons':removeDMLessons, 'AddPublicLessons':addPublicLessons, 
+		template_values = {'user':thisUser.email(), 'class':className, 'RemovePublicLessons':removePublicLessons, 'RemoveDMLessons':removeDMLessons, 'AddPublicLessons':addPublicLessons, 
 		'AddDMLessons':addDMLessons, 'classKey':thisClass.classKey }
 	        self.response.write(template.render(template_values))
 
@@ -1176,26 +1176,26 @@ class ClassManagerHandler(webapp2.RequestHandler):
 		self.redirect('/ClassManager?class='+className)
 
 class EnrollmentHandler(webapp2.RequestHandler):
-        @decorator.oauth_required
+	@decorator.oauth_required
 	def get(self):
 		classKey = self.request.get("key")
 		thisUser = users.get_current_user()
 		if not classKey:
-                        template_values = {'user':thisUser,'errorCatch':"yes"}
+                        template_values = {'user':thisUser.email(),'errorCatch':"yes"}
                         self.response.write(template.render(template_values))
                         return
 		template = JINJA_ENVIRONMENT.get_template('EnrollClass.html')
 		classQuery = Learn2MineClass.query().filter(Learn2MineClass.classKey==classKey).fetch(1)
 		if len(classQuery) == 0:
-                        template_values = {'user':thisUser,'errorCatch':"yes"}
+                        template_values = {'user':thisUser.email(),'errorCatch':"yes"}
                         self.response.write(template.render(template_values))
                         return
 		thisLesson = classQuery[0]
 		if thisUser.email in thisLesson.students:
-                        template_values = {'user':thisUser,'errorCatch':"yes", 'enrolled':"yes" }
+                        template_values = {'user':thisUser.email(),'errorCatch':"yes", 'enrolled':"yes" }
                         self.response.write(template.render(template_values))
                         return
-		template_values = {'user':thisUser, 'className':thisLesson.className,'classInstructor':thisLesson.instructor, 'classKey':classKey }
+		template_values = {'user':thisUser.email(), 'className':thisLesson.className,'classInstructor':thisLesson.instructor.email(), 'classKey':classKey }
 		self.response.write(template.render(template_values))
 	def post(self):
 		classKey = self.request.get("key")
@@ -1220,12 +1220,12 @@ class GradeViewerHandler(webapp2.RequestHandler):
 
 		classKey = self.request.get("key")
 		if not classKey:
-			template_values = {'user':thisUser,'errorCatch':"yes"}
+			template_values = {'user':thisUser.email(),'errorCatch':"yes"}
 			self.response.write(template.render(template_values))
 			return
 		thisClassQuery = Learn2MineClass.query().filter(Learn2MineClass.classKey == classKey).fetch(1)
 		if len(thisClassQuery) == 0:
-			template_values = {'user':thisUser,'errorCatch':"yes"}
+			template_values = {'user':thisUser.email(),'errorCatch':"yes"}
 			self.response.write(template.render(template_values))
 			return
 		thisClass = thisClassQuery[0]
@@ -1250,7 +1250,7 @@ class GradeViewerHandler(webapp2.RequestHandler):
 		for lesson in lessonplanResults:
 			if len(lesson[2]) > maxProblemCount:
 				maxProblemCount = len(lesson[2])
-		template_values = {'user':thisUser, 'class':thisClass.className, 'lessonplanResults':lessonplanResults, 'maxProblemCount':maxProblemCount,'key':classKey }
+		template_values = {'user':thisUser.email(), 'class':thisClass.className, 'lessonplanResults':lessonplanResults, 'maxProblemCount':maxProblemCount,'key':classKey }
 		self.response.write(template.render(template_values))
 
 	def post(self):
@@ -1270,12 +1270,12 @@ class ClassGradeViewerHandler(webapp2.RequestHandler):
 		thisUser = users.get_current_user()
 		findClass = self.request.get("class")
 		if not findClass:
-			template_values = {'user':thisUser,'errorCatch':"yes"}
+			template_values = {'user':thisUser.email(),'errorCatch':"yes"}
 			self.response.write(template.render(template_values))
 			return
 		thisClassQuery = Learn2MineClass.query().filter(Learn2MineClass.className == findClass).filter(Learn2MineClass.instructor == thisUser).fetch(1)
 		if len(thisClassQuery) == 0:
-			template_values = {'user':thisUser,'errorCatch':"yes"}
+			template_values = {'user':thisUser.email(),'errorCatch':"yes"}
 			self.response.write(template.render(template_values))
 			return
 		thisClass = thisClassQuery[0]
@@ -1293,7 +1293,7 @@ class ClassGradeViewerHandler(webapp2.RequestHandler):
 				score = int((len([i for i, result in enumerate(userGrades) if 'solved this problem' in result])/len(userGrades))*100)
 				studentGrades.append([userGrades,score])
 			lesson = Learn2MineLesson.query().filter(Learn2MineLesson.name == name).fetch(1)[0].header
-			template_values = {'class':findClass, 'grades':studentGrades, 'user':thisUser,'students':thisClass.students,'lesson':lesson, 'DM':"yes"}
+			template_values = {'class':findClass, 'grades':studentGrades, 'user':thisUser.email(),'students':thisClass.students,'lesson':lesson, 'DM':"yes"}
 
 		elif self.request.get("key"):
 			key = self.request.get("key")
@@ -1306,7 +1306,7 @@ class ClassGradeViewerHandler(webapp2.RequestHandler):
 				score = int((len([i for i, result in enumerate(userGrades) if 'solved this problem' in result])/len(userGrades))*100)
 				studentGrades.append([userGrades,score])
 			lesson = UsermadeLesson.query().filter(UsermadeLesson.urlKey == key).fetch(1)[0].header
-			template_values = {'class':findClass, 'grades':studentGrades, 'user':thisUser,'students':thisClass.students,'lesson':lesson, 'public':"yes"}
+			template_values = {'class':findClass, 'grades':studentGrades, 'user':thisUser.email(),'students':thisClass.students,'lesson':lesson, 'public':"yes"}
 		else:
 			lessonScores = []
 			publicCount = 0
@@ -1356,7 +1356,7 @@ class ClassGradeViewerHandler(webapp2.RequestHandler):
 				lessonScores.append([thisLessonScore,int(sum(thisLessonScore)/len(thisLessonScore))])
 			if len(thisClass.students) == 0:
 				outputMsg = "You do not have any students enrolled in your class yet"
-				template_values = {'errorCatch':"yes",'user':thisUser,'outputMsg':outputMsg}
+				template_values = {'errorCatch':"yes",'user':thisUser.email(),'outputMsg':outputMsg}
 				self.response.write(template.render(template_values))
 				return
 			gradeSums = [0] * len(lessonScores[0])
@@ -1366,7 +1366,7 @@ class ClassGradeViewerHandler(webapp2.RequestHandler):
 					gradeSums[index] += grade
 					index += 1
 			gradeAverages = [int(x/len(lessonScores)) for x in gradeSums]				
-			template_values = {'class':findClass, 'grades':lessonScores, 'user':thisUser,'students':thisClass.students, 'publicLessons':publicLessons,'DMLessons':DMLessons,'averages':gradeAverages}
+			template_values = {'class':findClass, 'grades':lessonScores, 'user':thisUser.email(),'students':thisClass.students, 'publicLessons':publicLessons,'DMLessons':DMLessons,'averages':gradeAverages}
 		self.response.write(template.render(template_values))
 
 #Handles page redirects
