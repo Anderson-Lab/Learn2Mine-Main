@@ -49,6 +49,7 @@ create_file(initCode,insCode,finalCode,language,"instructor.file")
 
 results = {}
 if language == "python27":
+<<<<<<< HEAD
 	interp = "python3"
 elif language == "python3":
 	interp = "python3"
@@ -56,6 +57,13 @@ elif language == "R" or language == "rcode":
 	interp = "Rscript"
 else:
 	interp = "python3"
+=======
+	interp = "python"
+elif language == "R" or language == "rcode":
+	interp = "Rscript"
+else:
+	interp = "python"
+>>>>>>> d71c44a842626df743ea929fc1632bede20c7284
 
 cmd = [interp,"student.file"]
 print " ".join(cmd)
