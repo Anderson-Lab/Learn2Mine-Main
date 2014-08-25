@@ -1191,10 +1191,8 @@ class EnrollmentHandler(webapp2.RequestHandler):
                         self.response.write(template.render(template_values))
                         return
 		thisLesson = classQuery[0]
-		if thisUser.email in thisLesson.students:
-                        template_values = {'user':thisUser.email(),'errorCatch':"yes", 'enrolled':"yes" }
-                        self.response.write(template.render(template_values))
-                        return
+		if thisUser in thisLesson.students:
+	                self.redirect('/Class')
 		template_values = {'user':thisUser.email(), 'className':thisLesson.className,'classInstructor':thisLesson.instructor.email(), 'classKey':classKey }
 		self.response.write(template.render(template_values))
 	def post(self):
