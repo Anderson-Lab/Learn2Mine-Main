@@ -58,3 +58,4 @@ tmp
 compiled_templates
 *.pid
 learn2mine_run.sh
+client_secrets.json
