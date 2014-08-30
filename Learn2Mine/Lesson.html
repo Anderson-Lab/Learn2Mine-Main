@@ -62,13 +62,15 @@ value: {{ exp }}
 							<li>{{ problem }}</li>
 							<textarea name="studentCode" class="answer{{ loop.index }}" cols="50" rows="5">{% if mostRecent[loop.index0] != "" %}{{ mostRecent[loop.index0] }}{%endif%}</textarea>
 							<br><br>
-							<input type="submit" class="regularButton" value="Refresh results"><br><br>
+							<input type="submit" class="regularButton" value="Refresh results">
+							<br><br>Job is running, click above to refresh results<br><br>
 							</form>
 							<form name="deleteHistory" method="post" id="deleteHistory" action="/ClearHistory">
-							<input type="submit" class="regularButton" value="Clear submission"><br><br>
+							<input type="hidden" name="question" value="{{loop.index}}"/>
+							<input type="hidden" name="urlKey" value="{{ urlKey }}"/>
+							<input type="submit" class="regularButton" value="Clear submission">
 							</form>
 							<div class="outputid{{ loop.index }}">
-							Job is running, click above to refresh results
 							</div><br><br>
 						{% else %}
 							<form name="grade{{ loop.index }}" method="post" id="gradeform" action="/OnsiteGrader">

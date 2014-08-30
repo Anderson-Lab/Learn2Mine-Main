@@ -15,6 +15,7 @@
 # limitations under the License.
 #
 from __future__ import division
+#from bioblend import galaxy
 from galaxy_api import *
 from common import *
 import json
@@ -534,19 +535,6 @@ class LessonHandler(webapp2.RequestHandler):
             userLessonKey.put()
         else:
             userLessonKey = existingUserLessonKey[0]
-            if len(userLessonKey.python) < len(thisLesson.problems):
-                userLessonKey.python = userLessonKey.python[:] + ([""] * (len(thisLesson.problems)-len(userLessonKey.python)))
-                userLessonKey.rcode = userLessonKey.rcode[:] + ([""] * (len(thisLesson.problems)-len(userLessonKey.rcode)))
-                userLessonKey.historyID = userLessonKey.historyID[:] + [""] * (len(thisLesson.problems)-len(userLessonKey.historyID))
-                userLessonKey.outputID = userLessonKey.outputID[:] + [""] * (len(thisLesson.problems)-len(userLessonKey.outputID))
-                userLessonKey.mostRecent = userLessonKey.mostRecent[:] + [""] * (len(thisLesson.problems)-len(userLessonKey.mostRecent))
-                userLessonKey.history = userLessonKey.history[:] + [""] * (len(thisLesson.problems)-len(userLessonKey.history))
-                userLessonKey.returnStatements = userLessonKey.returnStatements + (["No submission"] * (len(thisLesson.problems)-len(userLessonKey.returnStatements)))
-                experience = len(fnmatch.filter(userLessonKey.returnStatements,'*solved this problem.'))/len(thisLesson.problems)
-                experience = experience*100
-                userLessonKey.experience = experience
-                userLessonKey.put()
-                time.sleep(0.2)
         returnVals = userLessonKey.returnStatements[:]
         experience = userLessonKey.experience
         printProblems = []
@@ -756,15 +744,19 @@ class DeleteGalaxyHistory(webapp2.RequestHandler):
 			page = self.request.get("urlKey")
 	                thisLesson = UsermadeLesson.query().filter(UsermadeLesson.urlKey == page).fetch(1)[0]
 		problem = self.request.get("question")
-                userLesson = User2Lesson.query().filter(User2Lesson.user == users.get_current_user()).filter(User2Lesson.lessonID == page).fetch(1)[0]		
-                galaxyInstance = GalaxyParams.query().fetch(1)[0]
+                userLesson = User2Lesson.query().filter(User2Lesson.user == users.get_current_user()).filter(User2Lesson.lessonID == page).fetch(1)[0]
+                galaxyInput = GalaxyParams.query().fetch(1)[0]
+#                instance = galaxy.GalaxyInstance(url=galaxyInput.url, key=galaxyInput.api_key)
+#                instance.histories.delete_history(id=userLesson.historyID[int(problem)-1])
                 userLesson.historyID[int(problem)-1] = ""
 		userLesson.outputID[int(problem)-1] = ""
-		userLesson.returnStatement[int(problem)-1] = "No submission"
+		userLesson.returnStatements[int(problem)-1] = "No submission"
+                userLesson.put()
+                time.sleep(0.75)
                 if type == "DM":
-                        self.redirect("/DMLesson?page="+page+"#q"+problem)
+                    self.redirect("/DMLesson?page="+page+"#q"+problem)
                 else:
-                        self.redirect("/PublicLesson?key="+page+"#q"+problem)
+                    self.redirect("/PublicLesson?key="+page+"#q"+problem)
 
 class GalaxyParams(ndb.Model):
     """Models an individual User Lesson entry with author, content, and date."""
@@ -1011,6 +1003,15 @@ class LessonModifyHandler(webapp2.RequestHandler):
                     del userLesson.pythonInit[index],userLesson.pythonInstruct[index],userLesson.pythonFinal[index]
                 if len(userLesson.rcodeFinal) > 0:
                     del userLesson.rcodeInit[index],userLesson.rcodeInstruct[index],userLesson.rcodeFinal[index]
+                for lesson in User2Lesson.query().filter(User2Lesson.lessonID == urlKey).fetch(1000):
+                    del lesson.returnStatements[index]
+                    del lesson.python[index]
+                    del lesson.rcode[index]
+                    del lesson.historyID[index]
+                    del lesson.outputID[index]
+                    del lesson.mostRecent[index]
+                    del lesson.history[index]
+                    lesson.put()
 
             questionAdd = False
 
@@ -1030,6 +1031,16 @@ class LessonModifyHandler(webapp2.RequestHandler):
                     userLesson.pythonFinal = userLesson.pythonFinal[:] + [""]*addQuestions
                     userLesson.pythonInstruct = userLesson.pythonInstruct[:]+ [""]*addQuestions
                     userLesson.pythonInit = userLesson.pythonInit[:] + [""]*addQuestions
+                for lesson in User2Lesson.query().filter(User2Lesson.lessonID == urlKey).fetch(1000):
+                    lesson.returnStatements = lesson.returnStatements[:] + ["No submission"]*addQuestions
+                    lesson.python = lesson.python[:] + [""]*addQuestions
+                    lesson.rcode = lesson.rcode[:] + [""]*addQuestions
+                    lesson.historyID = lesson.historyID[:] + [""]*addQuestions
+                    lesson.outputID = lesson.outputID[:] + [""]*addQuestions
+                    lesson.mostRecent = lesson.outputID[:] + [""]*addQuestions
+                    lesson.history = lesson.history[:] + [""]*addQuestions
+                    lesson.experience = 100*(len(fnmatch.filter(lesson.returnStatements,'*solved this problem.'))/len(userLesson.problems))
+                    lesson.put()
             userLesson.put()
 
         # If not modifying lesson

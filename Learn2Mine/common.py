@@ -6,6 +6,7 @@ import logging
 import os
 import sys
 import urllib2
+import time
 
 #new_path = [ os.path.join( os.path.dirname( __file__ ), '..', '..', 'lib' ) ]
 #new_path.extend( sys.path[1:] )
@@ -57,6 +58,7 @@ def post( api_key, url, data ):
     """
     url = make_url( api_key, url )
     req = urllib2.Request( url, headers = { 'Content-Type': 'application/json' }, data = json.dumps( data ) )
+    time.sleep(0.5)
     return json.loads( urllib2.urlopen( req ).read() )
 
 def put( api_key, url, data ):
