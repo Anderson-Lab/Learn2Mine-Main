@@ -529,8 +529,8 @@ class LessonHandler(webapp2.RequestHandler):
             userLessonKey.history = [""] * len(thisLesson.problems)
             userLessonKey.user = users.get_current_user()
             userLessonKey.lessonID = page
+            userLessonKey.badge = ""
             userLessonKey.experience = 0
-            userLessonKey.badge = "images/"+page+"Mastery.png"
             userLessonKey.returnStatements = ["No submission"] * len(thisLesson.problems)
             userLessonKey.put()
         else:
@@ -539,7 +539,8 @@ class LessonHandler(webapp2.RequestHandler):
         experience = userLessonKey.experience
         printProblems = []
         for problem in thisLesson.problems:
-           printProblems.append("<br />".join(problem.split("\n")))
+           #printProblems.append("<br />".join(problem.split("\n")))
+           printProblems.append(problem)
 
 	template_values = {'user':thisUser.email(), 'problems':printProblems,'lesson':thisLesson,'languages':returnLanguages,'urlKey':page,'result':returnVals,'exp':experience, 'badge':userLessonKey.badge, 'public':public,'mostRecent':userLessonKey.mostRecent}
         if public:
@@ -672,6 +673,8 @@ class GradingHandler(webapp2.RequestHandler):
 			experience = len(fnmatch.filter(returnVals,'*solved this problem.'))/len(thisLesson.problems)
 			experience = experience*100
 			userLesson.experience = experience
+			if experience == 100:
+				userLesson.badge = self.request.get("urlKey")
 		userLesson.returnStatements[int(problem)-1] = returnStatement
 		returnLanguages = []
 		if "Python" in thisLesson.languages:
@@ -725,6 +728,8 @@ class GradeRefreshHandler(webapp2.RequestHandler):
                         experience = len(fnmatch.filter(returnVals,'*solved this problem.'))/len(thisLesson.problems)
                         experience = experience*100  
                         userLesson.experience = experience
+			if experience == 100:
+				userLesson.badge = self.request.get("urlKey")
                 userLesson.returnStatements[int(problem)-1] = returnStatement
 		userLesson.put()
 		time.sleep(0.75)
@@ -832,6 +837,10 @@ class Learn2MineLesson(ndb.Model):
     header = ndb.TextProperty(indexed=False)
     paragraph = ndb.TextProperty(indexed=True)
 
+class LessonBadge(ndb.Model):
+    badge = ndb.BlobProperty()
+    lesson = ndb.StringProperty()
+
 class LessonCreatorHandler(webapp2.RequestHandler):
     @decorator.oauth_required
 
@@ -870,7 +879,6 @@ class LessonPreviewHandler(webapp2.RequestHandler):
                 template_values = {'user':thisUser.email(),'errorCatch':"yes"}
                 self.response.write(template.render(template_values))
                 return
-
         elif self.request.get("key") != "":
             key = self.request.get("key")
             userLessonQuery = UsermadeLesson.query().filter(UsermadeLesson.urlKey == key).fetch(1)
@@ -893,7 +901,8 @@ class LessonPreviewHandler(webapp2.RequestHandler):
         if userLesson:
             printProblems = []
             for problem in userLesson.problems:
-                printProblems.append("<br />".join(problem.split("\n")))
+                #printProblems.append("<br />".join(problem.split("\n")))
+                printProblems.append(problem)
             template_values = {
                 'user':thisUser.email(), 'problems':printProblems, 'languages': userLesson.languages, 'paragraph':userLesson.paragraph, 'header':userLesson.header
             }
@@ -918,8 +927,8 @@ class LessonModifyHandler(webapp2.RequestHandler):
                 self.response.write(template.render(template_values))
                 return
 
-        elif self.request.get("public") != "":
-            public = self.request.get("public")
+        elif self.request.get("key") != "":
+            public = self.request.get("key")
             queryLesson = UsermadeLesson.query().filter(UsermadeLesson.urlKey == public).fetch(1)
             if len(queryLesson) > 0:
                 if queryLesson[0].publicEdit == "True":
@@ -940,7 +949,11 @@ class LessonModifyHandler(webapp2.RequestHandler):
             self.response.write(template.render(template_values))
             return
 
-        template_values = {'lesson':userLesson, 'user':thisUser}
+        badgeQuery = LessonBadge.query().filter(LessonBadge.lesson == userLesson.urlKey).fetch(1)
+        badge = None
+        if len(badgeQuery) > 0:
+            badge = badgeQuery[0].lesson
+        template_values = {'lesson':userLesson, 'user':thisUser,'img':badge}
         self.response.write(template.render(template_values))
 
     def post(self):
@@ -961,6 +974,18 @@ class LessonModifyHandler(webapp2.RequestHandler):
                 return
 
         questionCount = self.request.get("questionCount")
+
+        newBadge = self.request.get('pic')
+        if newBadge:
+            badgeQuery = LessonBadge.query().filter(LessonBadge.lesson == urlKey).fetch(1)
+            if len(badgeQuery) == 0:
+                lessonBadge = LessonBadge()
+                lessonBadge.badge = str(newBadge)
+                lessonBadge.lesson = urlKey
+            else:
+                lessonBadge = badgeQuery[0]
+                lessonBadge.badge = str(newBadge)
+            lessonBadge.put()
 
         if str(self.request.get("modify")) == "True":
             userLesson = existingLesson[0]
@@ -1168,8 +1193,7 @@ class ClassManagerHandler(webapp2.RequestHandler):
 		for lesson in thisClass.DMLessonplan:
 			removeDMLessons.append([Learn2MineLesson.query().filter(Learn2MineLesson.name == lesson).fetch(1)[0].header,lesson])
 		for lesson in thisClass.PublicLessonplan:
-			fetch_results = UsermadeLesson.query().filter(UsermadeLesson.urlKey == lesson).fetch(1)
-			removePublicLessons.append([fetch_results[0].header,lesson])
+			removePublicLessons.append([UsermadeLesson.query().filter(UsermadeLesson.urlKey == lesson).fetch(1)[0].header,lesson])
 		addDMLessons = []
 		addPublicLessons = []
 		for lesson in UsermadeLesson.query().filter(UsermadeLesson.publicExecute == "True").fetch(10):
@@ -1403,6 +1427,13 @@ class ClassGradeViewerHandler(webapp2.RequestHandler):
 			template_values = {'class':findClass, 'grades':lessonScores, 'user':thisUser.email(),'students':thisClass.students, 'publicLessons':publicLessons,'DMLessons':DMLessons,'averages':gradeAverages}
 		self.response.write(template.render(template_values))
 
+class BadgeViewHandler(webapp2.RequestHandler):
+    def get(self):
+        image_id = self.request.get('id')
+        lessonBadge = LessonBadge.query().filter(LessonBadge.lesson==image_id).fetch(1)[0]
+        self.response.headers['content-type'] = 'image/png'
+        self.response.out.write(lessonBadge.badge)
+
 #Handles page redirects
 app = webapp2.WSGIApplication([
     ('/Home', HomeHandler),
@@ -1432,5 +1463,6 @@ app = webapp2.WSGIApplication([
     ('/GradeViewer', GradeViewerHandler),
     ('/ClassGradeViewer', ClassGradeViewerHandler),
     ('/EnrollClass', EnrollmentHandler),
+    ('/Badge', BadgeViewHandler),
     ('/ClearHistory', DeleteGalaxyHistory)
 ], debug=True)

@@ -55,7 +55,7 @@
 	<div id="NPStext">
 	<h1>Submit code for Learn2Mine Lesson</h1>
 
-                <form name="updateLesson" action="/LessonModify" id="updateLesson" method="post" onsubmit="return validateUpdate();">
+                <form name="updateLesson" action="/LessonModify" id="updateLesson" method="post" onsubmit="return validateUpdate();" enctype="multipart/form-data">
 		{% if user == lesson.author %}
 			Submit lesson plan then <a href="http://learn2mine.appspot.com/LessonPreview?page={{ lesson.name }}" 
 			target="_blank">click here</a> to preview your lesson plan as it would appear in Learn2Mine.
@@ -116,6 +116,12 @@
 		{% endfor %}
 		</select> 
 
+                <br><br>Upload lesson completion badge (150x150px):<br>
+                <input type="file" name="pic" accept="image/*"><br><br>
+                {% if img %}Your current badge
+                <div><br><img src="/Badge?id={{img}}"><br><br></div>
+                {% endif %}
+
                 <input type="hidden" name="lessonName" value={{ lesson.name }} />
                 <input type="hidden" name="questionCount" value={{ lesson.problems|length }} />
 		<input type="hidden" name="python" value={{ python }} />
@@ -136,13 +142,17 @@
 	NOTE: Line breaks in problem statements will be translated properly in HTML (no need for break tags). <br>
 	Other HTML tags can be used for bold, underline, etc. if so desired.<br><br><br>
 
-	<form action="/LessonModify" method="post" name="lessonModify">
 
-		Full Lesson Name: <input type="text" name=fullLesson value='{{ lesson.header }}'><br><br>
-		Paragraph<br>
+	<form action="/LessonModify" method="post" name="lessonModify">
+		<div>
+		Lesson Header: <input type="text" name=fullLesson value='{{ lesson.header }}'><br><br>
+		Paragraph:<br>
                 <textarea id="lessonMakerTextarea" name="paragraph" placeholder="Enter lesson paragraph here">{{ lesson.paragraph }}</textarea></div><br><br><br><br>
 
-{% if lesson.languages|length != 1 %}
+
+	{% if lesson.languages|length != 1 %}
+
+
 		{% for i in range(0,(lesson.problems|length)) %}
 		<div id="NPStext">
 
@@ -216,7 +226,6 @@
 			<br><br>
 		{% endfor %}
 	{% endif %}
-
 	</div>
 {% endif %}
 		<input type="hidden" name="python" value={{ python }} />
