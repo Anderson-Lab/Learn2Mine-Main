@@ -667,7 +667,7 @@ class GradingHandler(webapp2.RequestHandler):
 					returnStatement = "Your submission is incorrect, but you won't be penalized as<br>you have previously solved this problem."
 				else:
 					returnAdd = "<br />".join(results['difference_stdout'].split("\n"))
-					returnStatement = "The code you entered is incorrect.<br>The following shows your results (-) versus the correct results (+). <br>" + returnAdd
+					returnStatement = "The code you entered is incorrect.<br>" + returnAdd
 			userLesson.returnStatements[int(problem)-1] = returnStatement
 			returnVals = userLesson.returnStatements[:]
 			experience = len(fnmatch.filter(returnVals,'*solved this problem.'))/len(thisLesson.problems)
@@ -722,7 +722,7 @@ class GradeRefreshHandler(webapp2.RequestHandler):
                                         returnStatement = "Your submission is incorrect, but you won't be penalized as<br>you have previously solved this problem."
                                 else:
                                         returnAdd = "<br />".join(results['difference_stdout'].split("\n"))
-					returnStatement = "The code you entered is incorrect.<br>The following shows your results (-) versus the correct results (+). <br>" + returnAdd
+					returnStatement = "The code you entered is incorrect.<br>" + returnAdd
                         userLesson.returnStatements[int(problem)-1] = returnStatement
                         returnVals = userLesson.returnStatements[:]
                         experience = len(fnmatch.filter(returnVals,'*solved this problem.'))/len(thisLesson.problems)

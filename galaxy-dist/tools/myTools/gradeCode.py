@@ -72,9 +72,25 @@ else:
 	
 results['student_stdout'] = student_stdout
 results['instructor_stdout'] = instructor_stdout
-d = difflib.Differ()
-diff = d.compare(student_stdout.split("\n"), instructor_stdout.split("\n"))
-results['difference_stdout'] = '\n'.join(diff)
+#d = difflib.Differ()
+#diff = d.compare(student_stdout.split("\n"), instructor_stdout.split("\n"))
+lines = student_stdout.split("\n")
+results['difference_stdout'] = "\nYour output has "+str(len(lines))+" lines:\n---"
+for i in range(len(lines)):
+  line = lines[i]
+  results['difference_stdout'] += "\nLine "+str(i+1)+": "+line
+
+ins_lines = instructor_stdout.split("\n")
+results['difference_stdout'] += "\n\nInstructor output has "+str(len(ins_lines))+" lines:\n---"
+for i in range(len(ins_lines)):
+  line = ins_lines[i]
+  if i >= len(lines):
+    results['difference_stdout'] += "\nLine "+str(i+1)+": Your solution is missing this line:\n+"+line
+  elif lines[i] == ins_lines[i]:
+    results['difference_stdout'] += "\nLine "+str(i+1)+": This line is correct"
+  else:
+    results['difference_stdout'] += "\nLine "+str(i+1)+": "+line
+
 results['email'] = email
 results['badge_image_url'] = 'None'
 badgeName = badgeName.strip()
