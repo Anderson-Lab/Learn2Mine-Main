@@ -67,21 +67,9 @@
 			Public Lessonplan URL: http://learn2mine.appspot.com/PublicLesson?key={{ lesson.urlKey }} <br><br>
 
 
-			{% if lesson.publicView == "True" %}
-				<input type="checkbox" name="publicView" value="no">Make lesson unavailable for public viewing
-			{% else %}
-				<input type="checkbox" name="publicView" value="yes">Make lesson available for public viewing
-			{% endif %}<br>
-			{% if lesson.publicEdit == "True" %}
-				<input type="checkbox" name="publicEdit" value="no">Make lesson unavailable for public edits
-			{% else %}
-				<input type="checkbox" name="publicEdit" value="yes">Make lesson available for public edits
-			{% endif %}<br>
-			{% if lesson.publicExecute == "True" %}
-				<input type="checkbox" name="publicExecute" value="no">Make lesson unavailable for public lessonplans
-			{% else %}
-				<input type="checkbox" name="publicExecute" value="yes">Make lesson available for public lessonplans
-			{% endif %}<br><br>
+			<input type="checkbox" name="publicView" value="yes" {% if lesson.publicView == "True" %}checked{%endif%}>Make lesson available for public viewing<br>
+			<input type="checkbox" name="publicEdit" value="yes" {% if lesson.publicEdit == "True" %}checked{%endif%}>Make lesson available for public edits<br>
+			<input type="checkbox" name="publicExecute" value="yes" {% if lesson.publicExecute == "True" %}checked{%endif%}>Make lesson available for public lessonplans<br><br>
 
 		{% else %}
 			Submit lesson plan then <a href="http://learn2mine.appspot.com/LessonPreview?key={{ lesson.urlKey }}" 
@@ -115,6 +103,9 @@
 			<option value="{{i}}">{{i}}</option>
 		{% endfor %}
 		</select> 
+
+                <br><br>
+                <input type="checkbox" name="masterProblem" id="masterProblem" value="True" {% if lesson.flag == "True" %}checked{% endif %}>Make final problem worth full experience
 
                 <br><br>Upload lesson completion badge (150x150px):<br>
                 <input type="file" name="pic" accept="image/*"><br><br>

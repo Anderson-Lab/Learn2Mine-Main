@@ -671,7 +671,10 @@ class GradingHandler(webapp2.RequestHandler):
 			userLesson.returnStatements[int(problem)-1] = returnStatement
 			returnVals = userLesson.returnStatements[:]
 			experience = len(fnmatch.filter(returnVals,'*solved this problem.'))/len(thisLesson.problems)
-			experience = experience*100
+			if int(problem) == len(thisLesson.problems) and thisLesson.flag == "True" and " solved this problem." in userLesson.returnStatements[int(problem)-1]:
+				experience = 100
+			else:
+				experience = experience*100
 			userLesson.experience = experience
 			if experience == 100:
 				userLesson.badge = self.request.get("urlKey")
@@ -726,7 +729,10 @@ class GradeRefreshHandler(webapp2.RequestHandler):
                         userLesson.returnStatements[int(problem)-1] = returnStatement
                         returnVals = userLesson.returnStatements[:]
                         experience = len(fnmatch.filter(returnVals,'*solved this problem.'))/len(thisLesson.problems)
-                        experience = experience*100  
+			if int(problem) == len(thisLesson.problems) and thisLesson.flag == "True" and " solved this problem." in userLesson.returnStatements[int(problem)-1]:
+				experience = 100
+			else:
+				experience = experience*100
                         userLesson.experience = experience
 			if experience == 100:
 				userLesson.badge = self.request.get("urlKey")
@@ -992,17 +998,17 @@ class LessonModifyHandler(webapp2.RequestHandler):
 
             if self.request.get("publicEdit") == "yes":
                 userLesson.publicEdit = "True"
-            elif self.request.get("publicEdit") == "no":
+            else:
                 userLesson.publicEdit = "False"
 
             if self.request.get("publicView") == "yes":
                 userLesson.publicView = "True"
-            elif self.request.get("publicView") == "no":
+            else:
                 userLesson.publicView = "False"
 
             if self.request.get("publicExecute") == "yes":
                 userLesson.publicExecute = "True"
-            elif self.request.get("publicExecute") == "no":
+            else:
                 userLesson.publicExecute = "False"
 
             if self.request.get("addRcode") == "yes" and "R" not in userLesson.languages:
@@ -1046,6 +1052,11 @@ class LessonModifyHandler(webapp2.RequestHandler):
             except ValueError:
                 pass
 
+            if self.request.get("masterProblem") == "True":
+                userLesson.flag = "True"
+            else:
+                userLesson.flag = "False"
+
             if questionAdd:
                 userLesson.problems = userLesson.problems[:] + [""]*addQuestions
 		if "R" in userLesson.languages:
@@ -1062,7 +1073,7 @@ class LessonModifyHandler(webapp2.RequestHandler):
                     lesson.rcode = lesson.rcode[:] + [""]*addQuestions
                     lesson.historyID = lesson.historyID[:] + [""]*addQuestions
                     lesson.outputID = lesson.outputID[:] + [""]*addQuestions
-                    lesson.mostRecent = lesson.outputID[:] + [""]*addQuestions
+                    lesson.mostRecent = lesson.mostRecent[:] + [""]*addQuestions
                     lesson.history = lesson.history[:] + [""]*addQuestions
                     lesson.experience = 100*(len(fnmatch.filter(lesson.returnStatements,'*solved this problem.'))/len(userLesson.problems))
                     lesson.put()
@@ -1078,6 +1089,7 @@ class LessonModifyHandler(webapp2.RequestHandler):
                 newLesson = True
                 userLesson = UsermadeLesson(id=''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(20)]))
                 userLesson.urlKey = ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(20)])
+		userLesson.flag = "False"
                 userLesson.publicEdit = "False"
                 userLesson.publicView = "False"
                 userLesson.publicExecute = "False"
