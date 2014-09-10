@@ -279,11 +279,11 @@ div#searchlink{
 }
 div#aboutlink{
 	background-color:#313131;
-	left:250px;
+	left:210px;
 }
 div#helplink{
 	background-color:#313131;
-	left:350px;
+	left:310px;
 }
 div#galaxylink{
 	background-color:#313131;
@@ -291,15 +291,15 @@ div#galaxylink{
 }
 div#rstudiolink{
 	background-color:#313131;
-	left:450px;
+	left:410px;
 }
 div#lessoncreatorlink{
 	background-color:#313131;
-	left:550px;
+	left:510px;
 }
 div#classviewlink{
 	background-color:#313131;
-	left:650px;
+	left:610px;
 }
 /*site nav hover images*/
 div#homelink:hover{
@@ -326,10 +326,16 @@ div#galaxylink:hover{
 div#gradelink:hover{
 	background-color:#898989;
 }
+div#lessoncreatorlink:hover{
+	background-color:#898989;
+}
+div#classviewlink:hover{
+	background-color:#898989;
+}
 div#rstudiolink:hover{
 	background-color:#898989;
 }
-
+ 
 
 /*LESSON LINKS*/
 .lessonlink{
