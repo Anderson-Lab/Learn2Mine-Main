@@ -704,7 +704,7 @@ class GradeRefreshHandler(webapp2.RequestHandler):
 	                thisLesson = UsermadeLesson.query().filter(UsermadeLesson.urlKey == page).fetch(1)[0]
 
 		problem = self.request.get("question")
-                userLesson = User2Lesson.query().filter(User2Lesson.user == users.get_current_user()).filter(User2Lesson.lessonID == page).fetch(1)[0]		
+                userLesson = User2Lesson.query().filter(User2Lesson.user == users.get_current_user()).filter(User2Lesson.lessonID == page).fetch(1)[0]
                 galaxyInstance = GalaxyParams.query().fetch(1)[0]
                 hist_id = userLesson.historyID[int(problem)-1]
                 output_id = userLesson.outputID[int(problem)-1]
@@ -749,25 +749,32 @@ class DeleteGalaxyHistory(webapp2.RequestHandler):
                 if not self.request.get("urlKey"):
 			type = "DM"
 			page = self.request.get("page")
-	                thisLesson = DMLesson.query().filter(UsermadeLesson.name == page).fetch(1)[0]
 		else:
 			type = "Public"
 			page = self.request.get("urlKey")
-	                thisLesson = UsermadeLesson.query().filter(UsermadeLesson.urlKey == page).fetch(1)[0]
 		problem = self.request.get("question")
-                userLesson = User2Lesson.query().filter(User2Lesson.user == users.get_current_user()).filter(User2Lesson.lessonID == page).fetch(1)[0]
-                galaxyInput = GalaxyParams.query().fetch(1)[0]
-#                instance = galaxy.GalaxyInstance(url=galaxyInput.url, key=galaxyInput.api_key)
-#                instance.histories.delete_history(id=userLesson.historyID[int(problem)-1])
-                userLesson.historyID[int(problem)-1] = ""
+		userLesson = User2Lesson.query().filter(User2Lesson.user == users.get_current_user()).filter(User2Lesson.lessonID == page).fetch(1)[0]
+		schneiderUserLesson = User2Lesson.query().filter(User2Lesson.user == users.User('schneiderai@g.cofc.edu')).filter(User2Lesson.lessonID == page).fetch(1)[0]
+#		galaxyInput = GalaxyParams.query().fetch(1)[0]
+#		instance = galaxy.GalaxyInstance(url=galaxyInput.url, key=galaxyInput.api_key)
+#		instance.histories.delete_history(id=userLesson.historyID[int(problem)-1])
+		userLesson.historyID[int(problem)-1] = ""
 		userLesson.outputID[int(problem)-1] = ""
 		userLesson.returnStatements[int(problem)-1] = "No submission"
-                userLesson.put()
-                time.sleep(0.75)
-                if type == "DM":
-                    self.redirect("/DMLesson?page="+page+"#q"+problem)
-                else:
-                    self.redirect("/PublicLesson?key="+page+"#q"+problem)
+		userLesson.put()
+		logging.debug("Schneider User lesson: " + str(schneiderUserLesson))
+		logging.debug("Schneider User lesson output: " + str(schneiderUserLesson.outputID[int(problem)-1]))
+		logging.debug("Schneider User lesson history: " + str(schneiderUserLesson.historyID[int(problem)-1]))
+		logging.debug("Schneider User lesson return: " + str(schneiderUserLesson.returnStatements[int(problem)-1]))
+		logging.debug("This User lesson: " + str(userLesson))
+		logging.debug("This User lesson output: " + str(userLesson.outputID[int(problem)-1]))
+		logging.debug("This User lesson history: " + str(userLesson.historyID[int(problem)-1]))
+		logging.debug("This User lesson return: " + str(userLesson.returnStatements[int(problem)-1]))
+		time.sleep(0.75)
+		if type == "DM":
+			self.redirect("/DMLesson?page="+page+"#q"+problem)
+		else:
+			self.redirect("/PublicLesson?key="+page+"#q"+problem)
 
 class GalaxyParams(ndb.Model):
     """Models an individual User Lesson entry with author, content, and date."""
@@ -1383,7 +1390,7 @@ class ClassGradeViewerHandler(webapp2.RequestHandler):
 			DMCount = 0
 			for student in thisClass.students:
 				thisLessonScore = []
-				if student == thisClass.students[0]:
+				if student == thisClass.students[0] and len(publicLessons) == 0:
 					for lesson in thisClass.PublicLessonplan:
 						publicLessons.append([UsermadeLesson.query().filter(UsermadeLesson.urlKey==lesson).fetch(1)[0].header,lesson])
 						publicCount += 1
@@ -1395,16 +1402,16 @@ class ClassGradeViewerHandler(webapp2.RequestHandler):
 						score = int((len([i for i, result in enumerate(userGrades) if 'solved this problem' in result])/len(userGrades))*100)
 						thisLessonScore.append(score)
 
-					for lesson in thisClass.DMLessonplan:
-						DMLessons.append([Learn2MineLesson.query().filter(Learn2MineLesson.name==lesson).fetch(1)[0].header,lesson])
-						DMCount += 1
-						lessonGrades = User2Lesson.query().filter(User2Lesson.user == student).filter(User2Lesson.lessonID == lesson).fetch(1)
-						if len(lessonGrades) == 0:
-							userGrades = (["No submission"] * len(Learn2MineLesson.query().filter(Learn2MineLesson.name == lesson).fetch(1)[0].problems))
-						else:
-							userGrades = lessonGrades[0].returnStatements
-						score = int((len([i for i, result in enumerate(userGrades) if 'solved this problem' in result])/len(userGrades))*100)
-						thisLessonScore.append(score)
+#					for lesson in thisClass.DMLessonplan:
+#						DMLessons.append([Learn2MineLesson.query().filter(Learn2MineLesson.name==lesson).fetch(1)[0].header,lesson])
+#						DMCount += 1
+#						lessonGrades = User2Lesson.query().filter(User2Lesson.user == student).filter(User2Lesson.lessonID == lesson).fetch(1)
+#						if len(lessonGrades) == 0:
+#							userGrades = (["No submission"] * len(Learn2MineLesson.query().filter(Learn2MineLesson.name == lesson).fetch(1)[0].problems))
+#						else:
+#							userGrades = lessonGrades[0].returnStatements
+#						score = int((len([i for i, result in enumerate(userGrades) if 'solved this problem' in result])/len(userGrades))*100)
+#						thisLessonScore.append(score)
 				else:
 					for lesson in thisClass.PublicLessonplan:
 						lessonGrades = User2Lesson.query().filter(User2Lesson.user == student).filter(User2Lesson.lessonID == lesson).fetch(1)
@@ -1415,27 +1422,27 @@ class ClassGradeViewerHandler(webapp2.RequestHandler):
 						score = int((len([i for i, result in enumerate(userGrades) if 'solved this problem' in result])/len(userGrades))*100)
 						thisLessonScore.append(score)
 
-					for lesson in thisClass.DMLessonplan:
-						lessonGrades = User2Lesson.query().filter(User2Lesson.user == student).filter(User2Lesson.lessonID == lesson).fetch(1)
-						if len(lessonGrades) == 0:
-							userGrades = (["No submission"] * len(Learn2MineLesson.query().filter(Learn2MineLesson.name == lesson).fetch(1)[0].problems))
-						else:
-							userGrades = lessonGrades[0].returnStatements
-						score = int((len([i for i, result in enumerate(userGrades) if 'solved this problem' in result])/len(userGrades))*100)
-						thisLessonScore.append(score)
+#					for lesson in thisClass.DMLessonplan:
+#						lessonGrades = User2Lesson.query().filter(User2Lesson.user == student).filter(User2Lesson.lessonID == lesson).fetch(1)
+#						if len(lessonGrades) == 0:
+#							userGrades = (["No submission"] * len(Learn2MineLesson.query().filter(Learn2MineLesson.name == lesson).fetch(1)[0].problems))
+#						else:
+#							userGrades = lessonGrades[0].returnStatements
+#						score = int((len([i for i, result in enumerate(userGrades) if 'solved this problem' in result])/len(userGrades))*100)
+#						thisLessonScore.append(score)
 				lessonScores.append([thisLessonScore,int(sum(thisLessonScore)/len(thisLessonScore))])
 			if len(thisClass.students) == 0:
 				outputMsg = "You do not have any students enrolled in your class yet"
 				template_values = {'errorCatch':"yes",'user':thisUser.email(),'outputMsg':outputMsg}
 				self.response.write(template.render(template_values))
 				return
-			gradeSums = [0] * len(lessonScores[0])
+			gradeSums = [0] * len(lessonScores[0][0])
 			for studentGrades in lessonScores:
-				index = 0
-				for grade in studentGrades[0]: 
-					gradeSums[index] += grade
-					index += 1
-			gradeAverages = [int(x/len(lessonScores)) for x in gradeSums]				
+                                index = 0
+                                for grade in studentGrades[0]:
+                                        gradeSums[index] += grade
+                                        index += 1
+			gradeAverages = [int(x/len(lessonScores)) for x in gradeSums]
 			template_values = {'class':findClass, 'grades':lessonScores, 'user':thisUser.email(),'students':thisClass.students, 'publicLessons':publicLessons,'DMLessons':DMLessons,'averages':gradeAverages}
 		self.response.write(template.render(template_values))
 
