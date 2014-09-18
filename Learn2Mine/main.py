@@ -709,7 +709,12 @@ class GradeRefreshHandler(webapp2.RequestHandler):
                 hist_id = userLesson.historyID[int(problem)-1]
                 output_id = userLesson.outputID[int(problem)-1]
                 url = str(galaxyInstance.url) + "histories/" + hist_id + "/contents/" + output_id + "/display"
-                results = display_result(galaxyInstance.api_key,url)
+		try:
+                	results = display_result(galaxyInstance.api_key,url)
+		except:
+			returnStatement = 'Cannot get status of this submission. Please clear and try again.'
+			results = "ERROR"
+
 		if results == "Running":
                         if any(string in userLesson.returnStatements[int(problem)-1] for string in ["Congratulations!","- previous correct"]):
                                 returnStatement = "Job running - previous correct"
@@ -717,7 +722,7 @@ class GradeRefreshHandler(webapp2.RequestHandler):
                                 returnStatement = "Job running - previous incorrect"
                         else:
                                 returnStatement = "Job running"
-                else:
+                elif results != "ERROR":
                         if results['return'] == "correct":
                                 returnStatement = "Congratulations! You've solved this problem."
                         else:
@@ -1169,7 +1174,7 @@ class ClassCreatorHandler(webapp2.RequestHandler):
 		for DMLesson in DMLessonQuery:
 			DMLessons.append([DMLesson.header, DMLesson.name])
 		PublicLessons = []
-		for PublicLesson in UsermadeLesson.query().filter(UsermadeLesson.publicExecute == "True").fetch(10):
+		for PublicLesson in UsermadeLesson.query().filter(UsermadeLesson.publicExecute == "True").fetch(100):
 			PublicLessons.append([PublicLesson.header, PublicLesson.urlKey])		
         	if thisUser:   
         	    url = users.create_logout_url(self.request.uri)
@@ -1215,7 +1220,7 @@ class ClassManagerHandler(webapp2.RequestHandler):
 			removePublicLessons.append([UsermadeLesson.query().filter(UsermadeLesson.urlKey == lesson).fetch(1)[0].header,lesson])
 		addDMLessons = []
 		addPublicLessons = []
-		for lesson in UsermadeLesson.query().filter(UsermadeLesson.publicExecute == "True").fetch(10):
+		for lesson in UsermadeLesson.query().filter(UsermadeLesson.publicExecute == "True").fetch(100):
 			if [lesson.header,lesson.urlKey] not in removePublicLessons:
 				addPublicLessons.append([lesson.header,lesson.urlKey])
 		for lesson in Learn2MineLesson.query().fetch(10):

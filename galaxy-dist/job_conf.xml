@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!-- A sample job config that explicitly configures job running the way it is configured by default (if there is no explicit config). -->
+<job_conf>
+    <plugins>
+        <plugin id="local" type="runner" load="galaxy.jobs.runners.local:LocalJobRunner" workers="4"/>
+    </plugins>
+    <handlers>
+        <handler id="main"/>
+    </handlers>
+    <destinations>
+        <destination id="local" runner="local"/>
+    </destinations>
+    <limits>
+        <!-- Certain limits can be defined. -->
+        <limit type="registered_user_concurrent_jobs">10</limit>
+        <limit type="unregistered_user_concurrent_jobs">0</limit>
+        <limit type="job_walltime">00:05:00</limit>
+        <limit type="concurrent_jobs" id="local">10</limit>
+    </limits>
+</job_conf>

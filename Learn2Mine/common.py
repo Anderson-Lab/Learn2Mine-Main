@@ -43,7 +43,6 @@ def get( api_key, url ):
         print "URL did not return JSON data: %s" % e
 	print urllib2.urlopen( url ).read()
 	return "Running"
-        #sys.exit(1)
 
 def get_raw( api_key, url ):
     """
@@ -89,7 +88,6 @@ def display( api_key, url, return_formatted=True ):
     except urllib2.HTTPError, e:
         print e
         print e.read( 1024 ) # Only return the first 1K of errors.
-        sys.exit( 1 )
     if type( r ) == unicode:
         print 'error: %s' % r
         return None
@@ -130,7 +128,6 @@ def submit( api_key, url, data, return_formatted=True ):
         if return_formatted:
             print e
             print e.read( 1024 )
-            sys.exit( 1 )
         else:
             return 'Error. '+ str( e.read( 1024 ) )
     if not return_formatted:
@@ -166,7 +163,6 @@ def update( api_key, url, data, return_formatted=True ):
         if return_formatted:
             print e
             print e.read( 1024 )
-            sys.exit( 1 )
         else:
             return 'Error. '+ str( e.read( 1024 ) )
     if not return_formatted:
@@ -186,7 +182,6 @@ def delete( api_key, url, data, return_formatted=True ):
         if return_formatted:
             print e
             print e.read( 1024 )
-            sys.exit( 1 )
         else:
             return 'Error. '+ str( e.read( 1024 ) )
     if not return_formatted:
