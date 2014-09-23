@@ -256,7 +256,15 @@ class HomeHandler(webapp2.RequestHandler):
  	#except:
 	# 	template_values = {'user':useremail,'badgeDisplay':'Error retrieving badges'}
 	# 	print("in the outer except")
- 	
+
+#	badgesQuery = User2Lesson.query().filter(User2Lesson.user == users.get_current_user()).fetch(100)
+#	badgeDisplay='You have not yet earned any Badges!'
+#	if users.get_current_user() == "nashtf@g.cofc.edu":
+#		for lessonKey in badgesQuery:
+#			if "images/" in lessonKey.badge:
+#				badgeDisplay += "<img width='100px' height='100px' src='"+lessonKey.badge+"'></img>"
+#	template_values = {'user':useremail,'badgeDisplay':badgeDisplay}
+
 	try:
 		userBadges = db.Query(User).filter("EMAIL =", useremail).get().BADGESEARNED
 		if len(userBadges) > 1:
@@ -284,6 +292,7 @@ class HomeHandler(webapp2.RequestHandler):
 	except:
 		badgeDisplay = 'You have not yet earned any badges!'
 		template_values = {'user':useremail,'badgeDisplay':badgeDisplay}
+
 	#self.response.write(writeText)
 	self.response.write(template.render(template_values))
 
@@ -759,7 +768,6 @@ class DeleteGalaxyHistory(webapp2.RequestHandler):
 			page = self.request.get("urlKey")
 		problem = self.request.get("question")
 		userLesson = User2Lesson.query().filter(User2Lesson.user == users.get_current_user()).filter(User2Lesson.lessonID == page).fetch(1)[0]
-		schneiderUserLesson = User2Lesson.query().filter(User2Lesson.user == users.User('schneiderai@g.cofc.edu')).filter(User2Lesson.lessonID == page).fetch(1)[0]
 #		galaxyInput = GalaxyParams.query().fetch(1)[0]
 #		instance = galaxy.GalaxyInstance(url=galaxyInput.url, key=galaxyInput.api_key)
 #		instance.histories.delete_history(id=userLesson.historyID[int(problem)-1])
@@ -767,15 +775,7 @@ class DeleteGalaxyHistory(webapp2.RequestHandler):
 		userLesson.outputID[int(problem)-1] = ""
 		userLesson.returnStatements[int(problem)-1] = "No submission"
 		userLesson.put()
-		logging.debug("Schneider User lesson: " + str(schneiderUserLesson))
-		logging.debug("Schneider User lesson output: " + str(schneiderUserLesson.outputID[int(problem)-1]))
-		logging.debug("Schneider User lesson history: " + str(schneiderUserLesson.historyID[int(problem)-1]))
-		logging.debug("Schneider User lesson return: " + str(schneiderUserLesson.returnStatements[int(problem)-1]))
-		logging.debug("This User lesson: " + str(userLesson))
-		logging.debug("This User lesson output: " + str(userLesson.outputID[int(problem)-1]))
-		logging.debug("This User lesson history: " + str(userLesson.historyID[int(problem)-1]))
-		logging.debug("This User lesson return: " + str(userLesson.returnStatements[int(problem)-1]))
-		time.sleep(0.75)
+		time.sleep(0.5)
 		if type == "DM":
 			self.redirect("/DMLesson?page="+page+"#q"+problem)
 		else:
