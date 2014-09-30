@@ -234,75 +234,80 @@ class newKeyHandler(webapp2.RequestHandler):
 
         
 class HomeHandler(webapp2.RequestHandler):
-    @decorator.oauth_required
-    def get(self):
-        template = JINJA_ENVIRONMENT.get_template('Home.html')
-	useremail = users.get_current_user().email()
-	## This block of code checks if the user exists in the datastore, if not, they are redirected to "/", which creates them
-	## This code is used in all of the Handlers
-	try:
-		db.Query(User).filter("EMAIL =", useremail).get().SESSION
-		exists = True
-	except:
-		exists = False 
-	if not exists:
-		self.redirect("/")
-	#Attempt to display user's 'Learn2mine' backpack group, calling our getBadges function
-	#The try/except fixes a problem where on first login, users would not be ready in the datastore before
- 	#		reaching here
- 	#try:
- 	#	userBadges = db.Query(User).filter("EMAIL =", useremail).get().BADGESEARNED
- 	#	templates_values, writeText = issueBadge(userBadges)
- 	#except:
-	# 	template_values = {'user':useremail,'badgeDisplay':'Error retrieving badges'}
-	# 	print("in the outer except")
 
-#	badgesQuery = User2Lesson.query().filter(User2Lesson.user == users.get_current_user()).fetch(100)
-#	badgeDisplay='You have not yet earned any Badges!'
-#	if users.get_current_user() == "nashtf@g.cofc.edu":
-#		for lessonKey in badgesQuery:
-#			if "images/" in lessonKey.badge:
-#				badgeDisplay += "<img width='100px' height='100px' src='"+lessonKey.badge+"'></img>"
-#	template_values = {'user':useremail,'badgeDisplay':badgeDisplay}
+        @decorator.oauth_required
+        def get(self):
+                template = JINJA_ENVIRONMENT.get_template('Home.html')
+                useremail = users.get_current_user().email()
 
-	try:
-		userBadges = db.Query(User).filter("EMAIL =", useremail).get().BADGESEARNED
-		if len(userBadges) > 1:
-			badgeDisplay = ''
-			for i in range(len(userBadges)-1):
-				badgeDisplay = badgeDisplay + "<img width='100px' height='100px' src='images/"+userBadges[i+1]+".png'></img>"
-		else:
-			badgeDisplay='You have not yet earned any Badges!'
-
-		template_values = {'user':useremail,'badgeDisplay':badgeDisplay}
-		#Get the currently logged in user's info
-		user_query = db.Query(User)
-		user = user_query.filter('EMAIL =', useremail).get()
-
-		#Check if the user is due any badges, if so, issue it with the Openbadges.issue() function
-		self.response.write('<script src="https://beta.openbadges.org/issuer.js"></script>')
-		user.BADGESDUE = list(set(user.BADGESDUE))
-		if len(user.BADGESDUE) > 1:
-			self.response.write('<script>window.onload = function(){OpenBadges.issue(["http://portal.cs.cofc.edu/learn2mine/static/badges/'+useremail.split("@")[0]+user.BADGESDUE[1]+'.json"], function(errors, successes) {console.log(errors.reason);window.location = "http://learn2mine.appspot.com/Home"});}</script>')
-			if(user.BADGESDUE[1] not in user.BADGESEARNED):
-				user.BADGESEARNED.append(user.BADGESDUE.pop(1))
+                badgeDisplay = ''
+                lessonKeys = User2Lesson.query().filter(User2Lesson.user == users.get_current_user()).fetch(100)
+                if len(lessonKeys) > 1:
+                        for key in lessonKeys:
+                                if len(key.badge) > 0:
+                                        badgeDisplay = badgeDisplay + "<img width='100px' height='100px' src='/Badge?id=" + key.badge + "'></img>"
+						
+                else:
+                        badgeDisplay = 'You have not yet earned any badges'
+                self.response.write('<script src="https://beta.openbadges.org/issuer.js"></script>')
+                template_values = {'user':useremail,'badgeDisplay':badgeDisplay}
+                self.response.write(template.render(template_values))
+	"""
+	@decorator.oauth_required
+	def get(self):
+		template = JINJA_ENVIRONMENT.get_template('Home.html')
+		useremail = users.get_current_user().email()
+		## This block of code checks if the user exists in the datastore, if not, they are redirected to "/", which creates them
+		## This code is used in all of the Handlers
+		try:
+			db.Query(User).filter("EMAIL =", useremail).get().SESSION
+			exists = True
+		except:
+			exists = False 
+		if not exists:
+			self.redirect("/")
+		#Attempt to display user's 'Learn2mine' backpack group, calling our getBadges function
+		#The try/except fixes a problem where on first login, users would not be ready in the datastore before
+	 	#		reaching here
+	 	#try:
+ 		#	userBadges = db.Query(User).filter("EMAIL =", useremail).get().BADGESEARNED
+ 		#	templates_values, writeText = issueBadge(userBadges)
+ 		#except:
+		# 	template_values = {'user':useremail,'badgeDisplay':'Error retrieving badges'}
+		# 	print("in the outer except")
+		try:
+			userBadges = db.Query(User).filter("EMAIL =", useremail).get().BADGESEARNED
+			if len(userBadges) > 1:
+				badgeDisplay = ''
+				for i in range(len(userBadges)-1):
+					badgeDisplay = badgeDisplay + "<img width='100px' height='100px' src='images/"+userBadges[i+1]+".png'></img>"
 			else:
-				user.BADGESDUE.pop(1)
-			user.put()
-	except:
-		badgeDisplay = 'You have not yet earned any badges!'
-		template_values = {'user':useremail,'badgeDisplay':badgeDisplay}
+				badgeDisplay='You have not yet earned any Badges!'
 
-	#self.response.write(writeText)
-	self.response.write(template.render(template_values))
+			template_values = {'user':useremail,'badgeDisplay':badgeDisplay}
+			#Get the currently logged in user's info
+			user_query = db.Query(User)
+			user = user_query.filter('EMAIL =', useremail).get()
+	
+			#Check if the user is due any badges, if so, issue it with the Openbadges.issue() function
+			self.response.write('<script src="https://beta.openbadges.org/issuer.js"></script>')
+			user.BADGESDUE = list(set(user.BADGESDUE))
+			if len(user.BADGESDUE) > 1:
+				self.response.write('<script>window.onload = function(){OpenBadges.issue(["http://portal.cs.cofc.edu/learn2mine/static/badges/'+useremail.split("@")[0]+user.BADGESDUE[1]+'.json"], function(errors, successes) {console.log(errors.reason);window.location = "http://learn2mine.appspot.com/Home"});}</script>')
+				if(user.BADGESDUE[1] not in user.BADGESEARNED):
+					user.BADGESEARNED.append(user.BADGESDUE.pop(1))
+				else:
+					user.BADGESDUE.pop(1)
+				user.put()
+		except:
+			badgeDisplay = 'You have not yet earned any badges!'
+			template_values = {'user':useremail,'badgeDisplay':badgeDisplay}
+
+		#self.response.write(writeText)
+		self.response.write(template.render(template_values))
+	"""
 
 
-	# Code to retroactively give users the root badge
-	#if "datascienceMastery" not in user.BADGESEARNED:
-	#	user.BADGESDUE.append("datascienceMastery")
-	#	user.put()
-
-	#If the user requested a new key, generate a new random integer, and make sure it is unique.
 
 class LessonsHandler(webapp2.RequestHandler):
     @decorator.oauth_required
@@ -875,7 +880,7 @@ class LessonCreatorHandler(webapp2.RequestHandler):
         thisUser = users.get_current_user()
 
         time.sleep(0.2)
-        userLessons = UsermadeLesson.query().filter(UsermadeLesson.author == thisUser).fetch(10)
+        userLessons = UsermadeLesson.query().filter(UsermadeLesson.author == thisUser).fetch(1000)
         lessonArray = []
         for lesson in userLessons:
             lessonArray.append(lesson.name)
@@ -1148,8 +1153,8 @@ class ClassPortalHandler(webapp2.RequestHandler):
 	def get(self):
 		template = JINJA_ENVIRONMENT.get_template('Class.html')
 	        thisUser = users.get_current_user()
-		instructing = Learn2MineClass.query().filter(Learn2MineClass.instructor == thisUser).fetch(10)
-		enrolledQuery = Learn2MineClass.query().fetch(10)
+		instructing = Learn2MineClass.query().filter(Learn2MineClass.instructor == thisUser).fetch(10000)
+		enrolledQuery = Learn2MineClass.query().fetch(10000)
 		enrolledClasses = []
 		for thisClass in enrolledQuery:
 			if thisUser in thisClass.students:
@@ -1223,7 +1228,7 @@ class ClassManagerHandler(webapp2.RequestHandler):
 		for lesson in UsermadeLesson.query().filter(UsermadeLesson.publicExecute == "True").fetch(100):
 			if [lesson.header,lesson.urlKey] not in removePublicLessons:
 				addPublicLessons.append([lesson.header,lesson.urlKey])
-		for lesson in Learn2MineLesson.query().fetch(10):
+		for lesson in Learn2MineLesson.query().fetch(1000):
 			if [lesson.header,lesson.name] not in removeDMLessons:
 				addDMLessons.append([lesson.header,lesson.name])
 		template_values = {'user':thisUser.email(), 'class':className, 'RemovePublicLessons':removePublicLessons, 'RemoveDMLessons':removeDMLessons, 'AddPublicLessons':addPublicLessons, 
