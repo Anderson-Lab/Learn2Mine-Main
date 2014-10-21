@@ -107,7 +107,7 @@
                 <br><br>
                 <input type="checkbox" name="masterProblem" id="masterProblem" value="True" {% if lesson.flag == "True" %}checked{% endif %}>Make final problem worth full experience
 
-                <br><br>Upload lesson completion badge (150x150px) [<a href="https://www.openbadges.me/">https://www.openbadges.me/</a>:<br>
+                <br><br>Upload lesson completion badge (150x150px) [<a href="https://www.openbadges.me/">https://www.openbadges.me/</a>:<br>]
                 <input type="file" name="pic" accept="image/*"><br><br>
                 {% if img %}Your current badge
                 <div><br><img src="/Badge?id={{img}}"><br><br></div>
@@ -130,9 +130,28 @@
 
 	Finalization Code - Code that is run after the student code<br><br><br>
 
-	NOTE: Line breaks in problem statements will be translated properly in HTML (no need for break tags). <br>
-	Other HTML tags can be used for bold, underline, etc. if so desired.<br><br><br>
-
+	It is up to authors of the assignment whether they want to show the solution to the student. A pattern that is used often<br>
+        
+        Init Code:
+<pre>
+...
+answer = '
+</pre>
+        Instructor Code:
+<pre>
+XXXXX
+</pre>
+        Finalization Code:
+<pre>
+'
+trim <- function (x) gsub("^\\s+|\\s+$", "", x)
+answer = trim(answer)
+if (answer == 'Sex') {
+  print('Instructor solution is hidden, but it should be in the form of XX.X (i.e., round to one decimal place)')
+} else {
+  print(paste('Your solution was ',answer))
+}        
+</pre>
 
 	<form action="/LessonModify" method="post" name="lessonModify">
 		<div>

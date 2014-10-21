@@ -354,7 +354,9 @@ class ProfileHandler(webapp2.RequestHandler):
     @decorator.oauth_required
     def get(self):
 		useremail = users.get_current_user().email()
-		template = JINJA_ENVIRONMENT.get_template('Profile.html')
+		template = JINJA_ENVIRONMENT.get_template('ProfileGraph.html')
+		template_values = {"user":useremail}
+		"""
 		profile = skillTree.makeTemplateValues(useremail)
 		profile.update({'user':useremail})
 		#profile.update({'basicRLink':'/Lessons?lesson=standardR'})
@@ -364,7 +366,9 @@ class ProfileHandler(webapp2.RequestHandler):
 			self.response.write(template.render(profile))
 			self.response.write('<script type="text/javascript" SRC="./Javascript/javascriptForProfile/profileTutorial.js"></script>')
 		else:
-			self.response.write(template.render(profile))		
+			self.response.write(template.render(profile))
+		"""
+		self.response.write(template.render(template_values))
 
 
 ## About and Help Handlers need only display the page, nothing fancy.
@@ -1463,6 +1467,21 @@ class BadgeViewHandler(webapp2.RequestHandler):
         self.response.headers['content-type'] = 'image/png'
         self.response.out.write(lessonBadge.badge)
 
+class UpdateHandler(webapp2.RequestHandler):
+	def get(self):
+		# Code for update to be run
+		self.redirect("/Home")
+
+class FlareHandler(webapp2.RequestHandler):
+	@decorator.oauth_required
+	def get(self):
+#              template = JINJA_ENVIRONMENT.get_template('Flare.html')
+               useremail = users.get_current_user().email()
+               f = urllib.urlopen("http://learn2mine.appspot.com/stylesheets/flare.json")
+               contents = f.read()
+
+               self.response.write(contents)
+
 #Handles page redirects
 app = webapp2.WSGIApplication([
     ('/Home', HomeHandler),
@@ -1493,5 +1512,7 @@ app = webapp2.WSGIApplication([
     ('/ClassGradeViewer', ClassGradeViewerHandler),
     ('/EnrollClass', EnrollmentHandler),
     ('/Badge', BadgeViewHandler),
-    ('/ClearHistory', DeleteGalaxyHistory)
+    ('/ClearHistory', DeleteGalaxyHistory),
+    ('/UpdateCode', UpdateHandler),
+    ('/flare', FlareHandler)
 ], debug=True)
