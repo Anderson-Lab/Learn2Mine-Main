@@ -1,0 +1,45 @@
+{
+    "name": "Learn2Mine",
+    "children": [
+        {
+            "name": "R",
+            "children": [
+                {"name": "Introduction to R", "size": 3938, "url": "http://learn2mine.appspot.com/PublicLesson?key=SImzuNA5PwEUNOm8gk05"},
+                {
+                    "name": "Loops",
+		    "children": [
+                        {"name": "Loops in R", "size":3940, "url": "http://learn2mine.appspot.com/PublicLesson?key=3SiChjC90csSWrfYODy2" },
+                        {"name": "Loops in R (continued)", "size":3941, "url": "http://learn2mine.appspot.com/PublicLesson?key=TYE8jmDozT3FYC7pYL9V" },
+                        {"name": "Loops in R (continued and then continued again)", "size":3942, "url": "http://learn2mine.appspot.com/PublicLesson?key=g0ruA6X2sUP5lAz0DW9k" }
+                    ]
+                },
+                {
+                    "name": "File IO",
+		    "children": [
+                        {"name": "File IO in R", "size":3943, "url": "http://learn2mine.appspot.com/PublicLesson?key=qKHEedRTYxVb1jnwGIMU" },
+                        {"name": "File IO in R (continued)", "size":3944, "url": "http://learn2mine.appspot.com/PublicLesson?key=a3sqXzbzaiSIU6D8O2w9" }
+                    ]
+                }
+            ]
+        },
+	{
+	    "name":"Data Mining",
+	    "children": [
+		{"name":"Cross-validation", "size":3947, "url": "http://learn2mine.appspot.com/PublicLesson?key=RkKqgzxcJyIOPiCyOJd5" },
+		{
+		    "name":"Decision Trees",
+		    "children": [
+                        {"name": "Decision Tree Basics", "size":3945, "url": "http://learn2mine.appspot.com/PublicLesson?key=zBpebMvxoWchKl1F5So9" },
+                        {"name": "Decision Tree Basics (continued)", "size":3946, "url": "http://learn2mine.appspot.com/PublicLesson?key=eTJyqbiXw9GATwxdA9qM" }			
+		    ]
+		},
+		{
+		    "name":"Applications",
+		    "children": [
+			{"name": "First Submission Titanic Kaggle Challenge", "size":3948, "url":"http://learn2mine.appspot.com/PublicLesson?key=v3s9kd7oW1MmoJIHJv5h"}
+		    ]
+		}
+	    ]
+	}
+    ]
+}
