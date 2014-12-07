@@ -8,6 +8,7 @@ import json
 import time
 import subprocess
 import difflib
+import string
 
 # usage: $html_file' '$other'
 
@@ -20,14 +21,17 @@ for j in range(len(sys.argv)):
 		results = results.replace(replaceList[i],replaceWithList[i])
 	sys.argv[j] = results
 
+def fixCharacters(s):
+  return filter(lambda x: x in string.printable, s)  
+
 htmlfile = sys.argv[1]
 other = json.loads(sys.argv[2])
-initCode = other['initializationCode']
-finalCode = other['finalizationCode']
-insCode = other['instructorCode']
+initCode = fixCharacters(other['initializationCode'])
+finalCode = fixCharacters(other['finalizationCode'])
+insCode = fixCharacters(other['instructorCode'])
 language = other['language']
 badgeName = other['badgeName']
-stuCode = other['studentCode']
+stuCode = fixCharacters(other['studentCode'])
 email = other['email']
 
 def create_file(initCode,middleCode,finalCode,language,outfile):
