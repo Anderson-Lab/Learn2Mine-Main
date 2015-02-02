@@ -11,6 +11,12 @@
 <link rel="shortcut icon" href="./images/l2m.ico">
 <script type="text/javascript" SRC="./Javascript/jquery.js"></script>
 <script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+<script type="text/javascript"
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
 <script type="text/javascript">
 $(function() {
 $( "#progressbar" ).progressbar({
@@ -18,6 +24,23 @@ value: {{ exp }}
 });
 });
 </script>
+
+<style type="text/css">
+#wrap {
+   width:900px;
+   margin:0;
+}
+#left_col {
+   float:left;
+   width:450px;
+   overflow-x: auto;
+}
+#right_col {
+   float:right;
+   width:450px;
+   overflow-x: auto;
+}
+</style>
 
 </head>
 
@@ -45,7 +68,7 @@ value: {{ exp }}
 				{{lesson.paragraph}}
 			</p>
 			<p>
-				This experience bar represents your strength for taking on the boss fight. Defeat the "boss problem" and you will max out your strength.
+				This experience bar represents your progress through the lesson. Depending on the lesson, there may be more than one way of obtaining full experience. For example, some lessons have "boss" fights at the end that, once completed, will max out your experience. These lessons will be clearly marked as such, and additional instructions will be given.
 			</p>
 			<div id="progressbar"></div><div id="progress-label">XP</div>
 			<p>

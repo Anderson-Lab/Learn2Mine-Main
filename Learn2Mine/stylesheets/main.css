@@ -528,11 +528,6 @@ img#skBadge{
     width: 50%;
     float:right;
 }
-#lessonMakerTextarea {
-    resize: both;
-    rows: 60;
-    cols: 150;
-}
 #lessonMakerProblem {
     text-align: center;
     margin-right: 80px;
@@ -619,8 +614,7 @@ img#openBadgesImg{
 }
 /* This button was generated using CSSButtonGenerator.com */
 
-.lessonMakerTextarea{
-rows:60;
-cols:150;
-resize:both;
+#lessonMakerTextarea{
+  height: auto;
+  width: auto;
 }

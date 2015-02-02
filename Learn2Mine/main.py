@@ -1226,7 +1226,11 @@ class ClassManagerHandler(webapp2.RequestHandler):
 		for lesson in thisClass.DMLessonplan:
 			removeDMLessons.append([Learn2MineLesson.query().filter(Learn2MineLesson.name == lesson).fetch(1)[0].header,lesson])
 		for lesson in thisClass.PublicLessonplan:
-			removePublicLessons.append([UsermadeLesson.query().filter(UsermadeLesson.urlKey == lesson).fetch(1)[0].header,lesson])
+			try:
+				header = UsermadeLesson.query().filter(UsermadeLesson.urlKey == lesson).fetch(1)[0].header
+			except:
+				header = 'DELETED'	
+			removePublicLessons.append([header,lesson])
 		addDMLessons = []
 		addPublicLessons = []
 		for lesson in UsermadeLesson.query().filter(UsermadeLesson.publicExecute == "True").fetch(100):
