@@ -193,6 +193,37 @@ def uniformCostSearch(problem):
                 newPath = curPath + [action]
                 space.push((state, newPath), problem.getCostOfActions(newPath))
 
+def aStarSearch(problem, heuristic=nullHeuristic):
+    visited = []
+    space = util.PriorityQueue()
+
+    startState = problem.getStartState()
+    startPath = []
+    startCost = problem.getCostOfActions(startPath) + heuristic(startState, problem)
+
+    space.push((startState, startPath), startCost)
+
+
+    while not space.isEmpty():
+        curState, curPath = space.pop()
+
+        if curState in visited:
+            continue
+
+        if problem.isGoalState(curState):
+            return curPath
+
+
+        visited.append(curState)
+
+        for state, action, cost in problem.getSuccessors(curState):
+            if not state in visited:
+                newPath = curPath + [action]
+                newCost = problem.getCostOfActions(newPath) + heuristic(state, problem)
+                space.push((state, newPath), newCost)
+
+    return []
+
 # Abbreviations
 bfs = breadthFirstSearch
 dfs = depthFirstSearch

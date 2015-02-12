@@ -345,5 +345,8 @@
 	<div id="skillTree"></div>
 	<div id="dialog"></div>
 	<br />
-
+	<div><b>Your existing lessons: </b></div>
+        {% for lesson in existingLessons %}
+        {{ lesson }}<br>
+        {% endfor %}
 </body>

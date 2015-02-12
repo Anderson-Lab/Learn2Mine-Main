@@ -355,19 +355,23 @@ class ProfileHandler(webapp2.RequestHandler):
     def get(self):
 		useremail = users.get_current_user().email()
 		template = JINJA_ENVIRONMENT.get_template('ProfileGraph.html')
-		template_values = {"user":useremail}
-		"""
-		profile = skillTree.makeTemplateValues(useremail)
-		profile.update({'user':useremail})
-		#profile.update({'basicRLink':'/Lessons?lesson=standardR'})
-		tutorial = self.request.get("tutorial")
-		if tutorial == "True":
-			#profile.update({'basicRLink':'/Lessons?lesson=standardR&tutorial=True'})
-			self.response.write(template.render(profile))
-			self.response.write('<script type="text/javascript" SRC="./Javascript/javascriptForProfile/profileTutorial.js"></script>')
-		else:
-			self.response.write(template.render(profile))
-		"""
+	        userLessons = UsermadeLesson.query().filter(UsermadeLesson.publicView == "True").fetch(1000)
+        	lessonHeaderArray = []
+        	lessonParagraphArray = []
+		imgArray = []
+        	urlKeyArray = []
+		for lesson in userLessons:
+		        badgeQuery = LessonBadge.query().filter(LessonBadge.lesson == lesson.urlKey).fetch(1)
+		        if len(badgeQuery) > 0:
+		            imgArray.append(badgeQuery[0].lesson)
+			else:
+		            imgArray.append("")
+
+			lessonHeaderArray.append(lesson.header)
+			lessonParagraphArray.append(lesson.paragraph)
+			urlKeyArray.append(lesson.urlKey)
+		template_values = { 'user': useremail, 'lessonHeaders': lessonHeaderArray, 'lessonParagraphs': lessonParagraphArray, 'urlKeys': urlKeyArray, 'imgs': imgArray}
+
 		self.response.write(template.render(template_values))
 
 

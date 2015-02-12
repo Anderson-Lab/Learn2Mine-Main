@@ -11,7 +11,25 @@
 <script type="text/javascript" SRC="./Javascript/jquery.js"></script>
 <script type="text/javascript" SRC="./Javascript/pageslide/jquery.pageslide.js"></script>
 
+<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+<link rel="shortcut icon" href="./images/l2m.ico">
+<script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+<script type="text/javascript"
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
+
 <style>
+.cleaner{clear: left; line-height: 0; height: 0;} 
+.rows{width: 300px; min-height: 25px;}
+.rowsAlt{background-color: blue;}
+
+.cols{height: 200px; float: left;}
+.col1{width: 25px;}
+.col2{width: 50px;}
+.col3{width: 100px;}
 
 .node {
   cursor: pointer;
@@ -51,6 +69,9 @@
                 <div class="loggedin">{{user}}</div>
         </div>
 <div id="NPStext">
+<h3>
+Official Skill Tree
+</h3>
 <h4>
 Clicking internal nodes will expand each skill subtree, while clicking on a leaf node will
 open a new tab for that lesson.
@@ -202,5 +223,15 @@ function click(d) {
 }
 
 </script>
+
+<div><h2>Public lessons: </h2></div>
+{% for header in lessonHeaders %}
+<a href="/PublicLesson?key={{ urlKeys[loop.index] }}">
+<img src="/Badge?id={{ imgs[loop.index] }}">
+</a>
+<p>
+{{ lessonParagraphs[loop.index] }}
+</p>
+{% endfor %}
 </body>
 </html>
