@@ -57,13 +57,13 @@
 
                 <form name="updateLesson" action="/LessonModify" id="updateLesson" method="post" onsubmit="return validateUpdate();" enctype="multipart/form-data">
 		{% if user == lesson.author %}
-			Submit lesson plan then <a href="http://learn2mine.appspot.com/PublicLesson?page={{ lesson.name }}" 
+			Submit lesson plan then <a href="http://learn2mine.appspot.com/PublicLesson?key={{ lesson.name }}" 
 			target="_blank">click here</a> to view your lesson plan as it would appear in Learn2Mine.
 			Refresh the page as updates are submitted to view changes.<br>
 
 			<br>
-			Public Edit URL: http://learn2mine.appspot.com/LessonModify?key={{ lesson.urlKey }} <br>
-			Public Lessonplan URL: http://learn2mine.appspot.com/PublicLesson?key={{ lesson.urlKey }} <br><br>
+			Public Edit URL: <a href="http://learn2mine.appspot.com/LessonModify?key={{ lesson.urlKey }}">http://learn2mine.appspot.com/LessonModify?key={{ lesson.urlKey }}</a><br>
+			Public Lessonplan URL: <a href="http://learn2mine.appspot.com/PublicLesson?key={{ lesson.urlKey }}">http://learn2mine.appspot.com/PublicLesson?key={{ lesson.urlKey }}</a> <br><br>
 
 
 			<input type="checkbox" name="publicView" value="yes" {% if lesson.publicView == "True" %}checked{%endif%}>Make lesson available for public viewing<br>

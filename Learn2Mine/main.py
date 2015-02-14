@@ -682,13 +682,15 @@ class GradingHandler(webapp2.RequestHandler):
 			else:
 				returnStatement = "Job running"
 		else:
+			returnAdd = "<br><a href=\"javascript:toggleDiv('returnAdd"+str(int(problem)-1)+"');\" style=\"background-color: #ccc; padding: 5px 10px;\">Show/Hide Details</a><br>"
 			if results['return'] == "correct":
-				returnStatement = "Congratulations! You've solved this problem."
+				returnAdd += "<div id='returnAdd"+str(int(problem)-1)+"' style='display: none;'>" + "<br />".join(results['student_stdout'].split("\n")) + "</div>"
+				returnStatement = "Congratulations! You've solved this problem.<br>" + returnAdd
 			else:
+				returnAdd += "<div id='returnAdd"+str(int(problem)-1)+"' style='display: none;'>" + "<br />".join(results['difference_stdout'].split("\n")) + "</div>"
 				if "previous correct" in userLesson.returnStatements[int(problem)-1]:
-					returnStatement = "Your submission is incorrect, but you won't be penalized as<br>you have previously solved this problem."
+					returnStatement = "Your submission is incorrect, but you won't be penalized as<br>you have previously solved this problem.<br>" + returnAdd
 				else:
-					returnAdd = "<br />".join(results['difference_stdout'].split("\n"))
 					returnStatement = "The code you entered is incorrect.<br>" + returnAdd
 			userLesson.returnStatements[int(problem)-1] = returnStatement
 			returnVals = userLesson.returnStatements[:]
@@ -745,13 +747,15 @@ class GradeRefreshHandler(webapp2.RequestHandler):
                         else:
                                 returnStatement = "Job running"
                 elif results != "ERROR":
+			returnAdd = "<br><a href=\"javascript:toggleDiv('returnAdd"+str(int(problem)-1)+"');\" style=\"background-color: #ccc; padding: 5px 10px;\">Show/Hide Details</a><br>"
                         if results['return'] == "correct":
-                                returnStatement = "Congratulations! You've solved this problem."
+				returnAdd += "<div id='returnAdd"+str(int(problem)-1)+"' style='display: none;'>" + "<br />".join(results['student_stdout'].split("\n")) + "</div>"
+                                returnStatement = "Congratulations! You've solved this problem.<br>" + returnAdd
                         else:
+				returnAdd += "<div id='returnAdd"+str(int(problem)-1)+"' style='display: none;'>" + "<br />".join(results['difference_stdout'].split("\n")) + "</div>"
                                 if "previous correct" in userLesson.returnStatements[int(problem)-1]:
-                                        returnStatement = "Your submission is incorrect, but you won't be penalized as<br>you have previously solved this problem."
+                                        returnStatement = "Your submission is incorrect, but you won't be penalized as<br>you have previously solved this problem.<br>" + returnAdd
                                 else:
-                                        returnAdd = "<br />".join(results['difference_stdout'].split("\n"))
 					returnStatement = "The code you entered is incorrect.<br>" + returnAdd
                         userLesson.returnStatements[int(problem)-1] = returnStatement
                         returnVals = userLesson.returnStatements[:]

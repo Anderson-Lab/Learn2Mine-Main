@@ -18,6 +18,11 @@
   MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
 </script>
 <script type="text/javascript">
+function toggleDiv(divId) {
+   $("#"+divId).toggle();
+}
+</script>
+<script type="text/javascript">
 $(function() {
 $( "#progressbar" ).progressbar({
 value: {{ exp }}
@@ -72,7 +77,7 @@ value: {{ exp }}
 			</p>
 			<div id="progressbar"></div><div id="progress-label">XP</div>
 			<p>
-                                Enter your code in the box provided if the answer is not correct, the difference between the answer produces by running the correct solution and yours will be shown.
+                                Enter your code in the box provided if the answer is not correct, the difference between the answers produced by running the correct solution and your solution will be shown.
 			</p>
 			<p>
 				<ol>
@@ -117,7 +122,7 @@ value: {{ exp }}
                         	                        {% endif %}
 							<p>
 							<div class="outputid{{ loop.index }}">
-							{{ result[loop.index0] }}
+							{{ result[loop.index0] }}<br>
 							</div><br><br>
 							</form>
 						{% endif %}

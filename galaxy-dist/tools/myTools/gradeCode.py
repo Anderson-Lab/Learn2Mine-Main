@@ -41,7 +41,7 @@ def create_file(initCode,middleCode,finalCode,language,outfile):
 
 	f.write("\n")
 
-	middleCode = middleCode.strip()
+	middleCode = middleCode.strip().replace('"""',"'''")
 	f.write(middleCode)
 
 	f.write("\n")
