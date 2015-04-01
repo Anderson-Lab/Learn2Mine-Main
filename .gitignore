@@ -13,6 +13,7 @@ __pycache__/
 #develop-eggs/
 #dist/
 eggs/
+bots/
 #lib/
 #lib64/
 #parts/

@@ -1387,6 +1387,8 @@ class ClassGradeViewerHandler(webapp2.RequestHandler):
 		studentGrades = []
 		if self.request.get("page"):
 			name = self.request.get("page")
+			lessonClass = UsermadeLesson.query().filter(UsermadeLesson.urlKey == key).fetch(1)[0]
+			lesson = lessonClass.header
 			for student in thisClass.students:
 				lessonGrades = User2Lesson.query().filter(User2Lesson.user == student).filter(User2Lesson.lessonID == name).fetch(1)
 				if len(lessonGrades) == 0:
@@ -1394,12 +1396,15 @@ class ClassGradeViewerHandler(webapp2.RequestHandler):
 				else:
 					userGrades = lessonGrades[0].returnStatements
 				score = int((len([i for i, result in enumerate(userGrades) if 'solved this problem' in result])/len(userGrades))*100)
+				if lessonClass.flag == "True" and " solved this problem." in userGrades[-1]:
+					score = 100
 				studentGrades.append([userGrades,score])
-			lesson = Learn2MineLesson.query().filter(Learn2MineLesson.name == name).fetch(1)[0].header
 			template_values = {'class':findClass, 'grades':studentGrades, 'user':thisUser.email(),'students':thisClass.students,'lesson':lesson, 'DM':"yes"}
 
 		elif self.request.get("key"):
 			key = self.request.get("key")
+			lessonClass = UsermadeLesson.query().filter(UsermadeLesson.urlKey == key).fetch(1)[0]
+			lesson = lessonClass.header
 			for student in thisClass.students:
 				lessonGrades = User2Lesson.query().filter(User2Lesson.user == student).filter(User2Lesson.lessonID == key).fetch(1)
 				if len(lessonGrades) == 0:
@@ -1407,8 +1412,9 @@ class ClassGradeViewerHandler(webapp2.RequestHandler):
 				else:
 					userGrades = lessonGrades[0].returnStatements
 				score = int((len([i for i, result in enumerate(userGrades) if 'solved this problem' in result])/len(userGrades))*100)
+				if lessonClass.flag == "True" and " solved this problem." in userGrades[-1]:
+					score = 100
 				studentGrades.append([userGrades,score])
-			lesson = UsermadeLesson.query().filter(UsermadeLesson.urlKey == key).fetch(1)[0].header
 			template_values = {'class':findClass, 'grades':studentGrades, 'user':thisUser.email(),'students':thisClass.students,'lesson':lesson, 'public':"yes"}
 		else:
 			lessonScores = []
@@ -1426,6 +1432,9 @@ class ClassGradeViewerHandler(webapp2.RequestHandler):
 						else:
 							userGrades = lessonGrades[0].returnStatements
 						score = int((len([i for i, result in enumerate(userGrades) if 'solved this problem' in result])/len(userGrades))*100)
+						thisLesson = UsermadeLesson.query().filter(UsermadeLesson.urlKey == lesson).fetch(1)[0]
+						if thisLesson.flag == "True" and " solved this problem." in userGrades[-1]:
+							score = 100
 						thisLessonScore.append(score)
 
 #					for lesson in thisClass.DMLessonplan:
@@ -1446,6 +1455,9 @@ class ClassGradeViewerHandler(webapp2.RequestHandler):
 						else:
 							userGrades = lessonGrades[0].returnStatements
 						score = int((len([i for i, result in enumerate(userGrades) if 'solved this problem' in result])/len(userGrades))*100)
+						thisLesson = UsermadeLesson.query().filter(UsermadeLesson.urlKey == lesson).fetch(1)[0]
+						if thisLesson.flag == "True" and " solved this problem." in userGrades[-1]:
+							score = 100
 						thisLessonScore.append(score)
 
 #					for lesson in thisClass.DMLessonplan:
