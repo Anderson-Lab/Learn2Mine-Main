@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/rps/rpsrunner.py", line 592, in <module>
+    sys.exit( main(sys.argv[1:]))
+  File "/rps/rpsrunner.py", line 582, in main
+    results = run_contests(contests, threads)
+  File "/rps/rpsrunner.py", line 447, in run_contests
+    results = pool.map(runner, contests)
+  File "/usr/lib/python2.7/multiprocessing/pool.py", line 251, in map
+    return self.map_async(func, iterable, chunksize).get()
+  File "/usr/lib/python2.7/multiprocessing/pool.py", line 558, in get
+    raise self._value
+TypeError: 'in <string>' requires string as left operand, not int

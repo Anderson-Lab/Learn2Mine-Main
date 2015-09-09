@@ -1,0 +1,2 @@
+# allpaper
+output = 'P'

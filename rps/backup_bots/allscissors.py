@@ -1,0 +1,2 @@
+# allscissors
+output = 'S'

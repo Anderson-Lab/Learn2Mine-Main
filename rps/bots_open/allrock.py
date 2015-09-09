@@ -1,0 +1,2 @@
+# allrock
+output = 'R'

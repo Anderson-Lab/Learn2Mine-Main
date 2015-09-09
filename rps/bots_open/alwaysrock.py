@@ -1,0 +1,2 @@
+# always rock
+output = "R"
