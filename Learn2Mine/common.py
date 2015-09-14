@@ -41,7 +41,7 @@ def get( api_key, url ):
         return json.loads( urllib2.urlopen( url , timeout = 100).read() )
     except ValueError, e:
         print "URL did not return JSON data: %s" % e
-	print urllib2.urlopen( url ).read()
+	print urllib2.urlopen( url, timeout=100 ).read()
 	return "Running"
 
 def get_raw( api_key, url ):
@@ -58,7 +58,7 @@ def post( api_key, url, data ):
     url = make_url( api_key, url )
     req = urllib2.Request( url, headers = { 'Content-Type': 'application/json' }, data = json.dumps( data ) )
     time.sleep(0.5)
-    return json.loads( urllib2.urlopen( req ).read() )
+    return json.loads( urllib2.urlopen( req, timeout=100 ).read() )
 
 def put( api_key, url, data ):
     """
@@ -67,7 +67,7 @@ def put( api_key, url, data ):
     url = make_url( api_key, url )
     req = urllib2.Request( url, headers = { 'Content-Type': 'application/json' }, data = json.dumps( data ))
     req.get_method = lambda: 'PUT'
-    return json.loads( urllib2.urlopen( req ).read() )
+    return json.loads( urllib2.urlopen( req, timeout=100 ).read() )
 
 def __del( api_key, url, data ):
     """
@@ -76,7 +76,7 @@ def __del( api_key, url, data ):
     url = make_url( api_key, url )
     req = urllib2.Request( url, headers = { 'Content-Type': 'application/json' }, data = json.dumps( data ))
     req.get_method = lambda: 'DELETE'
-    return json.loads( urllib2.urlopen( req ).read() )
+    return json.loads( urllib2.urlopen( req, timeout=100 ).read() )
 
 
 def display( api_key, url, return_formatted=True ):

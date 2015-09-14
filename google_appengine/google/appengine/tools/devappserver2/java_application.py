@@ -17,6 +17,8 @@
 """An abstraction around the source and classfiles for a Java application."""
 
 
+
+
 import os
 import os.path
 import google
@@ -41,8 +43,12 @@ class JavaApplication(object):
     """Return the environment that should be used to run the Java executable."""
     environ = {'SDKROOT': _SDKROOT,
                'PWD': self._module_configuration.application_root,
-               'TZ': 'UTC'}
-    for var in ('PATH', 'SYSTEMROOT', 'USER'):
+               'TZ': 'UTC',
+               'APPLICATION_ID': self._module_configuration.application}
+
+    # Most of the env variables are needed for a JVM on Windows.
+    for var in ('PATH', 'SYSTEMROOT', 'USER', 'GAE_LOCAL_VM_RUNTIME',
+                'TMP', 'TEMP'):
       if var in os.environ:
         environ[var] = os.environ[var]
     return environ

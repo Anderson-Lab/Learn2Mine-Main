@@ -46,9 +46,9 @@ To configure the custom header mode, edit an appengine_config file (the same
 one you may use to configure appstats) to include a line like this:
 
   remoteapi_CUSTOM_ENVIRONMENT_AUTHENTICATION = (
-    'HTTP_X_APPENGINE_INBOUND_APPID', ['otherappid'] )
+      'HTTP_X_APPENGINE_INBOUND_APPID', ['otherappid'] )
 
-See the ConfigDefaults class below for the full set of options avaiable.
+See the ConfigDefaults class below for the full set of options available.
 """
 
 
@@ -59,19 +59,21 @@ See the ConfigDefaults class below for the full set of options avaiable.
 
 
 
+
 import google
+import hashlib
 import logging
 import os
 import pickle
 import wsgiref.handlers
 import yaml
-import hashlib
 
 from google.appengine.api import api_base_pb
 from google.appengine.api import apiproxy_stub
 from google.appengine.api import apiproxy_stub_map
 from google.appengine.api import datastore_types
 from google.appengine.api import lib_config
+from google.appengine.api import oauth
 from google.appengine.api import users
 from google.appengine.datastore import datastore_pb
 from google.appengine.datastore import datastore_rpc
@@ -83,14 +85,14 @@ from google.appengine.runtime import apiproxy_errors
 from google.appengine.datastore import entity_pb
 
 
-
 class ConfigDefaults(object):
   """Configurable constants.
 
-  To override appstats configuration valuess, define values like this
+  To override remote_api configuration values, define values like this
   in your appengine_config.py file (in the root of your app):
 
-    remoteapi_AUTHORIZE_REMOTE_APP = [ 'appid' ]
+    remoteapi_CUSTOM_ENVIRONMENT_AUTHENTICATION = (
+        'HTTP_X_APPENGINE_INBOUND_APPID', ['otherappid'] )
 
   You may wish to base this file on sample_appengine_config.py.
   """
@@ -308,6 +310,11 @@ class ApiCallHandler(webapp.RequestHandler):
       'remote_datastore': RemoteDatastoreStub('remote_datastore'),
   }
 
+  OAUTH_SCOPES = [
+      'https://www.googleapis.com/auth/appengine.apis',
+      'https://www.googleapis.com/auth/cloud-platform',
+  ]
+
   def CheckIsAdmin(self):
     user_is_authorized = False
     if users.is_current_user_admin():
@@ -320,15 +327,23 @@ class ApiCallHandler(webapp.RequestHandler):
       else:
         logging.warning('remoteapi_CUSTOM_ENVIRONMENT_AUTHENTICATION is '
                         'configured incorrectly.')
+
+    if not user_is_authorized:
+      try:
+        user_is_authorized = (
+            oauth.is_current_user_admin(_scope=self.OAUTH_SCOPES))
+      except oauth.OAuthRequestError:
+
+        pass
     if not user_is_authorized:
       self.response.set_status(401)
       self.response.out.write(
-          "You must be logged in as an administrator to access this.")
+          'You must be logged in as an administrator to access this.')
       self.response.headers['Content-Type'] = 'text/plain'
       return False
     if 'X-appcfg-api-version' not in self.request.headers:
       self.response.set_status(403)
-      self.response.out.write("This request did not contain a necessary header")
+      self.response.out.write('This request did not contain a necessary header')
       self.response.headers['Content-Type'] = 'text/plain'
       return False
     return True

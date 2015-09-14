@@ -17,6 +17,7 @@
 """Tests for google.appengine.tools.devappserver2.dispatcher."""
 
 import logging
+import socket
 import unittest
 
 import google
@@ -27,25 +28,27 @@ from google.appengine.api import appinfo
 from google.appengine.api import dispatchinfo
 from google.appengine.api import request_info
 from google.appengine.tools.devappserver2 import api_server
-from google.appengine.tools.devappserver2 import constants
 from google.appengine.tools.devappserver2 import dispatcher
-from google.appengine.tools.devappserver2 import scheduled_executor
 from google.appengine.tools.devappserver2 import module
+from google.appengine.tools.devappserver2 import scheduled_executor
 
 # This file uses pep8 naming.
 # pylint: disable=invalid-name
 
 
 class ApplicationConfigurationStub(object):
+
   def __init__(self, modules):
     self.modules = modules
     self.dispatch = None
 
 
 class ModuleConfigurationStub(object):
+
   def __init__(self, application, module_name, version, manual_scaling):
     self.application_root = '/'
     self.application = application
+    self.application_external_name = 'app'
     self.module_name = module_name
     self.major_version = version
     self.version_id = '%s:%s.%s' % (module_name, version, '12345')
@@ -68,6 +71,7 @@ class ModuleConfigurationStub(object):
 
 
 class DispatchConfigurationStub(object):
+
   def __init__(self):
     self.dispatch = []
 
@@ -81,26 +85,33 @@ MODULE_CONFIGURATIONS = [
                             module_name='other',
                             version='version2',
                             manual_scaling=True),
+    ModuleConfigurationStub(application='app',
+                            module_name='another',
+                            version='version3',
+                            manual_scaling=True),
     ]
 
 
 class AutoScalingModuleFacade(module.AutoScalingModule):
+
   def __init__(self,
                module_configuration,
                host='fakehost',
                balanced_port=0):
     super(AutoScalingModuleFacade, self).__init__(
-        module_configuration,
-        host,
-        balanced_port,
+        module_configuration=module_configuration,
+        host=host,
+        balanced_port=balanced_port,
         api_host='localhost',
         api_port=8080,
         auth_domain='gmail.com',
         runtime_stderr_loglevel=1,
         php_config=None,
         python_config=None,
+        java_config=None,
+        custom_config=None,
         cloud_sql_config=None,
-        unused_vm_config=None,
+        vm_config=None,
         default_version_port=8080,
         port_registry=None,
         request_data=None,
@@ -127,20 +138,23 @@ class AutoScalingModuleFacade(module.AutoScalingModule):
 
 
 class ManualScalingModuleFacade(module.ManualScalingModule):
+
   def __init__(self,
                module_configuration,
                host='fakehost',
                balanced_port=0):
     super(ManualScalingModuleFacade, self).__init__(
-        module_configuration,
-        host,
-        balanced_port,
+        module_configuration=module_configuration,
+        host=host,
+        balanced_port=balanced_port,
         api_host='localhost',
         api_port=8080,
         auth_domain='gmail.com',
         runtime_stderr_loglevel=1,
         php_config=None,
         python_config=None,
+        java_config=None,
+        custom_config=None,
         cloud_sql_config=None,
         vm_config=None,
         default_version_port=8080,
@@ -183,13 +197,16 @@ def _make_dispatcher(app_config):
       1,
       php_config=None,
       python_config=None,
+      java_config=None,
+      custom_config=None,
       cloud_sql_config=None,
       vm_config=None,
       module_to_max_instances={},
       use_mtime_file_watcher=False,
       automatic_restart=True,
       allow_skipped_files=False,
-      module_to_threadsafe_override={})
+      module_to_threadsafe_override={},
+      external_port=None)
 
 
 class DispatcherQuitWithoutStartTest(unittest.TestCase):
@@ -215,12 +232,17 @@ class DispatcherTest(unittest.TestCase):
     self.module2 = ManualScalingModuleFacade(app_config.modules[0],
                                              balanced_port=2,
                                              host='localhost')
+    self.module3 = ManualScalingModuleFacade(app_config.modules[0],
+                                             balanced_port=3,
+                                             host='0.0.0.0')
 
     self.mox.StubOutWithMock(self.dispatcher, '_create_module')
     self.dispatcher._create_module(app_config.modules[0], 1).AndReturn(
         (self.module1, 2))
     self.dispatcher._create_module(app_config.modules[1], 2).AndReturn(
         (self.module2, 3))
+    self.dispatcher._create_module(app_config.modules[2], 3).AndReturn(
+        (self.module3, 4))
     self.mox.ReplayAll()
     self.dispatcher.start('localhost', 12345, object())
     app_config.dispatch = self.dispatch_config
@@ -232,7 +254,7 @@ class DispatcherTest(unittest.TestCase):
     self.mox.UnsetStubs()
 
   def test_get_module_names(self):
-    self.assertItemsEqual(['default', 'other'],
+    self.assertItemsEqual(['default', 'other', 'another'],
                           self.dispatcher.get_module_names())
 
   def test_get_hostname(self):
@@ -254,6 +276,11 @@ class DispatcherTest(unittest.TestCase):
                       'nomodule',
                       'version2',
                       None)
+    self.assertEqual('%s:3' % socket.gethostname(),
+                     self.dispatcher.get_hostname('another', 'version3'))
+    self.assertEqual(
+        '%s:1000' % socket.gethostname(),
+        self.dispatcher.get_hostname('another', 'version3', '0'))
 
   def test_get_module_by_name(self):
     self.assertEqual(self.module1,
@@ -384,6 +411,40 @@ class DispatcherTest(unittest.TestCase):
         'PUT', '/foo?bar=baz', [('Header', 'Value'), ('Other', 'Values')],
         'body', '1.2.3.4', fake_login=True, module_name='nomodule')
     self.mox.VerifyAll()
+    self.assertEqual('Hello World', response.content)
+
+  def test_add_request_merged_response(self):
+    """Tests handlers which return side-effcting generators."""
+    dummy_environ = object()
+    self.mox.StubOutWithMock(self.dispatcher, '_handle_request')
+    self.dispatcher._module_name_to_module['default'].build_request_environ(
+        'PUT', '/foo?bar=baz', [('Header', 'Value'), ('Other', 'Values')],
+        'body', '1.2.3.4', 1, fake_login=True).AndReturn(
+            dummy_environ)
+
+    start_response_ref = []
+    def capture_start_response(unused_env, start_response, unused_module,
+                               unused_inst):
+      start_response_ref.append(start_response)
+
+    def side_effecting_handler():
+      start_response_ref[0]('200 OK', [('Content-Type', 'text/plain')])
+      yield 'Hello World'
+
+    mock = self.dispatcher._handle_request(
+        dummy_environ, mox.IgnoreArg(),
+        self.dispatcher._module_name_to_module['default'],
+        None)
+    mock = mock.WithSideEffects(capture_start_response)
+    mock = mock.AndReturn(side_effecting_handler())
+
+    self.mox.ReplayAll()
+    response = self.dispatcher.add_request(
+        'PUT', '/foo?bar=baz', [('Header', 'Value'), ('Other', 'Values')],
+        'body', '1.2.3.4', fake_login=True, module_name='nomodule')
+    self.mox.VerifyAll()
+    self.assertEqual('200 OK', response.status)
+    self.assertEqual([('Content-Type', 'text/plain')], response.headers)
     self.assertEqual('Hello World', response.content)
 
   def test_handle_request(self):

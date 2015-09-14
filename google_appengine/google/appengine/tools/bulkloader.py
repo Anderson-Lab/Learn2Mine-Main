@@ -14,9 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-
-
 """Imports data over HTTP.
 
 Usage:
@@ -4012,6 +4009,7 @@ def ProcessArguments(arg_dict,
   log_file = GetArgument(arg_dict, 'log_file', die_fn)
   perform_map = GetArgument(arg_dict, 'map', die_fn)
   namespace = GetArgument(arg_dict, 'namespace', die_fn)
+  unused_passin = GetArgument(arg_dict, 'passin', die_fn)
 
   errors = []
 

@@ -17,6 +17,7 @@
 """Serves static content for "static_dir" and "static_files" handlers."""
 
 
+
 import base64
 import errno
 import httplib
@@ -27,10 +28,14 @@ import re
 import zlib
 
 from google.appengine.api import appinfo
+from google.appengine.tools import augment_mimetypes
 from google.appengine.tools.devappserver2 import errors
 from google.appengine.tools.devappserver2 import url_handler
 
 _FILE_MISSING_ERRNO_CONSTANTS = frozenset([errno.ENOENT, errno.ENOTDIR])
+
+# Run at import time so we only do this once.
+augment_mimetypes.init()
 
 
 class StaticContentHandler(url_handler.UserConfiguredURLHandler):
@@ -126,6 +131,8 @@ class StaticContentHandler(url_handler.UserConfiguredURLHandler):
       if if_match:
         start_response('412 Precondition Failed', [])
         return []
+      elif self._url_map.require_matching_file:
+        return None
       else:
         return self._handle_io_exception(start_response, e)
 
@@ -309,7 +316,10 @@ class StaticFilesHandler(StaticContentHandler):
     """
     relative_path = match.expand(self._url_map.static_files)
     if not self._is_relative_path_valid(relative_path):
-      return self._not_found_404(environ, start_response)
+      if self._url_map.require_matching_file:
+        return None
+      else:
+        return self._not_found_404(environ, start_response)
     full_path = os.path.join(self._root_path, relative_path)
     return self._handle_path(full_path, environ, start_response)
 

@@ -33,6 +33,7 @@ Methods defined in this module:
 
 
 
+
 import httplib
 import os
 import StringIO
@@ -359,6 +360,8 @@ def _get_fetch_result(rpc):
   Raises:
     InvalidURLError: if the url was invalid.
     DownloadError: if there was a problem fetching the url.
+    PayloadTooLargeError: if the request and its payload was larger than the
+      allowed limit.
     ResponseTooLargeError: if the response was either truncated (and
       allow_truncated=False was passed to make_fetch_call()), or if it
       was too big for us to download.
@@ -385,6 +388,11 @@ def _get_fetch_result(rpc):
       raise InvalidURLError(
           'Invalid request URL: ' + url + error_detail)
     if (err.application_error ==
+        urlfetch_service_pb.URLFetchServiceError.PAYLOAD_TOO_LARGE):
+
+      raise PayloadTooLargeError(
+          'Request exceeds 10 MiB limit for URL: ' + url)
+    if (err.application_error ==
         urlfetch_service_pb.URLFetchServiceError.CLOSED):
       raise ConnectionClosedError(
           'Connection closed unexpectedly by server at URL: ' + url)
@@ -399,7 +407,7 @@ def _get_fetch_result(rpc):
           + url + error_detail)
     if (err.application_error ==
         urlfetch_service_pb.URLFetchServiceError.INTERNAL_TRANSIENT_ERROR):
-      raise InteralTransientError(
+      raise InternalTransientError(
           'Temporary error in fetching URL: ' + url + ', please re-try')
     if (err.application_error ==
         urlfetch_service_pb.URLFetchServiceError.DNS_ERROR):
@@ -421,7 +429,11 @@ def _get_fetch_result(rpc):
     if (err.application_error ==
         urlfetch_service_pb.URLFetchServiceError.SSL_CERTIFICATE_ERROR):
       raise SSLCertificateError(
-        'Invalid and/or missing SSL certificate for URL: ' + url)
+          'Invalid and/or missing SSL certificate for URL: ' + url)
+    if (err.application_error ==
+        urlfetch_service_pb.URLFetchServiceError.CONNECTION_ERROR):
+      raise DownloadError('Unable to connect to server at URL: ' + url)
+
     raise err
 
   response = rpc.response

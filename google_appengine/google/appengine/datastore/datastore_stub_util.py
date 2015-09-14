@@ -24,6 +24,9 @@ This module is internal and should not be used by client applications.
 """
 
 
+from __future__ import with_statement
+
+
 
 
 
@@ -48,14 +51,12 @@ import threading
 import time
 import weakref
 
-from google.net.proto import ProtocolBuffer
-from google.appengine.datastore import entity_pb
-
 from google.appengine.api import api_base_pb
 from google.appengine.api import apiproxy_stub_map
 from google.appengine.api import datastore_admin
 from google.appengine.api import datastore_errors
 from google.appengine.api import datastore_types
+from google.appengine.api import yaml_errors
 from google.appengine.api.taskqueue import taskqueue_service_pb
 from google.appengine.datastore import datastore_index
 from google.appengine.datastore import datastore_pb
@@ -64,6 +65,12 @@ from google.appengine.datastore import datastore_query
 from google.appengine.datastore import datastore_stub_index
 from google.appengine.datastore import datastore_v4_pb
 from google.appengine.runtime import apiproxy_errors
+from google.net.proto import ProtocolBuffer
+from google.appengine.datastore import entity_pb
+
+if datastore_pbs._CLOUD_DATASTORE_ENABLED:
+  from google.appengine.datastore.datastore_pbs import googledatastore
+
 
 
 
@@ -93,7 +100,7 @@ _PROPERTY_TYPE_NAMES = {
     entity_pb.PropertyValue.kPointValueGroup: 'POINT',
     entity_pb.PropertyValue.kUserValueGroup: 'USER',
     entity_pb.PropertyValue.kReferenceValueGroup: 'REFERENCE'
-    }
+}
 
 
 
@@ -102,7 +109,7 @@ _SCATTER_PROPORTION = 32768
 
 
 
-_MAX_EG_PER_TXN = 5
+_MAX_EG_PER_TXN = 25
 
 
 
@@ -207,7 +214,7 @@ def _GetScatterProperty(entity_proto):
 
 _SPECIAL_PROPERTY_MAP = {
     datastore_types.SCATTER_SPECIAL_PROPERTY: (False, True, _GetScatterProperty)
-    }
+}
 
 
 def GetInvisibleSpecialPropertyNames():
@@ -237,6 +244,23 @@ def _PrepareSpecialProperties(entity_proto, is_load):
       special_property = property_func(entity_proto)
       if special_property:
         entity_proto.property_list().append(special_property)
+
+
+
+
+_METADATA_PROPERTY_NAME = '__metadata__'
+
+
+def _ScrubMetadataProperty(entity):
+  """Remove the metadata property from an entity protobuf.
+
+  Args:
+    entity: An Entity protobuf.
+  """
+  for i in reversed(xrange(entity.property_size())):
+    property = entity.property(i)
+    if _METADATA_PROPERTY_NAME == property.name():
+      del entity.property_list()[i]
 
 
 def _GetGroupByKey(entity, property_names):
@@ -283,7 +307,7 @@ def LoadEntity(entity, keys_only=False, property_names=None):
         if prop.name() in property_names:
 
           Check(prop.name() not in seen,
-                "datastore dev stub produced bad result",
+                'datastore dev stub produced bad result',
                 datastore_pb.Error.INTERNAL_ERROR)
           seen.add(prop.name())
           new_prop = clone.add_property()
@@ -351,6 +375,9 @@ def CheckValidUTF8(string, desc):
   Raises:
     apiproxy_errors.ApplicationError: if the string is not valid UTF-8.
   """
+
+  if isinstance(string, unicode):
+    return True
   try:
     string.decode('utf-8')
   except UnicodeDecodeError:
@@ -370,7 +397,7 @@ def CheckAppId(request_trusted, request_app_id, app_id):
   """
 
   assert app_id
-  CheckValidUTF8(app_id, "app id");
+  CheckValidUTF8(app_id, 'app id')
   Check(request_trusted or app_id == request_app_id,
         'app "%s" cannot access app "%s"\'s data' % (request_app_id, app_id))
 
@@ -398,13 +425,8 @@ def CheckReference(request_trusted,
 
   Check(key.path().element_size() > 0, 'key\'s path cannot be empty')
 
-  if require_id_or_name:
-
-    last_element = key.path().element_list()[-1]
-    has_id_or_name = ((last_element.has_id() and last_element.id() != 0) or
-                      (last_element.has_name() and last_element.name() != ""))
-    if not has_id_or_name:
-      raise datastore_errors.BadRequestError('missing key id/name')
+  if require_id_or_name and not datastore_pbs.is_complete_v3_key(key):
+    raise datastore_errors.BadRequestError('missing key id/name')
 
   for elem in key.path().element_list():
     Check(not elem.has_id() or not elem.has_name(),
@@ -496,16 +518,10 @@ def CheckPropertyValue(name, value, max_length, meaning):
         ' has multiple value fields set')
 
   if value.has_stringvalue():
-
-
-
-
-
-
-
-    s16 = value.stringvalue().decode('utf-8', 'replace').encode('utf-16')
-
-    Check((len(s16) - 2) / 2 <= max_length,
+    s = value.stringvalue()
+    if isinstance(s, unicode):
+      s = s.encode('utf-8')
+    Check(len(s) <= max_length,
           'Property %s is too long. Maximum length is %d.' % (name, max_length))
     if (meaning not in _BLOB_MEANINGS and
         meaning != entity_pb.Property.BYTESTRING):
@@ -556,7 +572,7 @@ def CheckQuery(query, filters, orders, max_query_components):
     Check(not datastore_types.RESERVED_PROPERTY_NAME.match(prop_name),
           'projections are not supported for the property: ' + prop_name)
   Check(len(projected_properties) == len(query.property_name_list()),
-            "cannot project a property multiple times")
+        'cannot project a property multiple times')
 
   key_prop_name = datastore_types.KEY_SPECIAL_PROPERTY
   unapplied_log_timestamp_us_name = (
@@ -580,10 +596,10 @@ def CheckQuery(query, filters, orders, max_query_components):
     ancestor = query.ancestor()
     Check(query.app() == ancestor.app(),
           'query app is %s but ancestor app is %s' %
-              (query.app(), ancestor.app()))
+          (query.app(), ancestor.app()))
     Check(query.name_space() == ancestor.name_space(),
           'query namespace is %s but ancestor namespace is %s' %
-              (query.name_space(), ancestor.name_space()))
+          (query.name_space(), ancestor.name_space()))
 
 
   if query.group_by_property_name_size():
@@ -615,10 +631,10 @@ def CheckQuery(query, filters, orders, max_query_components):
       ref_val = prop.value().referencevalue()
       Check(ref_val.app() == query.app(),
             '%s filter app is %s but query app is %s' %
-                (key_prop_name, ref_val.app(), query.app()))
+            (key_prop_name, ref_val.app(), query.app()))
       Check(ref_val.name_space() == query.name_space(),
             '%s filter namespace is %s but query namespace is %s' %
-                (key_prop_name, ref_val.name_space(), query.name_space()))
+            (key_prop_name, ref_val.name_space(), query.name_space()))
 
     if filter.op() in datastore_index.EQUALITY_OPERATORS:
       Check(prop_name not in projected_properties,
@@ -655,12 +671,12 @@ def CheckQuery(query, filters, orders, max_query_components):
     for filter in filters:
       prop_name = filter.property(0).name().decode('utf-8')
       Check(prop_name == key_prop_name or
-                prop_name == unapplied_log_timestamp_us_name,
+            prop_name == unapplied_log_timestamp_us_name,
             'kind is required for non-__key__ filters')
     for order in orders:
       prop_name = order.property().decode('utf-8')
       Check(prop_name == key_prop_name and
-                order.direction() is datastore_pb.Query_Order.ASCENDING,
+            order.direction() is datastore_pb.Query_Order.ASCENDING,
             'kind is required for all orders except __key__ ascending')
 
 
@@ -1007,6 +1023,17 @@ class BaseCursor(object):
     self.app = query.app()
     self.cursor = self._AcquireCursorID()
 
+    if query.has_count():
+      count = query.count()
+    elif query.has_limit():
+      count = query.limit()
+    else:
+      count = BaseDatastore._BATCH_SIZE
+
+    self.__use_persisted_offset = query.persist_offset()
+    self.__persisted_offset = query.offset()
+    self.__persisted_count = count
+
     self.__order_compare_entities = dsquery._order.cmp_for_filter(
         dsquery._filter_predicate)
     if self.group_by:
@@ -1015,6 +1042,8 @@ class BaseCursor(object):
       self.__cursor_properties = set(order.property() for order in orders)
       self.__cursor_properties.add('__key__')
       self.__cursor_properties = frozenset(self.__cursor_properties)
+
+    self.__first_sort_order = orders[0].direction()
     self.__index_list = index_list
 
   def _PopulateResultMetadata(self, query_result, compile,
@@ -1067,12 +1096,12 @@ class BaseCursor(object):
       compiled_cursor: The datastore_pb.CompiledCursor to decode.
 
     Returns:
-      (cursor_entity, inclusive): a entity_pb.EntityProto and if it should
+      (cursor_entity, inclusive): an entity_pb.EntityProto and if it should
       be included in the result set.
     """
-    assert compiled_cursor.has_position()
+    assert compiled_cursor.has_postfix_position()
 
-    position = compiled_cursor.position()
+    position = compiled_cursor.postfix_position()
 
 
 
@@ -1086,20 +1115,22 @@ class BaseCursor(object):
         remaining_properties.remove('__key__')
       except KeyError:
         Check(False, 'Cursor does not match query: extra value __key__')
-    for indexvalue in position.indexvalue_list():
-      property = cursor_entity.add_property()
-      property.set_name(indexvalue.property())
-      property.mutable_value().CopyFrom(indexvalue.value())
+    for index_value in position.index_value_list():
+      prop = cursor_entity.add_property()
+      prop.set_name(index_value.property_name())
+      prop.mutable_value().CopyFrom(index_value.value())
       try:
-        remaining_properties.remove(indexvalue.property())
+        remaining_properties.remove(index_value.property_name())
       except KeyError:
         Check(False, 'Cursor does not match query: extra value %s' %
-              indexvalue.property())
+              index_value.property_name())
     Check(not remaining_properties,
           'Cursor does not match query: missing values for %r' %
           remaining_properties)
 
-    return (cursor_entity, position.start_inclusive())
+
+
+    return (cursor_entity, position.before())
 
   def _EncodeCompiledCursor(self, last_result, compiled_cursor):
     """Converts the current state of the cursor into a compiled_cursor.
@@ -1111,17 +1142,48 @@ class BaseCursor(object):
     if last_result is not None:
 
 
-      position = compiled_cursor.mutable_position()
+      position = compiled_cursor.mutable_postfix_position()
 
 
       if '__key__' in self.__cursor_properties:
         position.mutable_key().MergeFrom(last_result.key())
       for prop in last_result.property_list():
         if prop.name() in self.__cursor_properties:
-          indexvalue = position.add_indexvalue()
-          indexvalue.set_property(prop.name())
-          indexvalue.mutable_value().CopyFrom(prop.value())
-      position.set_start_inclusive(False)
+          index_value = position.add_index_value()
+          index_value.set_property_name(prop.name())
+          index_value.mutable_value().CopyFrom(prop.value())
+      position.set_before(False)
+      _SetBeforeAscending(position, self.__first_sort_order)
+
+  def PopulateQueryResult(self, result, count, deprecated_offset,
+                          compile=False, first_result=False):
+    """Populates a QueryResult with this cursor and the given number of results.
+
+    Args:
+      result: datastore_pb.QueryResult
+      count: integer of how many results to return, or None if not specified
+      deprecated_offset: integer of how many results to skip, deprecated.
+      compile: boolean, whether we are compiling this query
+      first_result: whether the query result is the first for this query
+
+    Raises:
+      datastore_errors.BadArgumentError: if the offset doesn't match the
+      original offset from the RunQuery call.
+    """
+    if count is None:
+      count = self.__persisted_count
+    if (deprecated_offset is not None
+        and self.__persisted_offset != deprecated_offset):
+      raise datastore_errors.BadArgumentError(
+          'Invalid offset provided. Got %d expected %d.'
+          % (deprecated_offset, self.__persisted_offset))
+    self._PopulateQueryResult(result, count, self.__persisted_offset,
+                              compile, first_result)
+    self.__persisted_offset -= result.skipped_results()
+
+  def _PopulateQueryResult(self, result, count, offset,
+                           compile, first_result):
+    raise NotImplementedError
 
 
 class ListCursor(BaseCursor):
@@ -1154,7 +1216,8 @@ class ListCursor(BaseCursor):
           new_results.append(result)
       results = new_results
 
-    if query.has_compiled_cursor() and query.compiled_cursor().has_position():
+    if (query.has_compiled_cursor()
+        and query.compiled_cursor().has_postfix_position()):
       start_cursor = self._DecodeCompiledCursor(query.compiled_cursor())
       self.__last_result = start_cursor[0]
       start_cursor_position = self._GetCursorOffset(results, start_cursor)
@@ -1163,7 +1226,7 @@ class ListCursor(BaseCursor):
       start_cursor_position = 0
 
     if query.has_end_compiled_cursor():
-      if query.end_compiled_cursor().has_position():
+      if query.end_compiled_cursor().has_postfix_position():
         end_cursor = self._DecodeCompiledCursor(query.end_compiled_cursor())
         end_cursor_position = self._GetCursorOffset(results, end_cursor)
       else:
@@ -1206,17 +1269,7 @@ class ListCursor(BaseCursor):
         hi = mid
     return lo
 
-  def PopulateQueryResult(self, result, count, offset,
-                          compile=False, first_result=False):
-    """Populates a QueryResult with this cursor and the given number of results.
-
-    Args:
-      result: datastore_pb.QueryResult
-      count: integer of how many results to return
-      offset: integer of how many results to skip
-      compile: boolean, whether we are compiling this query
-      first_result: whether the query result is the first for this query
-    """
+  def _PopulateQueryResult(self, result, count, offset, compile, first_result):
     Check(offset >= 0, 'Offset must be >= 0')
 
     offset = min(offset, self.__count - self.__offset)
@@ -1226,7 +1279,8 @@ class ListCursor(BaseCursor):
       result.set_skipped_results(limited_offset)
 
     if compile and result.skipped_results() > 0:
-      self._EncodeCompiledCursor(self.__results[self.__offset - 1],
+      self._EncodeCompiledCursor(
+          self.__results[self.__offset - 1],
           result.mutable_skipped_results_compiled_cursor())
     if offset == limited_offset and count:
 
@@ -1365,8 +1419,8 @@ class LiveTxn(object):
               'operating on too many entity groups in a single transaction.')
       else:
         Check(len(self._entity_groups) < 1,
-              "cross-groups transaction need to be explicitly "
-              "specified (xg=True)")
+              'cross-groups transaction need to be explicitly '
+              'specified (xg=True)')
       tracker = EntityGroupTracker(entity_group)
       self._entity_groups[key] = tracker
 
@@ -1440,7 +1494,8 @@ class LiveTxn(object):
     return LoadEntity(entity)
 
   @_SynchronizeTxn
-  def GetQueryCursor(self, query, filters, orders, index_list):
+  def GetQueryCursor(self, query, filters, orders, index_list,
+                     filter_predicate=None):
     """Runs the given datastore_pb.Query and returns a QueryCursor for it.
 
     Does not see any modifications in the current txn.
@@ -1450,6 +1505,9 @@ class LiveTxn(object):
       filters: A list of filters that override the ones found on query.
       orders: A list of orders that override the ones found on query.
       index_list: A list of indexes used by the query.
+      filter_predicate: an additional filter of type
+          datastore_query.FilterPredicate. This is passed along to implement V4
+          specific filters without changing the entire stub.
 
     Returns:
       A BaseCursor that can be used to fetch query results.
@@ -1457,7 +1515,8 @@ class LiveTxn(object):
     Check(query.has_ancestor(),
           'Query must have an ancestor when performed in a transaction.')
     snapshot = self._GrabSnapshot(query.ancestor())
-    return _ExecuteQuery(snapshot.values(), query, filters, orders, index_list)
+    return _ExecuteQuery(snapshot.values(), query, filters, orders, index_list,
+                         filter_predicate)
 
   @_SynchronizeTxn
   def Put(self, entity, insert, indexes):
@@ -1645,7 +1704,6 @@ class LiveTxn(object):
         self._txn_manager._Delete(key)
 
 
-
       tracker._read_pos = EntityGroupTracker.APPLIED
 
 
@@ -1831,7 +1889,7 @@ class TimeBasedHRConsistencyPolicy(BaseHighReplicationConsistencyPolicy):
                          (.99, 300),
                          (.995, 2000),
                          (1, 240000)
-                         ]
+                        ]
 
   def SetClassificationMap(self, classification_map):
     """Set the probability a txn will be applied after a given amount of time.
@@ -2164,6 +2222,8 @@ class BaseIndexManager(object):
     return None
 
   def CreateIndex(self, index, trusted=False, calling_app=None):
+
+
     calling_app = datastore_types.ResolveAppId(calling_app)
     CheckAppId(trusted, calling_app, index.app_id())
     Check(index.id() == 0, 'New index id must be 0.')
@@ -2207,8 +2267,8 @@ class BaseIndexManager(object):
     Check(index.state() == stored_index.state() or
           index.state() in self._INDEX_STATE_TRANSITIONS[stored_index.state()],
           'cannot move index state from %s to %s' %
-              (entity_pb.CompositeIndex.State_Name(stored_index.state()),
-              (entity_pb.CompositeIndex.State_Name(index.state()))))
+          (entity_pb.CompositeIndex.State_Name(stored_index.state()),
+           (entity_pb.CompositeIndex.State_Name(index.state()))))
 
 
     self.__indexes_lock.acquire()
@@ -2295,7 +2355,8 @@ class BaseDatastore(BaseTransactionManager, BaseIndexManager):
 
 
 
-  def GetQueryCursor(self, raw_query, trusted=False, calling_app=None):
+  def GetQueryCursor(self, raw_query, trusted=False, calling_app=None,
+                     filter_predicate=None):
     """Execute a query.
 
     Args:
@@ -2303,6 +2364,9 @@ class BaseDatastore(BaseTransactionManager, BaseIndexManager):
       trusted: If the calling app is trusted.
       calling_app: The app requesting the results or None to pull the app from
         the environment.
+      filter_predicate: an additional filter of type
+          datastore_query.FilterPredicate. This is passed along to implement V4
+          specific filters without changing the entire stub.
 
     Returns:
       A BaseCursor that can be used to retrieve results.
@@ -2320,11 +2384,15 @@ class BaseDatastore(BaseTransactionManager, BaseIndexManager):
     CheckQuery(raw_query, filters, orders, self._MAX_QUERY_COMPONENTS)
     FillUsersInQuery(filters)
 
+    index_list = []
 
-    self._CheckHasIndex(raw_query, trusted, calling_app)
 
 
-    index_list = self.__IndexListForQuery(raw_query)
+    if filter_predicate is None:
+      self._CheckHasIndex(raw_query, trusted, calling_app)
+
+
+      index_list = self.__IndexListForQuery(raw_query)
 
 
     if raw_query.has_transaction():
@@ -2337,11 +2405,13 @@ class BaseDatastore(BaseTransactionManager, BaseIndexManager):
     if raw_query.has_ancestor() and raw_query.kind() not in self._pseudo_kinds:
 
       txn = self._BeginTransaction(raw_query.app(), False)
-      return txn.GetQueryCursor(raw_query, filters, orders, index_list)
+      return txn.GetQueryCursor(raw_query, filters, orders, index_list,
+                                filter_predicate)
 
 
     self.Groom()
-    return self._GetQueryCursor(raw_query, filters, orders, index_list)
+    return self._GetQueryCursor(raw_query, filters, orders, index_list,
+                                filter_predicate)
 
   def __IndexListForQuery(self, query):
     """Get the single composite index pb used by the query, if any, as a list.
@@ -2394,6 +2464,7 @@ class BaseDatastore(BaseTransactionManager, BaseIndexManager):
     calling_app = datastore_types.ResolveAppId(calling_app)
 
     if not transaction and eventual_consistency:
+      self.Groom()
 
       result = []
       for key in raw_keys:
@@ -2627,11 +2698,12 @@ class BaseDatastore(BaseTransactionManager, BaseIndexManager):
          if index.state() == entity_pb.CompositeIndex.READ_WRITE))
     if minimal_index is not None:
       msg = ('This query requires a composite index that is not defined. '
-          'You must update the index.yaml file in your application root.')
+             'You must update the index.yaml file in your application root.')
       is_most_efficient, kind, ancestor, properties = minimal_index
       if not is_most_efficient:
 
-        yaml = datastore_index.IndexYamlForQuery(kind, ancestor,
+        yaml = datastore_index.IndexYamlForQuery(
+            kind, ancestor,
             datastore_index.GetRecommendedIndexProperties(properties))
         msg += '\nThe following index is the minimum index required:\n' + yaml
       raise apiproxy_errors.ApplicationError(datastore_pb.Error.NEED_INDEX, msg)
@@ -2659,7 +2731,12 @@ class BaseDatastore(BaseTransactionManager, BaseIndexManager):
     """Writes the datastore to disk."""
     self.Flush()
 
-  def _GetQueryCursor(self, query, filters, orders, index_list):
+  def Close(self):
+    """Closes the Datstore, writing any buffered data."""
+    self.Write()
+
+  def _GetQueryCursor(self, query, filters, orders, index_list,
+                      filter_predicate):
     """Runs the given datastore_pb.Query and returns a QueryCursor for it.
 
     This must be implemented by a sub-class. The sub-class does not need to
@@ -2670,6 +2747,9 @@ class BaseDatastore(BaseTransactionManager, BaseIndexManager):
       filters: A list of filters that override the ones found on query.
       orders: A list of orders that override the ones found on query.
       index_list: A list of indexes used by the query.
+      filter_predicate: an additional filter of type
+          datastore_query.FilterPredicate. This is passed along to implement V4
+          specific filters without changing the entire stub.
 
     Returns:
       A BaseCursor that can be used to fetch query results.
@@ -2704,7 +2784,7 @@ class BaseDatastore(BaseTransactionManager, BaseIndexManager):
     raise NotImplementedError
 
   def _AllocateIds(self, references):
-    """Allocate or reserves IDs for the v4 datastore API.
+    """Allocate or reserves IDs for the v1 datastore API.
 
     Incomplete keys are allocated scattered IDs. Complete keys have every id in
     their paths reserved in the appropriate ID space.
@@ -2819,6 +2899,32 @@ class EntityGroupPseudoKind(object):
         datastore_pb.Error.BAD_REQUEST, 'queries not supported on ' + self.name)
 
 
+class _CachedIndexDefinitions(object):
+  """Records definitions read from index configuration files for later reuse.
+
+  If the names and modification times of the configuration files are unchanged,
+  then the index configurations previously parsed out of those files can be
+  reused.
+
+  Attributes:
+    file_names: a list of the names of the configuration files. This will have
+      one element when the configuration is based on an index.yaml but may have
+      more than one if it is based on datastore-indexes.xml and
+      datastore-indexes-auto.xml.
+    last_modifieds: a list of floats that are the modification times of the
+      files in file_names.
+    index_protos: a list of entity_pb.CompositeIndex objects corresponding to
+      the index definitions read from file_names.
+  """
+
+  def __init__(self, file_names, last_modifieds, index_protos):
+
+    assert len(file_names) <= 1
+    self.file_names = file_names
+    self.last_modifieds = last_modifieds
+    self.index_protos = index_protos
+
+
 class DatastoreStub(object):
   """A stub that maps datastore service calls on to a BaseDatastore.
 
@@ -2835,6 +2941,7 @@ class DatastoreStub(object):
     self._app_id = datastore_types.ResolveAppId(app_id)
     self._trusted = trusted
     self._root_path = root_path
+    self._xml_configuration = self._XmlConfiguration()
 
 
     self.__query_history = {}
@@ -2844,17 +2951,54 @@ class DatastoreStub(object):
 
 
 
-    self._cached_yaml = (None, None, None)
+    self._cached_index_definitions = _CachedIndexDefinitions([], [], None)
 
     if self._require_indexes or root_path is None:
 
-      self._index_yaml_updater = None
+      self._index_config_updater = None
     else:
 
-      self._index_yaml_updater = datastore_stub_index.IndexYamlUpdater(
-          root_path)
+
+      updater_class = (
+          datastore_stub_index.DatastoreIndexesAutoXmlUpdater
+          if self._xml_configuration else datastore_stub_index.IndexYamlUpdater)
+      self._index_config_updater = updater_class(root_path)
 
     DatastoreStub.Clear(self)
+
+  def _XmlConfiguration(self):
+    """Return True if the app at self._root_path uses XML configuration files.
+
+    An app uses XML configuration files if it has a WEB-INF subdirectory and it
+    does not have an index.yaml at its root. We assume this even if it doesn't
+    currently have any configuration files at all, because then we will want to
+    create a new datastore-indexes-auto.xml rather than create a new index.yaml.
+
+    Returns:
+      True if the app uses XML configuration files, False otherwise.
+
+    Raises:
+      yaml_errors.AmbiguousConfigurationFiles: if there is both an index.yaml
+        and either or both of the two possible XML configuration files.
+    """
+    if not self._root_path:
+      return False
+    index_yaml = os.path.join(self._root_path, 'index.yaml')
+    web_inf = os.path.join(self._root_path, 'WEB-INF')
+    datastore_indexes_xml = os.path.join(web_inf, 'datastore-indexes.xml')
+    datastore_indexes_auto_xml = os.path.join(
+        web_inf, 'appengine-generated', 'datastore-indexes-auto.xml')
+    existing = [
+        f for f in [
+            index_yaml, datastore_indexes_xml, datastore_indexes_auto_xml]
+        if os.path.isfile(f)]
+    if existing == [index_yaml]:
+      return False
+    elif index_yaml in existing:
+      raise yaml_errors.AmbiguousConfigurationFiles(
+          'App has both XML and YAML configuration files: %s' % existing)
+    else:
+      return os.path.isdir(web_inf)
 
   def Clear(self):
     """Clears out all stored values."""
@@ -2944,16 +3088,11 @@ class DatastoreStub(object):
     self._datastore.Touch(req.key_list(), self._trusted, self._app_id)
 
   @_NeedsIndexes
-  def _Dynamic_RunQuery(self, query, query_result):
-    cursor = self._datastore.GetQueryCursor(query, self._trusted, self._app_id)
+  def _Dynamic_RunQuery(self, query, query_result, filter_predicate=None):
+    cursor = self._datastore.GetQueryCursor(query, self._trusted, self._app_id,
+                                            filter_predicate)
 
-    if query.has_count():
-      count = query.count()
-    elif query.has_limit():
-      count = query.limit()
-    else:
-      count = self._BATCH_SIZE
-
+    count = query.count() if query.has_count() else None
     cursor.PopulateQueryResult(query_result, count, query.offset(),
                                query.compile(), first_result=True)
     if query_result.has_cursor():
@@ -2984,7 +3123,6 @@ class DatastoreStub(object):
         self.__query_ci_history.add(
             datastore_index.CompositeIndexForQuery(clone))
 
-
   def _Dynamic_Next(self, next_request, query_result):
     app = next_request.cursor().app()
     CheckAppId(self._trusted, self._app_id, app)
@@ -2993,12 +3131,13 @@ class DatastoreStub(object):
     Check(cursor and cursor.app == app,
           'Cursor %d not found' % next_request.cursor().cursor())
 
-    count = self._BATCH_SIZE
-    if next_request.has_count():
-      count = next_request.count()
-
-    cursor.PopulateQueryResult(query_result, count, next_request.offset(),
-                               next_request.compile(), first_result=False)
+    count = next_request.count() if next_request.has_count() else None
+    offset = next_request.offset() if next_request.has_offset() else None
+    cursor.PopulateQueryResult(query_result,
+                               count,
+                               offset,
+                               next_request.compile(),
+                               first_result=False)
 
     if not query_result.has_cursor():
       del self._query_cursors[next_request.cursor().cursor()]
@@ -3103,34 +3242,39 @@ class DatastoreStub(object):
 
     if not self._root_path:
       return
-    index_yaml_file = os.path.join(self._root_path, 'index.yaml')
-    if (self._cached_yaml[0] == index_yaml_file and
-        os.path.exists(index_yaml_file) and
-        os.path.getmtime(index_yaml_file) == self._cached_yaml[1]):
-      requested_indexes = self._cached_yaml[2]
+    file_names = [os.path.join(self._root_path, 'index.yaml')]
+    file_mtimes = [os.path.getmtime(f) for f in file_names if os.path.exists(f)]
+    if (self._cached_index_definitions.file_names == file_names and
+        all(os.path.exists(f) for f in file_names) and
+        self._cached_index_definitions.last_modifieds == file_mtimes):
+      requested_indexes = self._cached_index_definitions.index_protos
     else:
-      try:
-        index_yaml_mtime = os.path.getmtime(index_yaml_file)
-        fh = _open(index_yaml_file, 'r')
-      except (OSError, IOError):
-        index_yaml_data = None
-      else:
+      file_mtimes = []
+      index_texts = []
+      for file_name in file_names:
         try:
-          index_yaml_data = fh.read()
-        finally:
-          fh.close()
+          file_mtimes.append(os.path.getmtime(file_name))
+          with _open(file_name, 'r') as fh:
+            index_texts.append(fh.read())
+        except (OSError, IOError):
+          pass
 
       requested_indexes = []
-      if index_yaml_data is not None:
+      if len(index_texts) == len(file_names):
+        all_ok = True
+        for index_text in index_texts:
 
-        index_defs = datastore_index.ParseIndexDefinitions(index_yaml_data)
-        if index_defs is not None and index_defs.indexes is not None:
+          index_defs = datastore_index.ParseIndexDefinitions(index_text)
+          if index_defs is None or index_defs.indexes is None:
+            all_ok = False
+          else:
 
-          requested_indexes = datastore_index.IndexDefinitionsToProtos(
-              self._app_id,
-              index_defs.indexes)
-          self._cached_yaml = (index_yaml_file, index_yaml_mtime,
-                               requested_indexes)
+            requested_indexes.extend(
+                datastore_index.IndexDefinitionsToProtos(
+                    self._app_id, index_defs.indexes))
+        if all_ok:
+          self._cached_index_definitions = _CachedIndexDefinitions(
+              file_names, file_mtimes, requested_indexes)
 
 
     existing_indexes = self._datastore.GetIndexes(
@@ -3164,15 +3308,15 @@ class DatastoreStub(object):
                     created, deleted, len(requested))
 
   def _UpdateIndexes(self):
-    if self._index_yaml_updater is not None:
-      self._index_yaml_updater.UpdateIndexYaml()
+    if self._index_config_updater is not None:
+      self._index_config_updater.UpdateIndexConfig()
 
 
-class StubQueryConverter(object):
-  """Converter for v3 and v4 queries suitable for use in stubs."""
+class StubQueryConverter(datastore_pbs._QueryConverter):
+  """Converter for v3, v4 and v1 queries suitable for use in stubs."""
 
   def __init__(self, entity_converter):
-    self._entity_converter = entity_converter
+    super(StubQueryConverter, self).__init__(entity_converter)
 
   def v4_to_v3_compiled_cursor(self, v4_cursor, v3_compiled_cursor):
     """Converts a v4 cursor string to a v3 CompiledCursor.
@@ -3253,7 +3397,7 @@ class StubQueryConverter(object):
       v3_query.add_group_by_property_name(prop.name())
 
 
-    self.__populate_v3_filters(v4_query.filter(), v3_query)
+    self.__populate_v3_filters_from_v4(v4_query.filter(), v3_query)
 
 
     for v4_order in v4_query.order_list():
@@ -3313,36 +3457,33 @@ class StubQueryConverter(object):
       num_v4_filters += 1
 
     if num_v4_filters == 1:
-      get_property_filter = self.__get_property_filter
+      get_property_filter = self.__get_property_filter_from_v4
     elif num_v4_filters >= 1:
       v4_query.mutable_filter().mutable_composite_filter().set_operator(
           datastore_v4_pb.CompositeFilter.AND)
-      get_property_filter = self.__add_property_filter
+      get_property_filter = self.__add_property_filter_from_v4
 
     if v3_query.has_ancestor():
-      self.__v3_query_to_v4_ancestor_filter(v3_query,
-                                            get_property_filter(v4_query))
+      self._v3_query_to_v4_ancestor_filter(v3_query,
+                                           get_property_filter(v4_query))
     for v3_filter in v3_query.filter_list():
-      self.__v3_filter_to_v4_property_filter(v3_filter,
-                                             get_property_filter(v4_query))
+      self._v3_filter_to_v4_property_filter(v3_filter,
+                                            get_property_filter(v4_query))
 
 
     for v3_order in v3_query.order_list():
-      v4_order = v4_query.add_order()
-      v4_order.mutable_property().set_name(v3_order.property())
-      if v3_order.has_direction():
-        v4_order.set_direction(v3_order.direction())
+      self.v3_order_to_v4_order(v3_order, v4_query.add_order())
 
-  def __get_property_filter(self, v4_query):
+  def __get_property_filter_from_v4(self, v4_query):
     """Returns the PropertyFilter from the query's top-level filter."""
     return v4_query.mutable_filter().mutable_property_filter()
 
-  def __add_property_filter(self, v4_query):
+  def __add_property_filter_from_v4(self, v4_query):
     """Adds and returns a PropertyFilter from the query's composite filter."""
     v4_comp_filter = v4_query.mutable_filter().mutable_composite_filter()
     return v4_comp_filter.add_filter().mutable_property_filter()
 
-  def __populate_v3_filters(self, v4_filter, v3_query):
+  def __populate_v3_filters_from_v4(self, v4_filter, v3_query):
     """Populates a filters for a v3 Query.
 
     Args:
@@ -3372,76 +3513,597 @@ class StubQueryConverter(object):
             not v4_property_filter.value().list_value_list(),
             ('unsupported value type, %s, in property filter'
              ' on "%s"' % ('list_value', property_name)))
-        prop = v3_filter.add_property()
-        prop.set_multiple(False)
-        prop.set_name(property_name)
-        self._entity_converter.v4_value_to_v3_property_value(
-            v4_property_filter.value(), prop.mutable_value())
+        self._entity_converter.v4_to_v3_property(property_name,
+                                                 False,
+                                                 False,
+                                                 v4_property_filter.value(),
+                                                 v3_filter.add_property())
     elif v4_filter.has_composite_filter():
       datastore_pbs.check_conversion((v4_filter.composite_filter().operator()
                                       == datastore_v4_pb.CompositeFilter.AND),
                                      'unsupported composite property operator')
       for v4_sub_filter in v4_filter.composite_filter().filter_list():
-        self.__populate_v3_filters(v4_sub_filter, v3_query)
+        self.__populate_v3_filters_from_v4(v4_sub_filter, v3_query)
 
-  def __v3_filter_to_v4_property_filter(self, v3_filter, v4_property_filter):
-    """Converts a v3 Filter to a v4 PropertyFilter.
+  def v1_to_v3_compiled_cursor(self, v1_cursor, v3_compiled_cursor):
+    """Converts a v1 cursor string to a v3 CompiledCursor.
 
     Args:
-      v3_filter: a datastore_pb.Filter
-      v4_property_filter: a datastore_v4_pb.PropertyFilter to populate
+      v1_cursor: a string representing a v1 query cursor
+      v3_compiled_cursor: a datastore_pb.CompiledCursor to populate
+    """
+    v3_compiled_cursor.Clear()
+    try:
+      v3_compiled_cursor.ParseFromString(v1_cursor)
+    except ProtocolBuffer.ProtocolBufferDecodeError:
+      raise datastore_pbs.InvalidConversionError('Invalid query cursor.')
+
+  def v3_to_v1_compiled_cursor(self, v3_compiled_cursor):
+    """Converts a v3 CompiledCursor to a v1 cursor string.
+
+    Args:
+      v3_compiled_cursor: a datastore_pb.CompiledCursor
+
+    Returns:
+      a string representing a v1 query cursor
+    """
+    return v3_compiled_cursor.SerializeToString()
+
+  def v1_to_v3_query(self, v1_partition_id, v1_query, v3_query):
+    """Converts a v1 Query to a v3 Query.
+
+    Args:
+      v1_partition_id: a googledatastore.PartitionId
+      v1_query: a googledatastore.Query
+      v3_query: a datastore_pb.Query to populate
 
     Raises:
-      InvalidConversionError if the filter cannot be converted
+      InvalidConversionError if the query cannot be converted
     """
-    datastore_pbs.check_conversion(v3_filter.property_size() == 1,
-                                   'invalid filter')
-    datastore_pbs.check_conversion(v3_filter.op() <= 5,
-                                   'unsupported filter op: %d' % v3_filter.op())
-    v4_property_filter.Clear()
-    v4_property_filter.set_operator(v3_filter.op())
-    v4_property_filter.mutable_property().set_name(v3_filter.property(0).name())
-    self._entity_converter.v3_property_to_v4_value(
-        v3_filter.property(0), True, v4_property_filter.mutable_value())
+    v3_query.Clear()
 
-  def __v3_query_to_v4_ancestor_filter(self, v3_query, v4_property_filter):
-    """Converts a v3 Query to a v4 ancestor PropertyFilter.
+    if v1_partition_id.project_id:
+      v3_query.set_app(v1_partition_id.project_id)
+    if v1_partition_id.namespace_id:
+      v3_query.set_name_space(v1_partition_id.namespace_id)
+
+    v3_query.set_persist_offset(True)
+    v3_query.set_require_perfect_plan(True)
+    v3_query.set_compile(True)
+
+
+    if v1_query.HasField('limit'):
+      v3_query.set_limit(v1_query.limit.value)
+    if v1_query.offset:
+      v3_query.set_offset(v1_query.offset)
+    if v1_query.start_cursor:
+      self.v1_to_v3_compiled_cursor(v1_query.start_cursor,
+                                    v3_query.mutable_compiled_cursor())
+    if v1_query.end_cursor:
+      self.v1_to_v3_compiled_cursor(v1_query.end_cursor,
+                                    v3_query.mutable_end_compiled_cursor())
+
+
+    if v1_query.kind:
+      datastore_pbs.check_conversion(len(v1_query.kind) == 1,
+                                     'multiple kinds not supported')
+      v3_query.set_kind(v1_query.kind[0].name.encode('utf-8['))
+
+
+    has_key_projection = False
+    for prop in v1_query.projection:
+      if prop.property.name == datastore_pbs.PROPERTY_NAME_KEY:
+        has_key_projection = True
+      else:
+        v3_query.add_property_name(prop.property.name)
+    if has_key_projection and not v3_query.property_name_size():
+      v3_query.set_keys_only(True)
+
+
+    for prop in v1_query.distinct_on:
+      v3_query.add_group_by_property_name(prop.name)
+
+
+    self.__populate_v3_filters_from_v1(v1_query.filter, v3_query)
+
+
+    for v1_order in v1_query.order:
+      v3_order = v3_query.add_order()
+      v3_order.set_property(v1_order.property.name)
+      if v1_order.direction:
+        v3_order.set_direction(v1_order.direction)
+
+  def v3_to_v1_query(self, v3_query, v1_query):
+    """Converts a v3 Query to a v1 Query.
 
     Args:
       v3_query: a datastore_pb.Query
-      v4_property_filter: a datastore_v4_pb.PropertyFilter to populate
+      v1_query: a googledatastore.Query to populate
+
+    Raises:
+      InvalidConversionError if the query cannot be converted
     """
-    v4_property_filter.Clear()
-    v4_property_filter.set_operator(
-        datastore_v4_pb.PropertyFilter.HAS_ANCESTOR)
-    prop = v4_property_filter.mutable_property()
-    prop.set_name(datastore_pbs.PROPERTY_NAME_KEY)
-    self._entity_converter.v3_to_v4_key(
-        v3_query.ancestor(),
-        v4_property_filter.mutable_value().mutable_key_value())
+    v1_query.Clear()
+
+    datastore_pbs.check_conversion(not v3_query.has_distinct(),
+                                   'distinct option not supported')
+    datastore_pbs.check_conversion(v3_query.require_perfect_plan(),
+                                   'non-perfect plans not supported')
 
 
 
-__query_converter = StubQueryConverter(datastore_pbs.get_entity_converter())
+    if v3_query.has_limit():
+      v1_query.limit.value = v3_query.limit()
+    if v3_query.offset():
+      v1_query.offset = v3_query.offset()
+    if v3_query.has_compiled_cursor():
+      v1_query.start_cursor = (
+          self.v3_to_v1_compiled_cursor(v3_query.compiled_cursor()))
+    if v3_query.has_end_compiled_cursor():
+      v1_query.end_cursor = (
+          self.v3_to_v1_compiled_cursor(v3_query.end_compiled_cursor()))
 
 
-def get_query_converter():
-  """Returns a converter for v3 and v4 queries (not suitable for production).
+    if v3_query.has_kind():
+      v1_query.kind.add().name = v3_query.kind()
+
+
+    for name in v3_query.property_name_list():
+      v1_query.projection.add().property.name = name
+    if v3_query.keys_only():
+      v1_query.projection.add().property.name = (
+          datastore_pbs.PROPERTY_NAME_KEY)
+
+
+    for name in v3_query.group_by_property_name_list():
+      v1_query.distinct_on.add().name = name
+
+
+    num_v1_filters = len(v3_query.filter_list())
+    if v3_query.has_ancestor():
+      num_v1_filters += 1
+
+    if num_v1_filters == 1:
+      get_property_filter = self.__get_property_filter_from_v1
+    elif num_v1_filters >= 1:
+      v1_query.filter.composite_filter.operator = (
+          googledatastore.CompositeFilter.AND)
+      get_property_filter = self.__add_property_filter_from_V1
+
+    if v3_query.has_ancestor():
+      self._v3_query_to_v1_ancestor_filter(v3_query,
+                                           get_property_filter(v1_query))
+    for v3_filter in v3_query.filter_list():
+      self._v3_filter_to_v1_property_filter(v3_filter,
+                                            get_property_filter(v1_query))
+
+
+    for v3_order in v3_query.order_list():
+      self.v3_order_to_v1_order(v3_order, v1_query.order.add())
+
+  def __get_property_filter_from_v1(self, v1_query):
+    """Returns the PropertyFilter from the query's top-level filter."""
+    return v1_query.filter.add().property_filter
+
+  def __add_property_filter_from_v1(self, v1_query):
+    """Adds and returns a PropertyFilter from the query's composite filter."""
+    v1_comp_filter = v1_query.filter.composite_filter
+    return v1_comp_filter.filter.add().property_filter
+
+  def __populate_v3_filters_from_v1(self, v1_filter, v3_query):
+    """Populates a filters for a v3 Query.
+
+    Args:
+      v1_filter: a googledatastore.Filter
+      v3_query: a datastore_pb.Query to populate with filters
+    """
+    filter_type = v1_filter.WhichOneof('filter_type')
+    if filter_type == 'property_filter':
+      v1_property_filter = v1_filter.property_filter
+      v1_property_name = v1_property_filter.property.name
+      if (v1_property_filter.op
+          == googledatastore.PropertyFilter.HAS_ANCESTOR):
+        datastore_pbs.check_conversion(
+            v1_property_filter.value.HasField('key_value'),
+            'HAS_ANCESTOR requires a reference value')
+        datastore_pbs.check_conversion((v1_property_name
+                                        == datastore_pbs.PROPERTY_NAME_KEY),
+                                       'unsupported property')
+        datastore_pbs.check_conversion(not v3_query.has_ancestor(),
+                                       'duplicate ancestor constraint')
+        self._entity_converter.v1_to_v3_reference(
+            v1_property_filter.value.key_value,
+            v3_query.mutable_ancestor())
+      else:
+        v3_filter = v3_query.add_filter()
+        property_name = v1_property_name
+        v3_filter.set_op(v1_property_filter.op)
+        datastore_pbs.check_conversion(
+            not v1_property_filter.value.HasField('array_value'),
+            ('unsupported value type, %s, in property filter'
+             ' on "%s"' % ('array_value', property_name)))
+        self._entity_converter.v1_to_v3_property(property_name,
+                                                 False,
+                                                 False,
+                                                 v1_property_filter.value,
+                                                 v3_filter.add_property())
+    elif filter_type == 'composite_filter':
+      datastore_pbs.check_conversion((v1_filter.composite_filter.op
+                                      == googledatastore.CompositeFilter.AND),
+                                     'unsupported composite property operator')
+      for v1_sub_filter in v1_filter.composite_filter.filters:
+        self.__populate_v3_filters_from_v1(v1_sub_filter, v3_query)
+
+
+def get_query_converter(id_resolver=None):
+  """Returns a converter for v3 and v1 queries (not suitable for production).
 
   This converter is suitable for use in stubs but not for production.
 
   Returns:
     a StubQueryConverter
   """
-  return __query_converter
+  return StubQueryConverter(datastore_pbs.get_entity_converter(id_resolver))
 
 
 class StubServiceConverter(object):
-  """Converter for v3/v4 request/response protos suitable for use in stubs."""
+  """Converter for v3/v4/v1 request/response protos suitable for use in stubs.
+  """
 
   def __init__(self, entity_converter, query_converter):
     self._entity_converter = entity_converter
     self._query_converter = query_converter
+
+  def v1_to_v3_cursor(self, v1_query_handle, v3_cursor):
+    """Converts a v1 cursor string to a v3 Cursor.
+
+    Args:
+      v1_query_handle: a string representing a v1 query handle
+      v3_cursor: a datastore_pb.Cursor to populate
+    """
+    try:
+      v3_cursor.ParseFromString(v1_query_handle)
+    except ProtocolBuffer.ProtocolBufferDecodeError:
+      raise datastore_pbs.InvalidConversionError('Invalid query handle.')
+    return v3_cursor
+
+  def _v3_to_v1_query_handle(self, v3_cursor):
+    """Converts a v3 Cursor to a v1 query handle string.
+
+    Args:
+      v3_cursor: a datastore_pb.Cursor
+
+    Returns:
+      a string representing a v1 cursor
+    """
+    return v3_cursor.SerializeToString()
+
+  def v1_to_v3_txn(self, v1_txn, v3_txn):
+    """Converts a v1 transaction string to a v3 Transaction.
+
+    Args:
+      v1_txn: a string representing a v1 transaction
+      v3_txn: a datastore_pb.Transaction to populate
+    """
+    try:
+      v3_txn.ParseFromString(v1_txn)
+    except ProtocolBuffer.ProtocolBufferDecodeError:
+      raise datastore_pbs.InvalidConversionError('Invalid transaction.')
+    return v3_txn
+
+  def _v3_to_v1_txn(self, v3_txn):
+    """Converts a v3 Transaction to a v1 transaction string.
+
+    Args:
+      v3_txn: a datastore_pb.Transaction
+
+    Returns:
+      a string representing a v1 transaction
+    """
+    return v3_txn.SerializeToString()
+
+
+
+
+  def v1_to_v3_begin_transaction_req(self, app_id, v1_req):
+    """Converts a v1 BeginTransactionRequest to a v3 BeginTransactionRequest.
+
+    Args:
+      app_id: app id
+      v1_req: a googledatastore.BeginTransactionRequest
+
+    Returns:
+      a datastore_pb.BeginTransactionRequest
+    """
+    v3_req = datastore_pb.BeginTransactionRequest()
+    v3_req.set_app(app_id)
+    v3_req.set_allow_multiple_eg(True)
+    return v3_req
+
+  def v3_to_v1_begin_transaction_resp(self, v3_resp):
+    """Converts a v3 Transaction to a v1 BeginTransactionResponse.
+
+    Args:
+      v3_resp: a datastore_pb.Transaction
+
+    Returns:
+      a googledatastore.BeginTransactionResponse
+    """
+    v1_resp = googledatastore.BeginTransactionResponse()
+    v1_resp.transaction = self._v3_to_v1_txn(v3_resp)
+    return v1_resp
+
+
+
+
+  def v1_rollback_req_to_v3_txn(self, v1_req):
+    """Converts a v1 RollbackRequest to a v3 Transaction.
+
+    Args:
+      v1_req: a googledatastore.RollbackRequest
+
+    Returns:
+      a datastore_pb.Transaction
+    """
+    v3_txn = datastore_pb.Transaction()
+    self.v1_to_v3_txn(v1_req.transaction, v3_txn)
+    return v3_txn
+
+
+
+
+  def v1_commit_req_to_v3_txn(self, v1_req):
+    """Converts a v1 CommitRequest to a v3 Transaction.
+
+    Args:
+      v1_req: a googledatastore.CommitRequest
+
+    Returns:
+      a datastore_pb.Transaction
+    """
+    v3_txn = datastore_pb.Transaction()
+    self.v1_to_v3_txn(v1_req.transaction, v3_txn)
+    return v3_txn
+
+
+
+
+  def v1_run_query_req_to_v3_query(self, v1_req):
+    """Converts a v1 RunQueryRequest to a v3 Query.
+
+    GQL is not supported.
+
+    Args:
+      v1_req: a googledatastore.RunQueryRequest
+
+    Returns:
+      a datastore_pb.Query
+    """
+
+    datastore_pbs.check_conversion(not v1_req.HasField('gql_query'),
+                                   'GQL not supported')
+    v3_query = datastore_pb.Query()
+    self._query_converter.v1_to_v3_query(v1_req.partition_id, v1_req.query,
+                                         v3_query)
+
+
+    read_options = v1_req.read_options
+    if read_options.transaction:
+      self.v1_to_v3_txn(read_options.transaction,
+                        v3_query.mutable_transaction())
+    elif read_options.read_consistency == googledatastore.ReadOptions.EVENTUAL:
+      v3_query.set_strong(False)
+      v3_query.set_failover_ms(-1)
+    elif read_options.read_consistency == googledatastore.ReadOptions.STRONG:
+      v3_query.set_strong(True)
+
+    return v3_query
+
+  def v3_to_v1_run_query_req(self, v3_req):
+    """Converts a v3 Query to a v1 RunQueryRequest.
+
+    Args:
+      v3_req: a datastore_pb.Query
+
+    Returns:
+      a googledatastore.RunQueryRequest
+    """
+    v1_req = googledatastore.RunQueryRequest()
+
+
+    v1_partition_id = v1_req.partition_id
+    v1_partition_id.project_id = v3_req.app()
+    if v3_req.name_space():
+      v1_partition_id.namespace = v3_req.name_space()
+
+
+    if v3_req.has_transaction():
+      v1_req.read_options.transaction = self._v3_to_v1_txn(v3_req.transaction())
+    elif v3_req.strong():
+      v1_req.read_options.read_consistency = (
+          googledatastore.ReadOptions.STRONG)
+    elif v3_req.has_strong():
+      v1_req.read_options.read_consistency = (
+          googledatastore.ReadOptions.EVENTUAL)
+
+    self._query_converter.v3_to_v1_query(v3_req, v1_req.mutable_query())
+
+    return v1_req
+
+  def v1_run_query_resp_to_v3_query_result(self, v1_resp):
+    """Converts a V4 RunQueryResponse to a v3 QueryResult.
+
+    Args:
+      v1_resp: a googledatastore.QueryResult
+
+    Returns:
+      a datastore_pb.QueryResult
+    """
+    v3_resp = self.v1_to_v3_query_result(v1_resp.batch)
+
+    return v3_resp
+
+  def v3_to_v1_run_query_resp(self, v3_resp):
+    """Converts a v3 QueryResult to a V4 RunQueryResponse.
+
+    Args:
+      v3_resp: a datastore_pb.QueryResult
+
+    Returns:
+      a googledatastore.RunQueryResponse
+    """
+    v1_resp = googledatastore.RunQueryResponse()
+    self.v3_to_v1_query_result_batch(v3_resp, v1_resp.batch)
+
+    return v1_resp
+
+
+
+
+  def v1_to_v3_get_req(self, v1_req):
+    """Converts a v1 LookupRequest to a v3 GetRequest.
+
+    Args:
+      v1_req: a googledatastore.LookupRequest
+
+    Returns:
+      a datastore_pb.GetRequest
+    """
+    v3_req = datastore_pb.GetRequest()
+    v3_req.set_allow_deferred(True)
+
+
+    if v1_req.read_options.transaction:
+      self.v1_to_v3_txn(v1_req.read_options.transaction,
+                        v3_req.mutable_transaction())
+    elif (v1_req.read_options.read_consistency
+          == googledatastore.ReadOptions.EVENTUAL):
+      v3_req.set_strong(False)
+      v3_req.set_failover_ms(-1)
+    elif (v1_req.read_options.read_consistency
+          == googledatastore.ReadOptions.STRONG):
+      v3_req.set_strong(True)
+
+    for v1_key in v1_req.keys:
+      self._entity_converter.v1_to_v3_reference(v1_key, v3_req.add_key())
+
+    return v3_req
+
+  def v3_to_v1_lookup_resp(self, v3_resp):
+    """Converts a v3 GetResponse to a v1 LookupResponse.
+
+    Args:
+      v3_resp: a datastore_pb.GetResponse
+
+    Returns:
+      a googledatastore.LookupResponse
+    """
+    v1_resp = googledatastore.LookupResponse()
+
+    for v3_ref in v3_resp.deferred_list():
+      self._entity_converter.v3_to_v1_key(v3_ref, v1_resp.deferred.add())
+    for v3_entity in v3_resp.entity_list():
+      if v3_entity.has_entity():
+        self._entity_converter.v3_to_v1_entity(
+            v3_entity.entity(),
+            v1_resp.found.add().entity)
+      if v3_entity.has_key():
+        self._entity_converter.v3_to_v1_key(
+            v3_entity.key(),
+            v1_resp.missing.add().entity.key)
+
+    return v1_resp
+
+  def v1_to_v3_query_result(self, v1_batch):
+    """Converts a v1 QueryResultBatch to a v3 QueryResult.
+
+    Args:
+      v1_batch: a googledatastore.QueryResultBatch
+
+    Returns:
+      a datastore_pb.QueryResult
+    """
+    v3_result = datastore_pb.QueryResult()
+
+
+    v3_result.set_more_results(
+        (v1_batch.more_results
+         == googledatastore.QueryResultBatch.NOT_FINISHED))
+    if v1_batch.end_cursor:
+      self._query_converter.v1_to_v3_compiled_cursor(
+          v1_batch.end_cursor, v3_result.mutable_compiled_cursor())
+    if v1_batch.skipped_cursor:
+      self._query_converter.v1_to_v3_compiled_cursor(
+          v1_batch.skipped_cursor,
+          v3_result.mutable_skipped_results_compiled_cursor())
+
+
+    if v1_batch.entity_result_type() == googledatastore.EntityResult.PROJECTION:
+      v3_result.set_index_only(True)
+    elif v1_batch.entity_result_type() == googledatastore.EntityResult.KEY_ONLY:
+      v3_result.set_keys_only(True)
+
+
+    if v1_batch.skipped_results:
+      v3_result.set_skipped_results(v1_batch.skipped_results)
+    for v1_entity_result in v1_batch.entity_result:
+      v3_entity = v3_result.add_result()
+      self._entity_converter.v1_to_v3_entity(v1_entity_result.entity, v3_entity)
+      if v1_entity_result.cursor:
+        cursor = v3_result.add_result_compiled_cursor()
+        self._query_converter.v1_to_v3_compiled_cursor(v1_entity_result.cursor,
+                                                       cursor)
+      if v1_batch.entity_result_type != googledatastore.EntityResult.FULL:
+
+
+        v3_entity.clear_entity_group()
+
+    return v3_result
+
+  def v3_to_v1_query_result_batch(self, v3_result, v1_batch):
+    """Converts a v3 QueryResult to a v1 QueryResultBatch.
+
+    Args:
+      v3_result: a datastore_pb.QueryResult
+      v1_batch: a googledatastore.QueryResultBatch to populate
+    """
+    v1_batch.Clear()
+
+
+    if v3_result.more_results():
+      v1_batch.more_results = googledatastore.QueryResultBatch.NOT_FINISHED
+    else:
+      v1_batch.more_results = (
+          googledatastore.QueryResultBatch.MORE_RESULTS_AFTER_LIMIT)
+    if v3_result.has_compiled_cursor():
+      v1_batch.end_cursor = (
+          self._query_converter.v3_to_v1_compiled_cursor(
+              v3_result.compiled_cursor()))
+    if v3_result.has_skipped_results_compiled_cursor():
+      v1_batch.skipped_cursor = (
+          self._query_converter.v3_to_v1_compiled_cursor(
+              v3_result.skipped_results_compiled_cursor()))
+
+
+    if v3_result.keys_only():
+      v1_batch.entity_result_type = googledatastore.EntityResult.KEY_ONLY
+    elif v3_result.index_only():
+      v1_batch.entity_result_type = googledatastore.EntityResult.PROJECTION
+    else:
+      v1_batch.entity_result_type = googledatastore.EntityResult.FULL
+
+
+    if v3_result.has_skipped_results():
+      v1_batch.skipped_results = v3_result.skipped_results()
+    for v3_entity, v3_cursor in itertools.izip_longest(
+        v3_result.result_list(),
+        v3_result.result_compiled_cursor_list()):
+      v1_entity_result = v1_batch.entity_results.add()
+      self._entity_converter.v3_to_v1_entity(v3_entity,
+                                             v1_entity_result.entity)
+      if v3_cursor is not None:
+        v1_entity_result.cursor = (
+            self._query_converter.v3_to_v1_compiled_cursor(v3_cursor))
 
   def v4_to_v3_cursor(self, v4_query_handle, v3_cursor):
     """Converts a v4 cursor string to a v3 Cursor.
@@ -3617,10 +4279,6 @@ class StubServiceConverter(object):
     if v3_req.has_count():
       v4_req.set_suggested_batch_size(v3_req.count())
 
-    datastore_pbs.check_conversion(
-        not (v3_req.has_transaction() and v3_req.has_failover_ms()),
-        'Cannot set failover and transaction handle.')
-
 
     if v3_req.has_transaction():
       v4_req.mutable_read_options().set_transaction(
@@ -3628,7 +4286,7 @@ class StubServiceConverter(object):
     elif v3_req.strong():
       v4_req.mutable_read_options().set_read_consistency(
           datastore_v4_pb.ReadOptions.STRONG)
-    elif v3_req.has_failover_ms():
+    elif v3_req.has_strong():
       v4_req.mutable_read_options().set_read_consistency(
           datastore_v4_pb.ReadOptions.EVENTUAL)
     if v3_req.has_min_safe_time_seconds():
@@ -3778,6 +4436,10 @@ class StubServiceConverter(object):
     if v4_batch.has_end_cursor():
       self._query_converter.v4_to_v3_compiled_cursor(
           v4_batch.end_cursor(), v3_result.mutable_compiled_cursor())
+    if v4_batch.has_skipped_cursor():
+      self._query_converter.v4_to_v3_compiled_cursor(
+          v4_batch.skipped_cursor(),
+          v3_result.mutable_skipped_results_compiled_cursor())
 
 
     if v4_batch.entity_result_type() == datastore_v4_pb.EntityResult.PROJECTION:
@@ -3791,6 +4453,10 @@ class StubServiceConverter(object):
     for v4_entity in v4_batch.entity_result_list():
       v3_entity = v3_result.add_result()
       self._entity_converter.v4_to_v3_entity(v4_entity.entity(), v3_entity)
+      if v4_entity.has_cursor():
+        cursor = v3_result.add_result_compiled_cursor()
+        self._query_converter.v4_to_v3_compiled_cursor(v4_entity.cursor(),
+                                                       cursor)
       if v4_batch.entity_result_type() != datastore_v4_pb.EntityResult.FULL:
 
 
@@ -3817,6 +4483,10 @@ class StubServiceConverter(object):
       v4_batch.set_end_cursor(
           self._query_converter.v3_to_v4_compiled_cursor(
               v3_result.compiled_cursor()))
+    if v3_result.has_skipped_results_compiled_cursor():
+      v4_batch.set_skipped_cursor(
+          self._query_converter.v3_to_v4_compiled_cursor(
+              v3_result.skipped_results_compiled_cursor()))
 
 
     if v3_result.keys_only():
@@ -3829,27 +4499,29 @@ class StubServiceConverter(object):
 
     if v3_result.has_skipped_results():
       v4_batch.set_skipped_results(v3_result.skipped_results())
-    for v3_entity in v3_result.result_list():
+    for v3_entity, v3_cursor in itertools.izip_longest(
+        v3_result.result_list(),
+        v3_result.result_compiled_cursor_list()):
       v4_entity_result = datastore_v4_pb.EntityResult()
       self._entity_converter.v3_to_v4_entity(v3_entity,
                                              v4_entity_result.mutable_entity())
+      if v3_cursor is not None:
+        v4_entity_result.set_cursor(
+            self._query_converter.v3_to_v4_compiled_cursor(v3_cursor))
       v4_batch.entity_result_list().append(v4_entity_result)
 
 
-
-__service_converter = StubServiceConverter(
-    datastore_pbs.get_entity_converter(), __query_converter)
-
-
-def get_service_converter():
-  """Returns a converter for v3 and v4 service request/response protos.
+def get_service_converter(id_resolver=None):
+  """Returns a converter for v3 and v1 service request/response protos.
 
   This converter is suitable for use in stubs but not for production.
 
   Returns:
     a StubServiceConverter
   """
-  return __service_converter
+  query_converter = get_query_converter(id_resolver)
+  return StubServiceConverter(query_converter.get_entity_converter(),
+                              query_converter)
 
 
 def ReverseBitsInt64(v):
@@ -3887,7 +4559,7 @@ def ToScatteredId(v):
   the scattered ID space.
   """
   if v >= _MAX_SCATTERED_COUNTER:
-    raise datastore_errors.BadArgumentError('counter value too large (%d)' %v)
+    raise datastore_errors.BadArgumentError('counter value too large (%d)' % v)
   return _MAX_SEQUENTIAL_ID + 1 + long(ReverseBitsInt64(v << _SCATTER_SHIFT))
 
 
@@ -3923,6 +4595,25 @@ def CompareEntityPbByKey(a, b):
   """
   return cmp(datastore_types.Key._FromPb(a.key()),
              datastore_types.Key._FromPb(b.key()))
+
+
+def NormalizeCursors(query, first_sort_direction):
+  """Normalizes compiled cursors in place.
+
+  Any position specified in the position group is moved to either the
+  postfix_position or absolute_position field and the position group is
+  cleared.
+
+  If the cursor position does not specify before_ascending, populate it.
+  If before_ascending is already populated, use it and the sort direction
+  from the query to set an appropriate value for before.
+
+  Args:
+    query: datastore_pb.Query
+    first_sort_direction: first sort direction as returned by _GuessOrders
+  """
+  _NormalizeCursor(query.compiled_cursor(), first_sort_direction)
+  _NormalizeCursor(query.end_compiled_cursor(), first_sort_direction)
 
 
 def _GuessOrders(filters, orders):
@@ -3966,17 +4657,55 @@ def _GuessOrders(filters, orders):
   return orders
 
 
-def _MakeQuery(query, filters, orders):
+def _MakeQuery(query_pb, filters, orders, filter_predicate):
   """Make a datastore_query.Query for the given datastore_pb.Query.
 
-  Overrides filters and orders in query with the specified arguments."""
-  clone = datastore_pb.Query()
-  clone.CopyFrom(query)
-  clone.clear_filter()
-  clone.clear_order()
-  clone.filter_list().extend(filters)
-  clone.order_list().extend(orders)
-  return datastore_query.Query._from_pb(clone)
+  Overrides filters and orders in query with the specified arguments.
+
+  Args:
+    query_pb: a datastore_pb.Query.
+    filters: the filters from query.
+    orders: the orders from query.
+    filter_predicate: an additional filter of type
+          datastore_query.FilterPredicate. This is passed along to implement V4
+          specific filters without changing the entire stub.
+
+  Returns:
+    A datastore_query.Query for the datastore_pb.Query."""
+
+
+
+
+
+  clone_pb = datastore_pb.Query()
+  clone_pb.CopyFrom(query_pb)
+  clone_pb.clear_filter()
+  clone_pb.clear_order()
+  clone_pb.filter_list().extend(filters)
+  clone_pb.order_list().extend(orders)
+
+  query = datastore_query.Query._from_pb(clone_pb)
+
+
+
+
+  if filter_predicate is not None:
+    if query.filter_predicate is not None:
+
+
+      filter_predicate = datastore_query.CompositeFilter(
+          datastore_query.CompositeFilter.AND,
+          [filter_predicate, query.filter_predicate])
+
+    return datastore_query.Query(app=query.app,
+                                 namespace=query.namespace,
+                                 ancestor=query.ancestor,
+                                 filter_predicate=filter_predicate,
+                                 group_by=query.group_by,
+                                 order=query.order)
+  else:
+    return query
+
 
 def _CreateIndexEntities(entity, postfix_props):
   """Creates entities for index values that would appear in prodcution.
@@ -4060,7 +4789,8 @@ def _CreateIndexOnlyQueryResults(results, postfix_props):
   return new_results
 
 
-def _ExecuteQuery(results, query, filters, orders, index_list):
+def _ExecuteQuery(results, query, filters, orders, index_list,
+                  filter_predicate=None):
   """Executes the query on a superset of its results.
 
   Args:
@@ -4069,16 +4799,22 @@ def _ExecuteQuery(results, query, filters, orders, index_list):
     filters: the filters from query.
     orders: the orders from query.
     index_list: the list of indexes used by the query.
+    filter_predicate: an additional filter of type
+          datastore_query.FilterPredicate. This is passed along to implement V4
+          specific filters without changing the entire stub.
 
   Returns:
     A ListCursor over the results of applying query to results.
   """
   orders = _GuessOrders(filters, orders)
-  dsquery = _MakeQuery(query, filters, orders)
+
+
+  NormalizeCursors(query, orders[0].direction())
+  dsquery = _MakeQuery(query, filters, orders, filter_predicate)
 
   if query.property_name_size():
     results = _CreateIndexOnlyQueryResults(
-       results, set(order.property() for order in orders))
+        results, set(order.property() for order in orders))
 
   return ListCursor(query, dsquery, orders, index_list,
                     datastore_query.apply_query(dsquery, results))
@@ -4279,3 +5015,87 @@ def _CopyAndSetMultipleToFalse(prop):
   prop_copy.MergeFrom(prop)
   prop_copy.set_multiple(False)
   return prop_copy
+
+
+def _NormalizeCursor(cursor, first_sort_direction):
+  """Normalizes a compiled cursor in place.
+
+  Any position specified in the position group is moved to either the
+  postfix_position or absolute_position field and the position group is
+  cleared.
+
+  If the cursor position does not specify before_ascending, populate it.
+  If before_ascending is already populated, use it and the provided direction
+  to set an appropriate value for before.
+
+  Args:
+    cursor: datastore_pb.CompiledCursor
+    first_sort_direction: first sort direction as returned by _GuessOrders
+  """
+  Check((cursor.has_position()
+         + cursor.has_postfix_position()
+         + cursor.has_absolute_position()) <= 1,
+        ('Cursor may specify at most one of position, postfix_position, '
+         'and absolute_position.'))
+
+
+  if cursor.has_position():
+    pos = cursor.position()
+    if pos.has_start_key():
+      index_pos = cursor.mutable_absolute_position()
+      index_pos.set_key(pos.start_key())
+      if pos.has_start_inclusive():
+        index_pos.set_before(pos.start_inclusive())
+      if pos.has_before_ascending():
+        index_pos.set_before_ascending(pos.before_ascending())
+    elif pos.has_key() or len(pos.indexvalue_list()) > 0:
+      postfix_pos = cursor.mutable_postfix_position()
+      for value in pos.indexvalue_list():
+        index_value = postfix_pos.add_index_value()
+        index_value.set_property_name(value.property())
+        index_value.mutable_value().MergeFrom(value.value())
+      if pos.has_key():
+        postfix_pos.mutable_key().MergeFrom(pos.key())
+      if pos.has_start_inclusive():
+        postfix_pos.set_before(pos.start_inclusive())
+      if pos.has_before_ascending():
+        postfix_pos.set_before_ascending(pos.before_ascending())
+    cursor.clear_position()
+
+
+  pos = None
+  if cursor.has_absolute_position():
+    pos = cursor.absolute_position()
+  elif cursor.has_postfix_position():
+    pos = cursor.postfix_position()
+  if pos:
+    if pos.has_before_ascending():
+      _SetBefore(pos, first_sort_direction)
+    else:
+      _SetBeforeAscending(pos, first_sort_direction)
+
+
+def _SetBefore(position, first_direction):
+  """Sets the before field in position.
+
+  Args:
+    position: an entity_pb.IndexPosition or entity_pb.IndexPostfix
+    first_direction: the first sort order from the query
+      (a datastore_pb.Query_Order) or None
+  """
+  position.set_before(
+      position.before_ascending()
+      != (first_direction == datastore_pb.Query_Order.DESCENDING))
+
+
+def _SetBeforeAscending(position, first_direction):
+  """Sets the before_ascending field in position.
+
+  Args:
+    position: an entity_pb.IndexPosition or entity_pb.IndexPostfix
+    first_direction: the first sort order from the query
+      (a datastore_pb.Query_Order) or None
+  """
+  position.set_before_ascending(
+      position.before()
+      != (first_direction == datastore_pb.Query_Order.DESCENDING))

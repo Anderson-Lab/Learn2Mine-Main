@@ -694,7 +694,7 @@ class GradingHandler(webapp2.RequestHandler):
 					returnStatement = "The code you entered is incorrect.<br>" + returnAdd
 			userLesson.returnStatements[int(problem)-1] = returnStatement
 			returnVals = userLesson.returnStatements[:]
-			experience = len(fnmatch.filter(returnVals,'*solved this problem.'))/len(thisLesson.problems)
+			experience = len(fnmatch.filter(returnVals,'*solved this problem.*'))/len(thisLesson.problems)
 			if int(problem) == len(thisLesson.problems) and thisLesson.flag == "True" and " solved this problem." in userLesson.returnStatements[int(problem)-1]:
 				experience = 100
 			else:
@@ -759,7 +759,7 @@ class GradeRefreshHandler(webapp2.RequestHandler):
 					returnStatement = "The code you entered is incorrect.<br>" + returnAdd
                         userLesson.returnStatements[int(problem)-1] = returnStatement
                         returnVals = userLesson.returnStatements[:]
-                        experience = len(fnmatch.filter(returnVals,'*solved this problem.'))/len(thisLesson.problems)
+                        experience = len(fnmatch.filter(returnVals,'*solved this problem.*'))/len(thisLesson.problems)
 			if int(problem) == len(thisLesson.problems) and thisLesson.flag == "True" and " solved this problem." in userLesson.returnStatements[int(problem)-1]:
 				experience = 100
 			else:
@@ -1104,7 +1104,7 @@ class LessonModifyHandler(webapp2.RequestHandler):
                     lesson.outputID = lesson.outputID[:] + [""]*addQuestions
                     lesson.mostRecent = lesson.mostRecent[:] + [""]*addQuestions
                     lesson.history = lesson.history[:] + [""]*addQuestions
-                    lesson.experience = 100*(len(fnmatch.filter(lesson.returnStatements,'*solved this problem.'))/len(userLesson.problems))
+                    lesson.experience = 100*(len(fnmatch.filter(lesson.returnStatements,'*solved this problem.*'))/len(userLesson.problems))
                     lesson.put()
             userLesson.put()
 

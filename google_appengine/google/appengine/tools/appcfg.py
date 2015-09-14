@@ -14,10 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-
-
-
 """Tool for deploying apps to an app server.
 
 Currently, the application only uploads new appversions. To do this, it first
@@ -33,12 +29,12 @@ files, and commit or rollback the transaction.
 from __future__ import with_statement
 
 
+
 import calendar
 import contextlib
 import copy
 import datetime
 import errno
-import getpass
 import hashlib
 import logging
 import mimetypes
@@ -68,10 +64,10 @@ from google.appengine.api import croninfo
 from google.appengine.api import dispatchinfo
 from google.appengine.api import dosinfo
 from google.appengine.api import queueinfo
+from google.appengine.api import validation
 from google.appengine.api import yaml_errors
 from google.appengine.api import yaml_object
 from google.appengine.datastore import datastore_index
-from google.appengine.tools import appcfg_java
 from google.appengine.tools import appengine_rpc
 
 try:
@@ -80,6 +76,15 @@ try:
   from google.appengine.tools import appengine_rpc_httplib2
 except ImportError:
   appengine_rpc_httplib2 = None
+if sys.version_info[:2] >= (2, 7):
+
+
+
+  from google.appengine.tools import appcfg_java
+else:
+  appcfg_java = None
+
+from google.appengine.tools import augment_mimetypes
 from google.appengine.tools import bulkloader
 from google.appengine.tools import sdk_update_checker
 
@@ -120,9 +125,6 @@ SDK_PRODUCT = 'appcfg_py'
 
 DAY = 24*3600
 SUNDAY = 6
-
-SUPPORTED_RUNTIMES = (
-    'dart', 'go', 'php', 'python', 'python27', 'java', 'java7', 'vm', 'custom')
 
 
 
@@ -167,13 +169,14 @@ GO_APP_BUILDER = os.path.join('goroot', 'bin', 'go-app-builder')
 if sys.platform.startswith('win'):
   GO_APP_BUILDER += '.exe'
 
+GCLOUD_ONLY_RUNTIMES = set(['custom', 'nodejs'])
+
+
+
+augment_mimetypes.init()
+
 
 class Error(Exception):
-  pass
-
-
-class OAuthNotAvailable(Error):
-  """The appengine_rpc_httplib2 module could not be imported."""
   pass
 
 
@@ -232,6 +235,17 @@ def _PrintErrorAndExit(stream, msg, exit_code=2):
   """
   stream.write(msg)
   sys.exit(exit_code)
+
+
+def JavaSupported():
+  """True if Java is supported by this SDK."""
+
+
+  if appcfg_java:
+    tools_java_dir = os.path.join(os.path.dirname(appcfg_java.__file__), 'java')
+    return os.path.isdir(tools_java_dir)
+  else:
+    return False
 
 
 @contextlib.contextmanager
@@ -1808,13 +1822,15 @@ class AppVersionUpload(object):
     deployed: True iff the Deploy method has been called.
     started: True iff the StartServing method has been called.
     logging_context: The _ClientDeployLoggingContext for this upload.
+    ignore_endpoints_failures: True to finish deployment even if there are
+      errors updating the Google Cloud Endpoints configuration (if there is
+      one). False if these errors should cause a failure/rollback.
   """
 
   def __init__(self, rpcserver, config, module_yaml_path='app.yaml',
                backend=None,
                error_fh=None,
-               get_version=sdk_update_checker.GetVersionObject,
-               usage_reporting=False):
+               usage_reporting=False, ignore_endpoints_failures=True):
     """Creates a new AppVersionUpload.
 
     Args:
@@ -1827,9 +1843,10 @@ class AppVersionUpload(object):
       backend: If specified, indicates the update applies to the given backend.
         The backend name must match an entry in the backends: stanza.
       error_fh: Unexpected HTTPErrors are printed to this file handle.
-      get_version: Method for determining the current SDK version. The override
-        is used for testing.
       usage_reporting: Whether or not to report usage.
+      ignore_endpoints_failures: True to finish deployment even if there are
+        errors updating the Google Cloud Endpoints configuration (if there is
+        one). False if these errors should cause a failure/rollback.
     """
     self.rpcserver = rpcserver
     self.config = config
@@ -1873,13 +1890,9 @@ class AppVersionUpload(object):
       self.config.vm_settings = appinfo.VmSettings()
     self.config.vm_settings['module_yaml_path'] = module_yaml_path
 
-    if not self.config.vm_settings.get('image'):
-      sdk_version = get_version()
-      if sdk_version and sdk_version.get('release'):
-        self.config.vm_settings['image'] = sdk_version['release']
-
     if not self.config.auto_id_policy:
       self.config.auto_id_policy = appinfo.DATASTORE_ID_POLICY_DEFAULT
+    self.ignore_endpoints_failures = ignore_endpoints_failures
 
   def AddFile(self, path, file_handle):
     """Adds the provided file to the list to be pushed to the server.
@@ -2162,17 +2175,11 @@ class AppVersionUpload(object):
 
       check_config_updated = response.get('check_endpoints_config')
       if check_config_updated:
-        unused_done, last_state = RetryWithBackoff(
+        unused_done, (last_state, user_error) = RetryWithBackoff(
             self.IsEndpointsConfigUpdated,
             PrintRetryMessage, 1, 2, 60, 20)
         if last_state != EndpointsState.SERVING:
-          error_message = (
-              'Failed to update Endpoints configuration (last result %s).  '
-              'Check the app\'s AppEngine logs for errors: %s' %
-              (last_state, self.GetLogUrl()))
-          StatusUpdate(error_message, self.error_fh)
-          logging.warning(error_message)
-          raise RuntimeError(error_message)
+          self.HandleEndpointsError(user_error)
       self.in_transaction = False
 
     return app_summary
@@ -2299,7 +2306,7 @@ class AppVersionUpload(object):
     """
     response_dict = yaml.safe_load(resp)
 
-    if 'updated' not in response_dict and 'updatedDetail' not in response_dict:
+    if 'updated' not in response_dict and 'updatedDetail2' not in response_dict:
       return None
     return response_dict
 
@@ -2341,8 +2348,9 @@ class AppVersionUpload(object):
     if result is None:
       raise CannotStartServingError(
           'Internal error: Could not parse IsEndpointsConfigUpdated response.')
-    if 'updatedDetail' in result:
-      updated_state = EndpointsState.Parse(result['updatedDetail'])
+    if 'updatedDetail2' in result:
+      updated_state = EndpointsState.Parse(result['updatedDetail2'])
+      user_error = result.get('errorMessage')
     else:
 
 
@@ -2351,14 +2359,49 @@ class AppVersionUpload(object):
 
       updated_state = (EndpointsState.SERVING if result['updated']
                        else EndpointsState.PENDING)
-    return updated_state != EndpointsState.PENDING, updated_state
+      user_error = None
+    return updated_state != EndpointsState.PENDING, (updated_state, user_error)
 
-  def Rollback(self):
+  def HandleEndpointsError(self, user_error):
+    """Handle an error state returned by IsEndpointsConfigUpdated.
+
+    Args:
+      user_error: Either None or a string with a message from the server
+        that indicates what the error was and how the user should resolve it.
+
+    Raises:
+      RuntimeError: The update state is fatal and the user hasn't chosen
+        to ignore Endpoints errors.
+    """
+    detailed_error = user_error or (
+        "Check the app's AppEngine logs for errors: %s" % self.GetLogUrl())
+    error_message = ('Failed to update Endpoints configuration.  %s' %
+                     detailed_error)
+    StatusUpdate(error_message, self.error_fh)
+
+
+    doc_link = ('https://developers.google.com/appengine/docs/python/'
+                'endpoints/test_deploy#troubleshooting_a_deployment_failure')
+    StatusUpdate('See the deployment troubleshooting documentation for more '
+                 'information: %s' % doc_link, self.error_fh)
+
+    if self.ignore_endpoints_failures:
+      StatusUpdate('Ignoring Endpoints failure and proceeding with update.',
+                   self.error_fh)
+    else:
+      raise RuntimeError(error_message)
+
+  def Rollback(self, force_rollback=False):
     """Rolls back the transaction if one is in progress."""
     if not self.in_transaction:
       return
-    StatusUpdate('Rolling back the update.', self.error_fh)
-    self.logging_context.Send('/api/appversion/rollback')
+    msg = 'Rolling back the update.'
+    if self.config.vm and not force_rollback:
+      msg += ('  This can sometimes take a while since a VM version is being '
+              'rolled back.')
+    StatusUpdate(msg, self.error_fh)
+    self.logging_context.Send('/api/appversion/rollback',
+                              force_rollback='1' if force_rollback else '0')
     self.in_transaction = False
     self.files = {}
 
@@ -2490,9 +2533,12 @@ class AppVersionUpload(object):
 
 
         if file_length > max_size:
+          extra_msg = (' Consider --enable_jar_splitting.'
+                       if JavaSupported() and path.endswith('jar')
+                       else '')
           logging.error('Ignoring file \'%s\': Too long '
-                        '(max %d bytes, file is %d bytes)',
-                        path, max_size, file_length)
+                        '(max %d bytes, file is %d bytes).%s',
+                        path, max_size, file_length, extra_msg)
         else:
           logging.info('Processing file \'%s\'', path)
           self.AddFile(path, file_handle)
@@ -2537,7 +2583,7 @@ class AppVersionUpload(object):
     self.file_batcher.Flush()
     self.blob_batcher.Flush()
     self.errorblob_batcher.Flush()
-    StatusUpdate('Uploaded %d files and blobs' % num_files, self.error_fh)
+    StatusUpdate('Uploaded %d files and blobs.' % num_files, self.error_fh)
 
   @staticmethod
   def _LogDoUploadException(exception):
@@ -2751,7 +2797,6 @@ class AppCfgApp(object):
     argv: The original command line as a list.
     args: The positional command line args left over after parsing the options.
     raw_input_fn: Function used for getting raw user input, like email.
-    password_input_fn: Function used for getting user password.
     error_fh: Unexpected HTTPErrors are printed to this file handle.
 
   Attributes for testing:
@@ -2759,14 +2804,11 @@ class AppCfgApp(object):
       OptionsParser will exit the program when there is a parse failure, it
       is nice to subclass OptionsParser and catch the error before exiting.
     read_url_contents: A function to read the contents of a URL.
-    override_java_supported: If not None, forces the code to assume that Java
-      support is (True) or is not (False) present.
   """
 
   def __init__(self, argv, parser_class=optparse.OptionParser,
                rpc_server_class=None,
                raw_input_fn=raw_input,
-               password_input_fn=getpass.getpass,
                out_fh=sys.stdout,
                error_fh=sys.stderr,
                update_check_class=sdk_update_checker.SDKUpdateChecker,
@@ -2777,8 +2819,7 @@ class AppCfgApp(object):
                wrap_server_error_message=True,
                oauth_client_id=APPCFG_CLIENT_ID,
                oauth_client_secret=APPCFG_CLIENT_NOTSOSECRET,
-               oauth_scopes=APPCFG_SCOPES,
-               override_java_supported=None):
+               oauth_scopes=APPCFG_SCOPES):
     """Initializer.  Parses the cmdline and selects the Action to use.
 
     Initializes all of the attributes described in the class docstring.
@@ -2789,7 +2830,6 @@ class AppCfgApp(object):
       parser_class: Options parser to use for this application.
       rpc_server_class: RPC server class to use for this application.
       raw_input_fn: Function used for getting user email.
-      password_input_fn: Function used for getting user password.
       out_fh: All normal output is printed to this file handle.
       error_fh: Unexpected HTTPErrors are printed to this file handle.
       update_check_class: sdk_update_checker.SDKUpdateChecker class (can be
@@ -2815,14 +2855,11 @@ class AppCfgApp(object):
       oauth_scopes: The scope or set of scopes to be accessed by the OAuth2
           token retrieved. Defaults to APPCFG_SCOPES. Can be a string or
           iterable of strings, representing the scope(s) to request.
-      override_java_supported: If not None, forces the code to assume that Java
-        support is (True) or is not (False) present.
     """
     self.parser_class = parser_class
     self.argv = argv
     self.rpc_server_class = rpc_server_class
     self.raw_input_fn = raw_input_fn
-    self.password_input_fn = password_input_fn
     self.out_fh = out_fh
     self.error_fh = error_fh
     self.update_check_class = update_check_class
@@ -2832,7 +2869,6 @@ class AppCfgApp(object):
     self.oauth_client_id = oauth_client_id
     self.oauth_client_secret = oauth_client_secret
     self.oauth_scopes = oauth_scopes
-    self.override_java_supported = override_java_supported
 
     self.read_url_contents = _ReadUrlContents
 
@@ -2852,13 +2888,17 @@ class AppCfgApp(object):
 
     if not self.options.allow_any_runtime:
       if self.options.runtime:
-        if self.options.runtime not in SUPPORTED_RUNTIMES:
+        if self.options.runtime not in appinfo.GetAllRuntimes():
           _PrintErrorAndExit(self.error_fh,
                              '"%s" is not a supported runtime\n' %
                              self.options.runtime)
       else:
         appinfo.AppInfoExternal.ATTRIBUTES[appinfo.RUNTIME] = (
-            '|'.join(SUPPORTED_RUNTIMES))
+            '|'.join(appinfo.GetAllRuntimes()))
+
+    if self.options.redundant_oauth2:
+      print >>sys.stderr, (
+          '\nNote: the --oauth2 flag is now the default and can be omitted.\n')
 
     action = self.args.pop(0)
 
@@ -2934,12 +2974,6 @@ class AppCfgApp(object):
     verbosity = self.options.verbose
 
 
-
-    if any((self.options.oauth2_refresh_token, self.options.oauth2_access_token,
-            self.options.authenticate_service_account)):
-      self.options.oauth2 = True
-
-
     if self.options.oauth2_client_id:
       self.oauth_client_id = self.options.oauth2_client_id
     if self.options.oauth2_client_secret:
@@ -2979,13 +3013,6 @@ class AppCfgApp(object):
       return 1
     return 0
 
-  def _JavaSupported(self):
-    """True if this SDK supports uploading Java apps."""
-    if self.override_java_supported is not None:
-      return self.override_java_supported
-    tools_java_dir = os.path.join(os.path.dirname(appcfg_java.__file__), 'java')
-    return os.path.isdir(tools_java_dir)
-
   def _GetActionDescriptions(self):
     """Returns a formatted string containing the short_descs for all actions."""
     action_names = self.actions.keys()
@@ -3003,6 +3030,14 @@ class AppCfgApp(object):
     Returns:
       An OptionParser instance.
     """
+
+    def AppendSourceReference(option, opt_str, value, parser):
+      """Validates the source reference string and appends it to the list."""
+      try:
+        appinfo.ValidateSourceReference(value)
+      except validation.ValidationError, e:
+        raise optparse.OptionValueError('option %s: %s' % (opt_str, e.message))
+      getattr(parser.values, option.dest).append(value)
 
     class Formatter(optparse.IndentedHelpFormatter):
       """Custom help formatter that does not reformat the description."""
@@ -3081,9 +3116,6 @@ class AppCfgApp(object):
     parser.add_option('--skip_sdk_update_check', action='store_true',
                       dest='skip_sdk_update_check', default=False,
                       help='Do not check for SDK updates.')
-    parser.add_option('--passin', action='store_true',
-                      dest='passin', default=False,
-                      help='Read the login password from stdin.')
     parser.add_option('-A', '--application', action='store', dest='app_id',
                       help=('Set the application, overriding the application '
                             'value from app.yaml file.'))
@@ -3095,6 +3127,11 @@ class AppCfgApp(object):
                             'value from app.yaml file.'))
     parser.add_option('-r', '--runtime', action='store', dest='runtime',
                       help='Override runtime from app.yaml file.')
+    parser.add_option('--source_ref', metavar='[repository_uri#]revision',
+                      type='string', action='callback',
+                      callback=AppendSourceReference, dest='source_ref',
+                      default=[],
+                      help=optparse.SUPPRESS_HELP)
     parser.add_option('-E', '--env_variable', action='update',
                       dest='env_variables', metavar='NAME:VALUE',
                       help=('Set an environment variable, potentially '
@@ -3104,9 +3141,9 @@ class AppCfgApp(object):
     parser.add_option('-R', '--allow_any_runtime', action='store_true',
                       dest='allow_any_runtime', default=False,
                       help='Do not validate the runtime in app.yaml')
-    parser.add_option('--oauth2', action='store_true', dest='oauth2',
-                      default=False,
-                      help='Use OAuth2 instead of password auth.')
+    parser.add_option('--oauth2', action='store_true',
+                      dest='redundant_oauth2', default=False,
+                      help='Ignored (OAuth2 is the default).')
     parser.add_option('--oauth2_refresh_token', action='store',
                       dest='oauth2_refresh_token', default=None,
                       help='An existing OAuth2 refresh token to use. Will '
@@ -3133,6 +3170,17 @@ class AppCfgApp(object):
                       dest='auth_local_webserver', default=True,
                       help='Do not run a local web server to handle redirects '
                       'during OAuth authorization.')
+    parser.add_option('--called_by_gcloud',
+                      action='store_true', default=False,
+                      help=optparse.SUPPRESS_HELP)
+
+
+    parser.add_option('--ignore_endpoints_failures', action='store_true',
+                      dest='ignore_endpoints_failures', default=True,
+                      help=optparse.SUPPRESS_HELP)
+    parser.add_option('--no_ignore_endpoints_failures', action='store_false',
+                      dest='ignore_endpoints_failures',
+                      help=optparse.SUPPRESS_HELP)
     return parser
 
   def _MakeSpecificParser(self, action):
@@ -3169,64 +3217,21 @@ class AppCfgApp(object):
       A new AbstractRpcServer, on which RPC calls can be made.
 
     Raises:
-      OAuthNotAvailable: OAuth is requested but the dependecies aren't imported.
       RuntimeError: The user has request non-interactive authentication but the
         environment is not correct for that to work.
     """
-
-    def GetUserCredentials():
-      """Prompts the user for a username and password."""
-      email = self.options.email
-      if email is None:
-        email = self.raw_input_fn('Email: ')
-
-      password_prompt = 'Password for %s: ' % email
-
-
-      if self.options.passin:
-        password = self.raw_input_fn(password_prompt)
-      else:
-        password = self.password_input_fn(password_prompt)
-
-      return (email, password)
 
     StatusUpdate('Host: %s' % self.options.server, self.error_fh)
 
     source = GetSourceName()
 
-
-
-    dev_appserver = self.options.host == 'localhost'
-    if self.options.oauth2 and not dev_appserver:
-      if not appengine_rpc_httplib2:
-
-        raise OAuthNotAvailable()
-      if not self.rpc_server_class:
-        self.rpc_server_class = appengine_rpc_httplib2.HttpRpcServerOAuth2
-
-
-      get_user_credentials = (
-          appengine_rpc_httplib2.HttpRpcServerOAuth2.OAuth2Parameters(
-              access_token=self.options.oauth2_access_token,
-              client_id=self.oauth_client_id,
-              client_secret=self.oauth_client_secret,
-              scope=self.oauth_scopes,
-              refresh_token=self.options.oauth2_refresh_token,
-              credential_file=self.options.oauth2_credential_file,
-              token_uri=self._GetTokenUri()))
-
-      if hasattr(appengine_rpc_httplib2.tools, 'FLAGS'):
-        appengine_rpc_httplib2.tools.FLAGS.auth_local_webserver = (
-            self.options.auth_local_webserver)
-    else:
-      if not self.rpc_server_class:
-        self.rpc_server_class = appengine_rpc.HttpRpcServerWithOAuth2Suggestion
-        if hasattr(self, 'runtime'):
-          self.rpc_server_class.RUNTIME = self.runtime
-      get_user_credentials = GetUserCredentials
-
+    dev_appserver = self.options.host in ['localhost', '127.0.0.1']
 
     if dev_appserver:
+      if not self.rpc_server_class:
+        self.rpc_server_class = appengine_rpc.HttpRpcServer
+        if hasattr(self, 'runtime'):
+          self.rpc_server_class.RUNTIME = self.runtime
       email = self.options.email
       if email is None:
         email = 'test@example.com'
@@ -3244,20 +3249,30 @@ class AppCfgApp(object):
       rpcserver.authenticated = True
       return rpcserver
 
+    if not self.rpc_server_class:
+      self.rpc_server_class = appengine_rpc_httplib2.HttpRpcServerOAuth2
 
-    if self.options.passin:
-      auth_tries = 1
-    else:
-      auth_tries = 3
+
+    get_user_credentials = (
+        appengine_rpc_httplib2.HttpRpcServerOAuth2.OAuth2Parameters(
+            access_token=self.options.oauth2_access_token,
+            client_id=self.oauth_client_id,
+            client_secret=self.oauth_client_secret,
+            scope=self.oauth_scopes,
+            refresh_token=self.options.oauth2_refresh_token,
+            credential_file=self.options.oauth2_credential_file,
+            token_uri=self._GetTokenUri()))
+
 
     return self.rpc_server_class(self.options.server, get_user_credentials,
                                  GetUserAgent(), source,
                                  host_override=self.options.host,
                                  save_cookies=self.options.save_cookies,
-                                 auth_tries=auth_tries,
+                                 auth_tries=3,
                                  account_type='HOSTED_OR_GOOGLE',
                                  secure=self.options.secure,
-                                 ignore_certs=self.options.ignore_certs)
+                                 ignore_certs=self.options.ignore_certs,
+                                 options=self.options)
 
   def _GetTokenUri(self):
     """Returns the OAuth2 token_uri, or None to use the default URI.
@@ -3332,7 +3347,7 @@ class AppCfgApp(object):
       self.parser.error('Error parsing %s.yaml: %s.' % (
           os.path.join(basepath, basename), e))
     if not appyaml:
-      if self._JavaSupported():
+      if JavaSupported():
         if appcfg_java.IsWarFileWithoutYaml(basepath):
           java_app_update = appcfg_java.JavaAppUpdate(basepath, self.options)
           appyaml_string = java_app_update.GenerateAppYamlString([])
@@ -3342,8 +3357,9 @@ class AppCfgApp(object):
                             'configuration file nor a WEB-INF subdirectory '
                             'with web.xml and appengine-web.xml.' % basename)
       else:
-        self.parser.error('Directory does not contain an %s.yaml configuration '
-                          'file' % basename)
+        self.parser.error('Directory %r does not contain configuration file '
+                          '%s.yaml' %
+                          (os.path.abspath(basepath), basename))
 
     orig_application = appyaml.application
     orig_module = appyaml.module
@@ -3360,6 +3376,15 @@ class AppCfgApp(object):
       if appyaml.env_variables is None:
         appyaml.env_variables = appinfo.EnvironmentVariables()
       appyaml.env_variables.update(self.options.env_variables)
+    if self.options.source_ref:
+      try:
+        combined_refs = '\n'.join(self.options.source_ref)
+        appinfo.ValidateCombinedSourceReferencesString(combined_refs)
+        if appyaml.beta_settings is None:
+          appyaml.beta_settings = appinfo.BetaSettings()
+        appyaml.beta_settings['source_reference'] = combined_refs
+      except validation.ValidationError, e:
+        self.parser.error(e.message)
 
     if not appyaml.application:
       self.parser.error('Expected -A app_id when application property in file '
@@ -3608,14 +3633,36 @@ class AppCfgApp(object):
       paths to absolute paths, its stderr is raised.
     """
 
-    if (not self.options.precompilation and
-        appyaml.GetEffectiveRuntime() == 'go'):
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    runtime = appyaml.GetEffectiveRuntime()
+    if appyaml.vm and (self.options.called_by_gcloud or runtime != 'go'):
+      self.options.precompilation = False
+    elif runtime == 'dart':
+      self.options.precompilation = False
+    elif runtime == 'go' and not self.options.precompilation:
       logging.warning('Precompilation is required for Go apps; '
                       'ignoring --no_precompilation')
       self.options.precompilation = True
-
-    if appyaml.runtime.startswith('java'):
+    elif (runtime.startswith('java') and
+          appinfo.JAVA_PRECOMPILED not in (appyaml.derived_file_type or [])):
       self.options.precompilation = False
+
+    if runtime in GCLOUD_ONLY_RUNTIMES:
+      raise RuntimeError('The runtime: \'%s\' is only supported with '
+                         'gcloud.' % runtime)
 
     if self.options.precompilation:
       if not appyaml.derived_file_type:
@@ -3626,17 +3673,22 @@ class AppCfgApp(object):
     paths = self.file_iterator(basepath, appyaml.skip_files, appyaml.runtime)
     openfunc = lambda path: self.opener(os.path.join(basepath, path), 'rb')
 
-    gopath = os.environ.get('GOPATH')
-    if appyaml.GetEffectiveRuntime() == 'go' and gopath:
 
-
-
-
-
-
+    if (appyaml.GetEffectiveRuntime() == 'go' and
+        not (appyaml.runtime == 'vm' and
+             'GAE_LOCAL_VM_RUNTIME' in os.environ)):
 
       sdk_base = os.path.normpath(os.path.join(
           google.appengine.__file__, '..', '..', '..'))
+
+      gopath = os.environ.get('GOPATH')
+      if not gopath:
+        gopath = os.path.join(sdk_base, 'gopath')
+
+
+
+
+
       goroot = os.path.join(sdk_base, 'goroot')
       if not os.path.exists(goroot):
 
@@ -3651,6 +3703,7 @@ class AppCfgApp(object):
                              '(-nobuild_files applied)')
         gab_argv = [
             gab,
+            '-api_version', appyaml.api_version,
             '-app_base', self.basepath,
             '-arch', '6',
             '-gopath', gopath,
@@ -3689,12 +3742,14 @@ class AppCfgApp(object):
         paths = app_paths + overlay.keys()
         openfunc = Open
 
-    appversion = AppVersionUpload(rpcserver,
-                                  appyaml,
-                                  module_yaml_path=module_yaml_path,
-                                  backend=backend,
-                                  error_fh=self.error_fh,
-                                  usage_reporting=self.options.usage_reporting)
+    appversion = AppVersionUpload(
+        rpcserver,
+        appyaml,
+        module_yaml_path=module_yaml_path,
+        backend=backend,
+        error_fh=self.error_fh,
+        usage_reporting=self.options.usage_reporting,
+        ignore_endpoints_failures=self.options.ignore_endpoints_failures)
     return appversion.DoUpload(paths, openfunc)
 
   def UpdateUsingSpecificFiles(self):
@@ -3730,11 +3785,9 @@ class AppCfgApp(object):
       self.UpdateUsingSpecificFiles()
       return
 
-    if (self._JavaSupported() and
-        appcfg_java.IsWarFileWithoutYaml(self.basepath)):
+    if JavaSupported() and appcfg_java.IsWarFileWithoutYaml(self.basepath):
       java_app_update = appcfg_java.JavaAppUpdate(self.basepath, self.options)
-      self.options.compile_jsps = True
-
+      self.options.compile_jsps = not java_app_update.app_engine_web_xml.vm
 
 
 
@@ -3841,12 +3894,28 @@ class AppCfgApp(object):
 
     if cron_yaml:
       cron_upload = CronEntryUpload(rpcserver, cron_yaml, self.error_fh)
-      cron_upload.DoUpload()
+      try:
+        cron_upload.DoUpload()
+      except urllib2.HTTPError, e:
+        ErrorUpdate('Error %d: --- begin server output ---\n'
+                    '%s\n--- end server output ---' %
+                    (e.code, e.read().rstrip('\n')))
+        print >> self.error_fh, (
+            'Your app was updated, but there was an error updating your '
+            'cron tasks. Please retry later with appcfg.py update_cron.')
 
 
     if queue_yaml:
       queue_upload = QueueEntryUpload(rpcserver, queue_yaml, self.error_fh)
-      queue_upload.DoUpload()
+      try:
+        queue_upload.DoUpload()
+      except urllib2.HTTPError, e:
+        ErrorUpdate('Error %d: --- begin server output ---\n'
+                    '%s\n--- end server output ---' %
+                    (e.code, e.read().rstrip('\n')))
+        print >> self.error_fh, (
+            'Your app was updated, but there was an error updating your '
+            'queues. Please retry later with appcfg.py update_queues.')
 
 
     if dos_yaml:
@@ -3890,7 +3959,7 @@ class AppCfgApp(object):
     parser.add_option('--no_usage_reporting', action='store_false',
                       dest='usage_reporting', default=True,
                       help='Disable usage reporting.')
-    if self._JavaSupported():
+    if JavaSupported():
       appcfg_java.AddUpdateOptions(parser)
 
   def VacuumIndexes(self):
@@ -4012,7 +4081,7 @@ class AppCfgApp(object):
     Args:
       appyaml: A parsed app.yaml file.
     """
-    if appyaml.runtime == 'php':
+    if appyaml.runtime.startswith('php'):
       _PrintErrorAndExit(
           self.error_fh,
           'Error: Backends are not supported with the PHP runtime. '
@@ -4061,8 +4130,7 @@ class AppCfgApp(object):
       self.backend = self.args[0]
     elif len(self.args) > 1:
       self.parser.error('Expected an optional <backend> argument.')
-    if (self._JavaSupported() and
-        appcfg_java.IsWarFileWithoutYaml(self.basepath)):
+    if JavaSupported() and appcfg_java.IsWarFileWithoutYaml(self.basepath):
       java_app_update = appcfg_java.JavaAppUpdate(self.basepath, self.options)
       self.options.compile_jsps = True
       sdk_root = os.path.dirname(appcfg_java.__file__)
@@ -4254,6 +4322,15 @@ class AppCfgApp(object):
     parser.add_option('-I', '--instance', type='string', dest='instance',
                       help='Instance to lock/unlock.')
 
+  def PrepareVmRuntimeAction(self):
+    """Prepare the application for vm runtimes and return state."""
+    if not self.options.app_id:
+      self.parser.error('Expected an --application argument')
+    rpcserver = self._GetRpcServer()
+    response = rpcserver.Send('/api/vms/prepare',
+                              app_id=self.options.app_id)
+    print >> self.out_fh, response
+
   def _ParseAndValidateModuleYamls(self, yaml_paths):
     """Validates given yaml paths and returns the parsed yaml objects.
 
@@ -4363,9 +4440,17 @@ class AppCfgApp(object):
 
   def Rollback(self):
     """Does a rollback of an existing transaction for this app version."""
-    if self.args:
-      self.parser.error('Expected a single <directory> or <file> argument.')
     self._Rollback()
+
+  def _RollbackOptions(self, parser):
+    """Adds rollback-specific options to parser.
+
+    Args:
+      parser: An instance of OptionsParser.
+    """
+    parser.add_option('--force_rollback', action='store_true',
+                      dest='force_rollback', default=False,
+                      help='Force rollback.')
 
   def _Rollback(self, backend=None):
     """Does a rollback of an existing transaction.
@@ -4392,7 +4477,15 @@ class AppCfgApp(object):
                                   backend=backend)
 
     appversion.in_transaction = True
-    appversion.Rollback()
+
+
+
+
+    force_rollback = False
+    if hasattr(self.options, 'force_rollback'):
+      force_rollback = self.options.force_rollback
+
+    appversion.Rollback(force_rollback)
 
   def SetDefaultVersion(self):
     """Sets the default version."""
@@ -4437,9 +4530,11 @@ class AppCfgApp(object):
 
   def MigrateTraffic(self):
     """Migrates traffic."""
+    module = 'default'
     if len(self.args) == 1:
       appyaml = self._ParseAppInfoFromYaml(self.args[0])
       app_id = appyaml.application
+      module = appyaml.module or 'default'
       version = appyaml.version
     elif not self.args:
       if not (self.options.app_id and self.options.version):
@@ -4452,8 +4547,15 @@ class AppCfgApp(object):
 
     if self.options.app_id:
       app_id = self.options.app_id
+    if self.options.module:
+      module = self.options.module
     if self.options.version:
       version = self.options.version
+
+    if module not in ['', 'default']:
+      StatusUpdate('migrate_traffic does not support non-default module at '
+                   'this time.')
+      return
 
     traffic_migrator = TrafficMigrator(
         self._GetRpcServer(), app_id, version, self.error_fh)
@@ -5147,6 +5249,7 @@ option to delete them."""),
       'rollback': Action(
           function='Rollback',
           usage='%prog [options] rollback <directory> | <file>',
+          options=_RollbackOptions,
           short_desc='Rollback an in-progress update.',
           long_desc="""
 The 'update' command requires a server-side transaction.
@@ -5315,6 +5418,15 @@ for debugging."""),
           uses_basepath=False,
           long_desc="""
 The 'lock' command relocks a debugged vm runtime application."""),
+
+      'prepare_vm_runtime': Action(
+          function='PrepareVmRuntimeAction',
+          usage='%prog [options] prepare_vm_runtime -A app_id',
+          short_desc='Prepare an application for the VM runtime.',
+          hidden=True,
+          uses_basepath=False,
+          long_desc="""
+The 'prepare_vm_runtime' prepares an application for the VM runtime."""),
   }
 
 

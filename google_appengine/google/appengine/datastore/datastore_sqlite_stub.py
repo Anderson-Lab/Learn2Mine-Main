@@ -39,6 +39,7 @@ when it begins and releases it when it commits or rolls back.
 
 
 
+
 import array
 import itertools
 import logging
@@ -233,6 +234,7 @@ def _DedupingEntityGenerator(cursor):
 
     seen.add(encoded_row_key)
     entity = entity_pb.EntityProto(row_entity)
+    datastore_stub_util._ScrubMetadataProperty(entity)
     datastore_stub_util.PrepareSpecialPropertiesForLoad(entity)
     yield entity
 
@@ -265,6 +267,7 @@ def _ProjectionPartialEntityGenerator(cursor):
       prop_to_add.mutable_value().Merge(value_decoder)
       prop_to_add.set_multiple(False)
 
+    datastore_stub_util._ScrubMetadataProperty(entity)
     datastore_stub_util.PrepareSpecialPropertiesForLoad(entity)
     yield entity
 
@@ -687,6 +690,7 @@ class DatastoreSqliteStub(datastore_stub_util.BaseDatastore,
 
   def Close(self):
     """Closes the SQLite connection and releases the files."""
+    datastore_stub_util.BaseDatastore.Close(self)
     conn = self._GetConnection()
     conn.close()
 
@@ -1261,6 +1265,7 @@ class DatastoreSqliteStub(datastore_stub_util.BaseDatastore,
       if row:
         entity = entity_pb.EntityProto()
         entity.ParseFromString(row[0])
+        datastore_stub_util._ScrubMetadataProperty(entity)
         return datastore_stub_util.LoadEntity(entity)
     finally:
       self._ReleaseConnection(conn)
@@ -1292,28 +1297,44 @@ class DatastoreSqliteStub(datastore_stub_util.BaseDatastore,
     conn = self._GetConnection()
     try:
       db_cursor = conn.execute(sql_stmt, params)
-      entities = (entity_pb.EntityProto(row[1]) for row in db_cursor.fetchall())
-      return dict((datastore_types.ReferenceToKeyValue(entity.key()), entity)
-                  for entity in entities)
+      entities = {}
+      for row in db_cursor.fetchall():
+        entity = entity_pb.EntityProto(row[1])
+        datastore_stub_util._ScrubMetadataProperty(entity)
+        entities[datastore_types.ReferenceToKeyValue(entity.key())] = entity
+      return entities
     finally:
 
       self._ReleaseConnection(conn)
 
-  def _GetQueryCursor(self, query, filters, orders, index_list):
+  def _GetQueryCursor(self, query, filters, orders, index_list,
+                      filter_predicate=None):
     """Returns a query cursor for the provided query.
 
     Args:
-      conn: The SQLite connection.
-      query: A datastore_pb.Query protobuf.
+      query: The datastore_pb.Query to run.
+      filters: A list of filters that override the ones found on query.
+      orders: A list of orders that override the ones found on query.
+      index_list: A list of indexes used by the query.
+      filter_predicate: an additional filter of type
+          datastore_query.FilterPredicate. This is passed along to implement V4
+          specific filters without changing the entire stub.
+
     Returns:
       A QueryCursor object.
     """
     if query.has_kind() and query.kind() in self._pseudo_kinds:
+
+      datastore_stub_util.NormalizeCursors(query,
+                                           datastore_pb.Query_Order.ASCENDING)
       cursor = self._pseudo_kinds[query.kind()].Query(query, filters, orders)
       datastore_stub_util.Check(cursor,
                                 'Could not create query for pseudo-kind')
     else:
       orders = datastore_stub_util._GuessOrders(filters, orders)
+
+
+      datastore_stub_util.NormalizeCursors(query, orders[0].direction())
       filter_info = self.__GenerateFilterInfo(filters, query)
       order_info = self.__GenerateOrderInfo(orders)
 
@@ -1335,10 +1356,17 @@ class DatastoreSqliteStub(datastore_stub_util.BaseDatastore,
               conn.execute(sql_stmt, params))
         else:
           db_cursor = _DedupingEntityGenerator(conn.execute(sql_stmt, params))
-        dsquery = datastore_stub_util._MakeQuery(query, filters, orders)
+        dsquery = datastore_stub_util._MakeQuery(query, filters, orders,
+                                                 filter_predicate)
+
+        filtered_entities = [r for r in db_cursor]
+
+
+        if filter_predicate:
+          filtered_entities = filter(filter_predicate, filtered_entities)
+
         cursor = datastore_stub_util.ListCursor(
-            query, dsquery, orders, index_list,
-            [r for r in db_cursor])
+            query, dsquery, orders, index_list, filtered_entities)
       finally:
         self._ReleaseConnection(conn)
     return cursor
